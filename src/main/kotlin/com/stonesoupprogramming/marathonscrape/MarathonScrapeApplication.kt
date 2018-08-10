@@ -40,6 +40,7 @@ fun main(args: Array<String>) {
 class Application(@Autowired private val nyWebScraper: NyWebScraper) : CommandLineRunner {
 
     override fun run(vararg args: String) {
-        nyWebScraper.scrape()
+        val records = nyWebScraper.scrape()
+        records.writeToCsv("NYRR.csv")
     }
 }

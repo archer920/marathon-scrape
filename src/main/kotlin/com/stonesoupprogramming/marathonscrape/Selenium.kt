@@ -21,7 +21,7 @@ class NyWebScraper(@Autowired private val chromeDriver: ChromeDriver) {
                         nationality(parts[1]),
                         parts[4])
             }
-            runners
+            runners.sortedBy { it.age }.toList()
         }.flatten()
     }
 
