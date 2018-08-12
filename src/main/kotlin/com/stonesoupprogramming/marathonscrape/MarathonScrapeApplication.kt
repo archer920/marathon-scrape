@@ -1,8 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
 import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.chrome.ChromeOptions
-import org.openqa.selenium.firefox.FirefoxDriver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -11,7 +9,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.context.annotation.Scope
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
@@ -65,7 +62,7 @@ fun main(args: Array<String>) {
 
 @Component
 class Application(
-        @Autowired private val nyRunnerDataRepository: NyRunnerDataRepository,
+        @Autowired private val runnerDataRepository: RunnerDataRepository,
         @Autowired @Qualifier("NY-SCRAPERS") private val nyScrapers: List<NyWebScraper>,
         @Autowired @Qualifier("NY-CONSUMERS") private val nyConsumers : List<NyConsumer>) : CommandLineRunner {
 
@@ -73,28 +70,28 @@ class Application(
 
     override fun run(vararg args: String) {
         if(args.contains("--NYRR")){
-            val queue2014 = LinkedBlockingQueue<NyRunnerData>()
-            nyScrapers[0].scrape(queue2014,2014, "https://results.nyrr.org/event/M2014/finishers")
+            val queue2014 = LinkedBlockingQueue<RunnerData>()
+            nyScrapers[0].scrape(ChromeDriver(), queue2014,2014, "https://results.nyrr.org/event/M2014/finishers")
             nyConsumers[0].insertValues(queue2014)
             Thread.sleep(10000)
 
-            val queue2015 = LinkedBlockingQueue<NyRunnerData>()
-            nyScrapers[1].scrape(queue2015, 2015, "https://results.nyrr.org/event/M2015/finishers")
+            val queue2015 = LinkedBlockingQueue<RunnerData>()
+            nyScrapers[1].scrape(ChromeDriver(), queue2015, 2015, "https://results.nyrr.org/event/M2015/finishers")
             nyConsumers[1].insertValues(queue2015)
             Thread.sleep(10000)
 
-            val queue2016 = LinkedBlockingQueue<NyRunnerData>()
-            nyScrapers[2].scrape(queue2016, 2016, "https://results.nyrr.org/event/M2016/finishers")
+            val queue2016 = LinkedBlockingQueue<RunnerData>()
+            nyScrapers[2].scrape(ChromeDriver(), queue2016, 2016, "https://results.nyrr.org/event/M2016/finishers")
             nyConsumers[2].insertValues(queue2016)
             Thread.sleep(10000)
 
-            val queue2017 = LinkedBlockingQueue<NyRunnerData>()
-            nyScrapers[3].scrape(queue2017, 2017, "https://results.nyrr.org/event/M2017/finishers")
+            val queue2017 = LinkedBlockingQueue<RunnerData>()
+            nyScrapers[3].scrape(ChromeDriver(), queue2017, 2017, "https://results.nyrr.org/event/M2017/finishers")
             nyConsumers[3].insertValues(queue2017)
         }
         if(args.contains("--Write-NYRR-CSV")){
             logger.info("Starting file export...")
-            nyRunnerDataRepository.findAll().sortedWith(compareBy(NyRunnerData::year, NyRunnerData::age)).writeToCsv("NYRR.csv")
+            runnerDataRepository.queryForExport(Sources.NY).writeToCsv("${Sources.NY}.csv")
             logger.info("Finished file export...")
         }
     }

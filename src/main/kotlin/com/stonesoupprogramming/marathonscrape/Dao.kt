@@ -1,5 +1,10 @@
 package com.stonesoupprogramming.marathonscrape
 
-import org.springframework.data.mongodb.repository.MongoRepository
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 
-interface NyRunnerDataRepository : MongoRepository<NyRunnerData, String>
+interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
+
+    @Query("SELECT age, gender, nationality, finishTime, halfwayTime, company, marathonYear FROM RunnerData rd ORDER BY marathonYear, age, place")
+    fun queryForExport(source : String) : List<RunnerData>
+}
