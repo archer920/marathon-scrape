@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Scope
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
@@ -120,6 +121,8 @@ class BerlinMarathonScraper(@Autowired @Qualifier("jquery") private val jquery :
     }
 
     private fun scrapeForYear(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int){
+        val sw = StopWatch()
+        sw.start()
         try {
             driver.waitUntilClickable( By.id("gridEventChooser"))
             when(year){
@@ -167,6 +170,8 @@ class BerlinMarathonScraper(@Autowired @Qualifier("jquery") private val jquery :
         } catch (e : Exception){
             logger.error("Exception while scraping year $year")
         }
+        sw.stop()
+        logger.info("Finished $year in ${sw.totalTimeSeconds} seconds")
     }
 
     private fun findFinishTime(driver: RemoteWebDriver, rowIndex: Int) : String {
