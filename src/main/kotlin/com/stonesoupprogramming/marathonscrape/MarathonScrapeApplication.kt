@@ -24,9 +24,6 @@ class Configuration {
     fun jquery () = BufferedReader(InputStreamReader(Configuration::class.java.getResourceAsStream("/js/jquery-3.3.1.js"))).readText()
 
     @Bean
-    fun berlinMarathonJs() = BufferedReader(InputStreamReader(Configuration::class.java.getResourceAsStream("/js/berlinMarathon/berlin.js"))).readText()
-
-    @Bean
     fun asyncExecute () : ThreadPoolTaskExecutor {
         with (ThreadPoolTaskExecutor()){
             corePoolSize = Runtime.getRuntime().availableProcessors()
@@ -66,6 +63,7 @@ class Application(
         @Autowired private val runnerDataRepository: RunnerDataRepository,
         @Autowired @Qualifier("nyScrapers") private val nyScrapers: List<WebScraper>,
         @Autowired @Qualifier("berlinMarathonScraper") private val berlinMarathonScraper: WebScraper,
+        @Autowired @Qualifier("viennaMarathonScrape") private val viennaMarathonScrape: WebScraper,
         @Autowired @Qualifier("consumers") private val runnerDataConsumers : List<RunnerDataConsumer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -90,14 +88,30 @@ class Application(
             runnerDataConsumers[3].insertValues(queue)
         }
         if(args.contains("--Write-NYRR-CSV")){
-            logger.info("Starting file export...")
-            runnerDataRepository.queryForExport(Sources.NY).writeToCsv("${Sources.NY}.csv")
-            logger.info("Finished file export...")
+            writeFile(Sources.NY, 2014, 2017)
         }
         if(args.contains("--Berlin-Marathon-Scrape")){
             val url = "https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html"
             berlinMarathonScraper.scrape(ChromeDriver(), queue, 2014, url)
             runnerDataConsumers.forEach { it.insertValues(queue) }
         }
+        if(args.contains("--Write-Berlin-Marathon-Scrape")) {
+            writeFile(Sources.BERLIN, 2014, 2017)
+        }
+        if(args.contains("--Vienna-City-Marathon-Scrape")){
+            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
+            runnerDataConsumers.forEach { it.insertValues(queue) }
+        }
+        if(args.contains("--Write-Vienna-City-Marathon")){
+            writeFile(Sources.VIENNA, 2014, 2018)
+        }
+    }
+
+    private fun writeFile(source : String, startYear : Int, endYear : Int){
+        logger.info("Starting file export...")
+        for(i in startYear..endYear){
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
+        }
+        logger.info("Finished file export...")
     }
 }

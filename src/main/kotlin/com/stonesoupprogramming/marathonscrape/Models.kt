@@ -11,6 +11,7 @@ import javax.validation.constraints.NotBlank
 object Sources {
     const val NY = "NYRR"
     const val BERLIN="Berlin Marathon"
+    const val VIENNA = "Vienna City Marathon"
 }
 
 @Entity
@@ -28,6 +29,10 @@ data class RunnerData(
         @field: Column(unique = true, nullable = false) @field: NotBlank var raceYearPlace : String = "") {
     override fun toString(): String {
         return "RunnerData(place=$place,  Year=$marathonYear, id=$id, source='$source', age='$age', gender='$gender', nationality='$nationality', finishTime='$finishTime', halfwayTime='$halfwayTime', company='$company')"
+    }
+
+    fun updateRaceYearPlace(){
+        raceYearPlace = "$source, $marathonYear, $place"
     }
 }
 

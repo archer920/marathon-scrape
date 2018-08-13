@@ -8,14 +8,11 @@ import org.openqa.selenium.support.ui.WebDriverWait
 import org.openqa.selenium.support.ui.Select
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.cglib.core.Local
 import org.springframework.context.annotation.Scope
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import org.springframework.util.StopWatch
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
 import javax.validation.ConstraintViolationException
@@ -98,12 +95,9 @@ class NyWebScraper : WebScraper {
             }
 }
 
-
-
 @Component
 @Scope("prototype")
-class BerlinMarathonScraper(@Autowired @Qualifier("jquery") private val jquery : String,
-                            @Autowired @Qualifier("berlinMarathonJs") private val js : String) : WebScraper{
+class BerlinMarathonScraper : WebScraper{
     private val logger = LoggerFactory.getLogger(BerlinMarathonScraper::class.java)
 
     override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
@@ -221,6 +215,119 @@ class BerlinMarathonScraper(@Autowired @Qualifier("jquery") private val jquery :
                 .findElement(By.tagName("tbody"))
                 .findElements(By.tagName("tr"))[rowIndex]
                 .findElements(By.tagName("td"))[8].text.toInt()).toString()
+    }
+}
+
+@Component
+class ViennaMarathonScrape : WebScraper {
+
+    private val logger = LoggerFactory.getLogger(ViennaMarathonScrape::class.java)
+
+    override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
+        try {
+
+            for (i in 2014..2018){
+                val sw = StopWatch()
+                sw.start()
+                driver.get(url)
+
+                scraperForYear(driver, queue, year, url)
+                sw.stop()
+                logger.info("Finished year $i in ${sw.totalTimeSeconds}")
+            }
+        } catch (e : Exception) {
+            logger.error("Failed to scrape Vienna Marathon", e)
+        }
+    }
+
+    private fun scraperForYear(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url : String) {
+        try {
+            scrapeByGender(driver, queue, year, "f")
+            scrapeByGender(driver, queue, year, "m")
+//            loop@for(section in 0 until 28){
+//                val gender = if(section <= 13) { "f" } else { "m" }
+//                when(section){
+//                    0, 1 -> continue@loop
+//                }
+//
+//
+//
+//                val elem = driver.findElementsByClassName("list-group-item")[section]
+//                elem.scrollIntoView(driver)
+//
+//                val js = buildJs(year, section, gender)
+//
+//
+//
+//            }
+        } catch (e : Exception){
+            logger.error("Failed to scrape year $year", e)
+        }
+    }
+
+    private fun scrapeByGender(driver : RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, gender: String){
+        for(i in 8..10){
+            driver.scrollIntoView(By.cssSelector("""select[name="resultYear"""))
+            driver.waitUntilClickable(By.cssSelector("""select[name="resultYear"""))
+            driver.selectComboBoxOption(By.cssSelector("""select[name="resultYear"""), year.toString())
+            driver.waitUntilClickable(By.className("list-group-item"))
+
+            driver.executeScript(buildJs(year, i, gender))
+
+            driver.waitUntilVisible(By.className("resultList"))
+            val rows = driver.findElementsByCssSelector(".resultList > tbody > tr").size
+            for (row in 1 until rows){
+                if(row % 2 != 0){
+                    continue
+                }
+                processRow(driver, queue, row, gender, year)
+            }
+            driver.executeScript("searchResultList()")
+        }
+    }
+
+    fun buildJs(year: Int, section: Int, gender: String) : String {
+        val rank = when(section){
+            0 -> "1-499"
+            1 -> "500-999"
+            2 -> "1000-1499"
+            3 -> "1500-1999"
+            4 -> "2000-2499"
+            5 -> "2500-2999"
+            6 -> "3000-3499"
+            7 -> "3500-3999"
+            8 -> "4000-4499"
+            9 -> "5000-5499"
+            10 -> "5500-9999"
+            else -> throw IllegalArgumentException("Invalid section number")
+        }
+        return """openResultList('?&wantList=$year&mara=true&rank=$rank&gender=$gender')"""
+    }
+
+    private fun processRow(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, row: Int, gender : String, year : Int) {
+        val place = findCellValue(driver, row, 0).toInt()
+        val age = LocalDateTime.now().year - ("19${findCellValue(driver, row, 4)}").toInt()
+        val finishTime = findCellValue(driver, row, 9)
+        val nationality = findCellValue(driver, row, 5)
+        val g = when(gender){
+            "f" -> "W"
+            "m" -> "M"
+            else -> ""
+        }
+        val runnerData = RunnerData(age = age.toString(),
+                finishTime = finishTime,
+                gender = g,
+                marathonYear = year,
+                nationality = nationality,
+                place = place,
+                source = Sources.VIENNA)
+        runnerData.updateRaceYearPlace()
+        queue.put(runnerData)
+        logger.info("Produced: $runnerData")
+    }
+
+    private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int) : String {
+        return driver.findElementsByCssSelector(".resultList > tbody > tr")[row].findElements(By.tagName("td"))[cell].text
     }
 }
 
