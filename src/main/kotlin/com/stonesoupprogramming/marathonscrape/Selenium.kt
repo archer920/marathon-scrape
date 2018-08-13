@@ -335,13 +335,13 @@ class BostonMarathonScrape : WebScraper {
             while(next25Present(driver)){
                 driver.waitUntilVisible(By.className("tablegrid_list"), timeout = 60)
 
-                for (i in 0 until numRows(driver) step 2){
-                    val marathonYear = evenRowCellValue(driver, i, 0).toInt()
-                    val age = evenRowCellValue(driver, i, 3)
-                    val gender = evenRowCellValue(driver, i, 4)
-                    val country = evenRowCellValue(driver, i, 7)
-                    val finishTime = oddRowCellValue(driver, i + 1, 4)
-                    val place = oddRowCellValue(driver, i + 1, 0).split("/")[0].trim().toInt()
+                for (i in 0 until numRows(driver)){
+                    val marathonYear = trHeaderCellValue(driver, i, 0).toInt()
+                    val age = trHeaderCellValue(driver, i, 3)
+                    val gender = trHeaderCellValue(driver, i, 4)
+                    val country = trHeaderCellValue(driver, i, 7)
+                    val finishTime = infoGridCellValue(driver, i, 4)
+                    val place = infoGridCellValue(driver, i, 0).split("/")[0].trim().toInt()
 
                     val runnerData = RunnerData(marathonYear = marathonYear,
                             place = place,
@@ -361,24 +361,18 @@ class BostonMarathonScrape : WebScraper {
         }
     }
 
-    private fun evenRowCellValue(driver: RemoteWebDriver, row : Int, cell : Int) : String {
-        if(cell % 2 != 0){
-            throw IllegalArgumentException("This is for odd rows only")
-        }
+    private fun trHeaderCellValue(driver: RemoteWebDriver, row : Int, cell : Int) : String {
         return driver.findElementsByClassName("tr_header")[row].findElements(By.tagName("td"))[cell].text
     }
 
-    private fun oddRowCellValue(driver: RemoteWebDriver, row : Int, cell: Int) : String {
-        if(cell % 2 == 0){
-            throw IllegalArgumentException("This is for even rows only")
-        }
+    private fun infoGridCellValue(driver: RemoteWebDriver, row : Int, cell: Int) : String {
         return driver.findElementsByCssSelector(".table_infogrid")[row]
                 .findElements(By.tagName("tr"))[1]
                 .findElements(By.tagName("td"))[cell].text
     }
 
     private fun numRows(driver: RemoteWebDriver) : Int {
-        return driver.findElementsByClassName("tr_header").size * 2
+        return driver.findElementsByClassName("tr_header").size
     }
 
     private fun next25Present(driver: RemoteWebDriver) : Boolean {

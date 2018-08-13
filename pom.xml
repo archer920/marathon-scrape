@@ -5,7 +5,7 @@
 
     <groupId>com.stonesoupprogramming</groupId>
     <artifactId>marathon-scrape</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>marathon-scrape</name>
@@ -151,7 +151,6 @@
                 </executions>
                 <configuration>
                     <mainClass>com.stonesoupprogramming.marathonscrape.MarathonScrapeApplicationKt</mainClass>
-                    <arguments>--Vienna-City-Marathon-Scrape</arguments>
                 </configuration>
             </plugin>
 

@@ -108,7 +108,7 @@ class Application(
         }
         if(args.contains("--Boston-Marathon-Scrape")){
             bostonMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
-            //runnerDataConsumers.forEach { it.insertValues(queue) }
+            runnerDataConsumers.forEach { it.insertValues(queue) }
         }
     }
 

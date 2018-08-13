@@ -29,11 +29,11 @@ data class RunnerData(
         @field: Column(nullable=false) @field: Min(1) var place : Int = 1,
         @field: Column(unique = true, nullable = false) @field: NotBlank var raceYearPlace : String = "") {
     override fun toString(): String {
-        return "RunnerData(place=$place,  Year=$marathonYear, id=$id, source='$source', age='$age', gender='$gender', nationality='$nationality', finishTime='$finishTime', halfwayTime='$halfwayTime', company='$company')"
+        return "RunnerData(place=$place, Year=$marathonYear, id=$id, source='$source', age='$age', gender='$gender', nationality='$nationality', finishTime='$finishTime', halfwayTime='$halfwayTime', company='$company', raceYearPlace=$raceYearPlace)"
     }
 
     fun updateRaceYearPlace(){
-        raceYearPlace = "$source, $marathonYear, $place, $gender"
+        raceYearPlace = hashCode().toString()
     }
 }
 
