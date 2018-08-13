@@ -1,1 +1,0 @@
-$(document).find('.button-load-more').click()

@@ -1,28 +1,39 @@
 package com.stonesoupprogramming.marathonscrape
 
+import org.openqa.selenium.By
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.openqa.selenium.support.ui.Select
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.cglib.core.Local
 import org.springframework.context.annotation.Scope
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
 import javax.validation.ConstraintViolationException
 
 const val END_OF_SCRAPE = "End of Scrape"
 
+interface WebScraper {
+    @Async
+    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String = "")
+}
+
 @Component
 @Scope("prototype")
-class NyWebScraper {
+class NyWebScraper : WebScraper {
 
     private val logger = LoggerFactory.getLogger(NyWebScraper::class.java)
 
     @Async
-    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
+    override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
         try {
             driver.get(url)
             var showMore = true
@@ -46,7 +57,7 @@ class NyWebScraper {
                                 nationality = nationality(parts[1]),
                                 finishTime = parts[4],
                                 marathonYear = year,
-                                source = "NYRR",
+                                source = Sources.NY,
                                 raceYearPlace = "$year, $place",
                                 place = place)
                         queue.put(runnerData)
@@ -71,7 +82,7 @@ class NyWebScraper {
             queue.put(RunnerData(source = END_OF_SCRAPE))
             logger.info("Scraping $year completed")
         } catch (e : Exception){
-            logger.error("Exception during scrape")
+            logger.error("Exception while processing $url", e)
         } finally {
             driver.close()
         }
@@ -86,11 +97,161 @@ class NyWebScraper {
             }
 }
 
+
+
 @Component
 @Scope("prototype")
-class NyConsumer(@Autowired private val repository: RunnerDataRepository){
+class BerlinMarathonScraper(@Autowired @Qualifier("jquery") private val jquery : String,
+                            @Autowired @Qualifier("berlinMarathonJs") private val js : String) : WebScraper{
+    private val logger = LoggerFactory.getLogger(BerlinMarathonScraper::class.java)
 
-    private val logger = LoggerFactory.getLogger(NyConsumer::class.java)
+    override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
+        try {
+            driver.get(url)
+
+            for(i in 2014 until 2018){
+                scrapeForYear(driver, queue, year)
+            }
+        } catch (e : Exception){
+            logger.error("Exception while processing $url", e)
+        } finally {
+            driver.close()
+        }
+    }
+
+    private fun scrapeForYear(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int){
+        try {
+            driver.waitUntilClickable( By.id("gridEventChooser"))
+            when(year){
+                2014 -> driver.selectComboBoxOption( By.id("gridEventChooser"),"2014 | 41. BMW BERLIN-MARATHON")
+                2015 -> driver.selectComboBoxOption( By.id("gridEventChooser"),"2015 | 42. BMW BERLIN-MARATHON")
+                2016 -> driver.selectComboBoxOption( By.id("gridEventChooser"), "2016 | 43. BMW BERLIN-MARATHON")
+                2017 -> driver.selectComboBoxOption( By.id("gridEventChooser"), "2017 | 44. BMW BERLIN-MARATHON")
+                else -> throw IllegalArgumentException("Illegal year $year")
+            }
+
+            driver.waitUntilVisible(By.id("gridCompetitionChooser"))
+            driver.waitUntilClickable(By.id("gridCompetitionChooser"))
+            driver.selectComboBoxOption(By.id("gridCompetitionChooser"), "Runner")
+
+            driver.waitUntilVisible(By.id("resultGrid"))
+
+            try{
+                var rowIndex = 1 //The first row doesn't have any data
+                while(true){
+                    val row = driver
+                            .findElementById("resultGrid")
+                            .findElement(By.tagName("tbody"))
+                            .findElements(By.tagName("tr"))[rowIndex]
+                    row.scrollIntoView(driver)
+
+                    val runnerData = RunnerData(
+                            source = Sources.BERLIN,
+                            marathonYear = year,
+                            place = findPlace(driver, rowIndex),
+                            company = findCompany(driver, rowIndex),
+                            nationality = findNationality(driver, rowIndex),
+                            age = findAge(driver, rowIndex),
+                            gender = findGender(driver, rowIndex),
+                            finishTime = findFinishTime(driver, rowIndex))
+
+                    runnerData.raceYearPlace = "${Sources.BERLIN}, $year, ${runnerData.place}"
+                    queue.put(runnerData)
+                    logger.info("Produced: $runnerData")
+
+                    rowIndex++
+                }
+            } catch (e : Exception){
+                logger.error(e.toString(), e)
+            }
+        } catch (e : Exception){
+            logger.error("Exception while scraping year $year")
+        }
+    }
+
+    private fun findFinishTime(driver: RemoteWebDriver, rowIndex: Int) : String {
+        return driver
+                .findElementById("resultGrid")
+                .findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"))[rowIndex]
+                .findElements(By.tagName("td"))[12].text
+    }
+
+    private fun findGender(driver: RemoteWebDriver, rowIndex: Int) : String {
+        return driver
+                .findElementById("resultGrid")
+                .findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"))[rowIndex]
+                .findElements(By.tagName("td"))[9].text
+    }
+
+    private fun findPlace(driver : RemoteWebDriver, rowIndex : Int) : Int {
+        return driver
+                .findElementById("resultGrid")
+                .findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"))[rowIndex]
+                .findElements(By.tagName("td"))[2].text.toInt()
+    }
+
+    private fun findCompany(driver: RemoteWebDriver, rowIndex: Int) : String {
+        return driver
+                .findElementById("resultGrid")
+                .findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"))[rowIndex]
+                .findElements(By.tagName("td"))[6].text
+    }
+
+    private fun findNationality(driver: RemoteWebDriver, rowIndex: Int) : String{
+        return driver
+                .findElementById("resultGrid")
+                .findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"))[rowIndex]
+                .findElements(By.tagName("td"))[7].text
+    }
+
+    private fun findAge(driver: RemoteWebDriver, rowIndex: Int) : String {
+        return (LocalDateTime.now().year -
+                driver
+                .findElementById("resultGrid")
+                .findElement(By.tagName("tbody"))
+                .findElements(By.tagName("tr"))[rowIndex]
+                .findElements(By.tagName("td"))[8].text.toInt()).toString()
+    }
+}
+
+private fun RemoteWebDriver.selectComboBoxOption(selector: By, value : String){
+    Select(this.findElement(selector)).selectByVisibleText(value)
+}
+
+private fun RemoteWebDriver.waitUntilClickable(selector: By, timeout : Long = 60){
+    WebDriverWait(this, timeout).until(ExpectedConditions.elementToBeClickable(selector))
+}
+
+private fun RemoteWebDriver.waitUntilVisible(selector : By, timeout : Long = 60){
+    WebDriverWait(this, timeout).until(ExpectedConditions.visibilityOfElementLocated(selector))
+}
+
+private fun RemoteWebDriver.scrollIntoView(selector: By){
+    val elem = this.findElement(selector)
+    this.executeScript("arguments[0].scrollIntoView(true);", elem)
+    this.waitUntilVisible(selector)
+}
+
+private fun WebElement.scrollIntoView(driver: RemoteWebDriver){
+    driver.executeScript("arguments[0].scrollIntoView(true);", this)
+    this.waitUntilVisible(driver)
+}
+
+private fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut : Long = 60){
+    WebDriverWait(driver, timeOut).until(ExpectedConditions.visibilityOf(this))
+
+}
+
+@Component
+@Scope("prototype")
+class RunnerDataConsumer(@Autowired private val repository: RunnerDataRepository){
+
+    private val logger = LoggerFactory.getLogger(RunnerDataConsumer::class.java)
 
     @Async
     fun insertValues(queue: BlockingQueue<RunnerData>){

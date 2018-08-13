@@ -17,11 +17,14 @@ import java.io.InputStreamReader
 import java.util.concurrent.LinkedBlockingQueue
 
 @Configuration
-@EnableAsync
+@EnableAsync(proxyTargetClass = true)
 class Configuration {
 
     @Bean
     fun jquery () = BufferedReader(InputStreamReader(Configuration::class.java.getResourceAsStream("/js/jquery-3.3.1.js"))).readText()
+
+    @Bean
+    fun berlinMarathonJs() = BufferedReader(InputStreamReader(Configuration::class.java.getResourceAsStream("/js/berlinMarathon/berlin.js"))).readText()
 
     @Bean
     fun asyncExecute () : ThreadPoolTaskExecutor {
@@ -36,20 +39,18 @@ class Configuration {
     }
 
     @Bean
-    @Qualifier("NY-SCRAPERS")
     fun nyScrapers(@Autowired first: NyWebScraper,
                    @Autowired second: NyWebScraper,
                    @Autowired third: NyWebScraper,
-                   @Autowired fourth: NyWebScraper): List<NyWebScraper> {
+                   @Autowired fourth: NyWebScraper): List<WebScraper> {
         return listOf(first, second, third, fourth)
     }
 
     @Bean
-    @Qualifier("NY-CONSUMERS")
-    fun nyConsumers(@Autowired first : NyConsumer,
-                    @Autowired second: NyConsumer,
-                    @Autowired third: NyConsumer,
-                    @Autowired fourth: NyConsumer) = listOf(first, second, third, first)
+    fun consumers(@Autowired first : RunnerDataConsumer,
+                    @Autowired second: RunnerDataConsumer,
+                    @Autowired third: RunnerDataConsumer,
+                    @Autowired fourth: RunnerDataConsumer) = listOf(first, second, third, first)
 
 }
 
@@ -63,36 +64,40 @@ fun main(args: Array<String>) {
 @Component
 class Application(
         @Autowired private val runnerDataRepository: RunnerDataRepository,
-        @Autowired @Qualifier("NY-SCRAPERS") private val nyScrapers: List<NyWebScraper>,
-        @Autowired @Qualifier("NY-CONSUMERS") private val nyConsumers : List<NyConsumer>) : CommandLineRunner {
+        @Autowired @Qualifier("nyScrapers") private val nyScrapers: List<WebScraper>,
+        @Autowired @Qualifier("berlinMarathonScraper") private val berlinMarathonScraper: WebScraper,
+        @Autowired @Qualifier("consumers") private val runnerDataConsumers : List<RunnerDataConsumer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
+        val queue = LinkedBlockingQueue<RunnerData>()
+
         if(args.contains("--NYRR")){
-            val queue2014 = LinkedBlockingQueue<RunnerData>()
-            nyScrapers[0].scrape(ChromeDriver(), queue2014,2014, "https://results.nyrr.org/event/M2014/finishers")
-            nyConsumers[0].insertValues(queue2014)
+            nyScrapers[0].scrape(ChromeDriver(), queue,2014, "https://results.nyrr.org/event/M2014/finishers")
+            runnerDataConsumers[0].insertValues(queue)
             Thread.sleep(10000)
 
-            val queue2015 = LinkedBlockingQueue<RunnerData>()
-            nyScrapers[1].scrape(ChromeDriver(), queue2015, 2015, "https://results.nyrr.org/event/M2015/finishers")
-            nyConsumers[1].insertValues(queue2015)
+            nyScrapers[1].scrape(ChromeDriver(), queue, 2015, "https://results.nyrr.org/event/M2015/finishers")
+            runnerDataConsumers[1].insertValues(queue)
             Thread.sleep(10000)
 
-            val queue2016 = LinkedBlockingQueue<RunnerData>()
-            nyScrapers[2].scrape(ChromeDriver(), queue2016, 2016, "https://results.nyrr.org/event/M2016/finishers")
-            nyConsumers[2].insertValues(queue2016)
+            nyScrapers[2].scrape(ChromeDriver(), queue, 2016, "https://results.nyrr.org/event/M2016/finishers")
+            runnerDataConsumers[2].insertValues(queue)
             Thread.sleep(10000)
 
-            val queue2017 = LinkedBlockingQueue<RunnerData>()
-            nyScrapers[3].scrape(ChromeDriver(), queue2017, 2017, "https://results.nyrr.org/event/M2017/finishers")
-            nyConsumers[3].insertValues(queue2017)
+            nyScrapers[3].scrape(ChromeDriver(), queue, 2017, "https://results.nyrr.org/event/M2017/finishers")
+            runnerDataConsumers[3].insertValues(queue)
         }
         if(args.contains("--Write-NYRR-CSV")){
             logger.info("Starting file export...")
             runnerDataRepository.queryForExport(Sources.NY).writeToCsv("${Sources.NY}.csv")
             logger.info("Finished file export...")
+        }
+        if(args.contains("--Berlin-Marathon-Scrape")){
+            val url = "https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html"
+            berlinMarathonScraper.scrape(ChromeDriver(), queue, 2014, url)
+            runnerDataConsumers.forEach { it.insertValues(queue) }
         }
     }
 }

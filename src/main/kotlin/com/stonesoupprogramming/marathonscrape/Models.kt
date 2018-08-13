@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank
 
 object Sources {
     const val NY = "NYRR"
+    const val BERLIN="Berlin Marathon"
 }
 
 @Entity
