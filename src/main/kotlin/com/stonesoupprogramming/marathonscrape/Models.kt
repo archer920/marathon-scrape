@@ -12,6 +12,7 @@ object Sources {
     const val NY = "NYRR"
     const val BERLIN="Berlin Marathon"
     const val VIENNA = "Vienna City Marathon"
+    const val BOSTON = "Boston Marathon"
 }
 
 @Entity
@@ -32,7 +33,7 @@ data class RunnerData(
     }
 
     fun updateRaceYearPlace(){
-        raceYearPlace = "$source, $marathonYear, $place"
+        raceYearPlace = "$source, $marathonYear, $place, $gender"
     }
 }
 

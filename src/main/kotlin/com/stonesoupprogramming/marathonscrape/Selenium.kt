@@ -56,8 +56,8 @@ class NyWebScraper : WebScraper {
                                 finishTime = parts[4],
                                 marathonYear = year,
                                 source = Sources.NY,
-                                raceYearPlace = "$year, $place",
                                 place = place)
+                        runnerData.updateRaceYearPlace()
                         queue.put(runnerData)
                         logger.info("Produced: $runnerData")
                     }
@@ -152,7 +152,7 @@ class BerlinMarathonScraper : WebScraper{
                             gender = findGender(driver, rowIndex),
                             finishTime = findFinishTime(driver, rowIndex))
 
-                    runnerData.raceYearPlace = "${Sources.BERLIN}, $year, ${runnerData.place}"
+                    runnerData.updateRaceYearPlace()
                     queue.put(runnerData)
                     logger.info("Produced: $runnerData")
 
@@ -312,6 +312,83 @@ class ViennaMarathonScrape : WebScraper {
 
     private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int) : String {
         return driver.findElementsByCssSelector(".resultList > tbody > tr")[row].findElements(By.tagName("td"))[cell].text
+    }
+}
+
+@Component
+class BostonMarathonScrape : WebScraper {
+
+    private val logger = LoggerFactory.getLogger(BostonMarathonScrape::class.java)
+
+    override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
+        try {
+            driver.get(url)
+            driver.waitUntilClickable(By.cssSelector("select[name=RaceYearLowID"))
+            driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearLowID]"), 2014.toString())
+            driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearHighID]"), 2018.toString())
+
+            driver.scrollIntoView(By.className("submit_button"))
+            driver.findElementByCssSelector(".form_submit_pad > .submit_button").click()
+
+            driver.waitUntilVisible(By.cssSelector("input[name=next]"))
+
+            while(next25Present(driver)){
+                driver.waitUntilVisible(By.className("tablegrid_list"), timeout = 60)
+
+                for (i in 0 until numRows(driver) step 2){
+                    val marathonYear = evenRowCellValue(driver, i, 0).toInt()
+                    val age = evenRowCellValue(driver, i, 3)
+                    val gender = evenRowCellValue(driver, i, 4)
+                    val country = evenRowCellValue(driver, i, 7)
+                    val finishTime = oddRowCellValue(driver, i + 1, 4)
+                    val place = oddRowCellValue(driver, i + 1, 0).split("/")[0].trim().toInt()
+
+                    val runnerData = RunnerData(marathonYear = marathonYear,
+                            place = place,
+                            source = Sources.BOSTON,
+                            age = age,
+                            gender = gender,
+                            nationality =  country,
+                            finishTime = finishTime)
+                    runnerData.updateRaceYearPlace()
+                    queue.put(runnerData)
+                    logger.info("Produced: $runnerData")
+                }
+                driver.findElementByCssSelector("input[name=next]").click()
+            }
+        } catch (e : Exception){
+            logger.error("Failed to scrape Boston Marathon", e)
+        }
+    }
+
+    private fun evenRowCellValue(driver: RemoteWebDriver, row : Int, cell : Int) : String {
+        if(cell % 2 != 0){
+            throw IllegalArgumentException("This is for odd rows only")
+        }
+        return driver.findElementsByClassName("tr_header")[row].findElements(By.tagName("td"))[cell].text
+    }
+
+    private fun oddRowCellValue(driver: RemoteWebDriver, row : Int, cell: Int) : String {
+        if(cell % 2 == 0){
+            throw IllegalArgumentException("This is for even rows only")
+        }
+        return driver.findElementsByCssSelector(".table_infogrid")[row]
+                .findElements(By.tagName("tr"))[1]
+                .findElements(By.tagName("td"))[cell].text
+    }
+
+    private fun numRows(driver: RemoteWebDriver) : Int {
+        return driver.findElementsByClassName("tr_header").size * 2
+    }
+
+    private fun next25Present(driver: RemoteWebDriver) : Boolean {
+        return try {
+            driver.findElementByCssSelector("input[name=next]")
+            true
+        } catch (e : Exception){
+            logger.trace("Element wasn't present", e)
+            false
+        }
     }
 }
 

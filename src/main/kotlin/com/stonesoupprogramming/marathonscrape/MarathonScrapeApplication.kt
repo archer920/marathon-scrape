@@ -64,6 +64,7 @@ class Application(
         @Autowired @Qualifier("nyScrapers") private val nyScrapers: List<WebScraper>,
         @Autowired @Qualifier("berlinMarathonScraper") private val berlinMarathonScraper: WebScraper,
         @Autowired @Qualifier("viennaMarathonScrape") private val viennaMarathonScrape: WebScraper,
+        @Autowired @Qualifier("bostonMarathonScrape") private val bostonMarathonScrape: WebScraper,
         @Autowired @Qualifier("consumers") private val runnerDataConsumers : List<RunnerDataConsumer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -104,6 +105,10 @@ class Application(
         }
         if(args.contains("--Write-Vienna-City-Marathon")){
             writeFile(Sources.VIENNA, 2014, 2018)
+        }
+        if(args.contains("--Boston-Marathon-Scrape")){
+            bostonMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
+            //runnerDataConsumers.forEach { it.insertValues(queue) }
         }
     }
 
