@@ -5,7 +5,7 @@
 
     <groupId>com.stonesoupprogramming</groupId>
     <artifactId>marathon-scrape</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
 
     <name>marathon-scrape</name>
@@ -129,7 +129,7 @@
                 </executions>
                 <configuration>
                     <mainClass>com.stonesoupprogramming.marathonscrape.MarathonScrapeApplicationKt</mainClass>
-                    <arguments>--seed-db</arguments>
+                    <arguments>--Berlin-Marathon-Scrape</arguments>
                 </configuration>
             </plugin>
 
