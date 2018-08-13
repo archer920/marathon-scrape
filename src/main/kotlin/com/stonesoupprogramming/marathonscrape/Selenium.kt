@@ -138,7 +138,7 @@ class BerlinMarathonScraper(@Autowired @Qualifier("jquery") private val jquery :
 
             try{
                 var rowIndex = 1 //The first row doesn't have any data
-                while(true){
+                while(rowIndex < 40000){
                     val row = driver
                             .findElementById("resultGrid")
                             .findElement(By.tagName("tbody"))
