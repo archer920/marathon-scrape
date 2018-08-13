@@ -244,29 +244,13 @@ class ViennaMarathonScrape : WebScraper {
         try {
             scrapeByGender(driver, queue, year, "f")
             scrapeByGender(driver, queue, year, "m")
-//            loop@for(section in 0 until 28){
-//                val gender = if(section <= 13) { "f" } else { "m" }
-//                when(section){
-//                    0, 1 -> continue@loop
-//                }
-//
-//
-//
-//                val elem = driver.findElementsByClassName("list-group-item")[section]
-//                elem.scrollIntoView(driver)
-//
-//                val js = buildJs(year, section, gender)
-//
-//
-//
-//            }
         } catch (e : Exception){
             logger.error("Failed to scrape year $year", e)
         }
     }
 
     private fun scrapeByGender(driver : RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, gender: String){
-        for(i in 8..10){
+        for(i in 0..10){
             driver.scrollIntoView(By.cssSelector("""select[name="resultYear"""))
             driver.waitUntilClickable(By.cssSelector("""select[name="resultYear"""))
             driver.selectComboBoxOption(By.cssSelector("""select[name="resultYear"""), year.toString())
