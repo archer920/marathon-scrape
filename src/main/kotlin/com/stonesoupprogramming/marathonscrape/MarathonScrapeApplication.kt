@@ -82,56 +82,54 @@ class Application(
         val queue = LinkedBlockingQueue<RunnerData>()
 
         if(args.contains("--NYRR")){
-            nyScrapers[0].scrape(ChromeDriver(), queue,2014, "https://results.nyrr.org/event/M2014/finishers")
             runnerDataConsumer.insertValues(queue)
+            nyScrapers[0].scrape(ChromeDriver(), queue,2014, "https://results.nyrr.org/event/M2014/finishers")
             Thread.sleep(10000)
 
             nyScrapers[1].scrape(ChromeDriver(), queue, 2015, "https://results.nyrr.org/event/M2015/finishers")
-            runnerDataConsumer.insertValues(queue)
             Thread.sleep(10000)
 
             nyScrapers[2].scrape(ChromeDriver(), queue, 2016, "https://results.nyrr.org/event/M2016/finishers")
-            runnerDataConsumer.insertValues(queue)
             Thread.sleep(10000)
 
             nyScrapers[3].scrape(ChromeDriver(), queue, 2017, "https://results.nyrr.org/event/M2017/finishers")
-            runnerDataConsumer.insertValues(queue)
         }
         if(args.contains("--Write-NYRR-CSV")){
             writeFile(Sources.NY, 2014, 2017)
         }
         if(args.contains("--Berlin-Marathon-Scrape")){
+            runnerDataConsumer.insertValues(queue)
             val url = "https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html"
             berlinMarathonScraper.scrape(ChromeDriver(), queue, 2014, url)
-            runnerDataConsumer.insertValues(queue)
         }
         if(args.contains("--Write-Berlin-Marathon-Scrape")) {
             writeFile(Sources.BERLIN, 2014, 2017)
         }
         if(args.contains("--Vienna-City-Marathon-Scrape")){
-            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
             runnerDataConsumer.insertValues(queue)
+            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
         }
         if(args.contains("--Write-Vienna-City-Marathon")){
             writeFile(Sources.VIENNA, 2014, 2018)
         }
         if(args.contains("--Boston-Marathon-Scrape")){
-            bostonMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
             runnerDataConsumer.insertValues(queue)
+            bostonMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
         }
         if(args.contains("--Write-Boston-Marathon")){
             writeFile(Sources.BOSTON, 2014, 2018)
         }
         if(args.contains("--Chicago-Marathon-Scrape")){
+            runnerDataConsumer.insertValues(queue)
             chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
             Thread.sleep(1000)
             chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
-            runnerDataConsumer.insertValues(queue)
         }
         if(args.contains("--Write-Chicago-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
         }
         if(args.contains("--Scrape-Ny-Marathon")){
+            runnerDataConsumer.insertValues(queue)
             val urls = mapOf(2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
                     2015 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472151101",
                     2016 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472161106",
@@ -140,12 +138,12 @@ class Application(
                 nyMarathonGuide.scrape(ChromeDriver(), queue, it.key, it.value)
                 Thread.sleep(5000)
             }
-            runnerDataConsumer.insertValues(queue)
         }
         if(args.contains("--Write-Ny-Marathon")){
             writeFile(Sources.NY_MARATHON_GUIDE, 2014, 2017)
         }
         if(args.contains("--Scrape-LA-Marathon")){
+            runnerDataConsumer.insertValues(queue)
             val mens2015 = listOf("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=DA&Ind=3",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=E&Ind=4",
@@ -261,7 +259,6 @@ class Application(
             }
             Thread.sleep(10000)
             laMarathonScrape.scrape2014(ChromeDriver(), queue)
-            runnerDataConsumer.insertValues(queue)
         }
         if(args.contains("--Write-LA-Marathon")){
             writeFile(Sources.LA, 2014, 2017)
