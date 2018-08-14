@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.sun.xml.internal.ws.util.CompletedFuture
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component
 import org.springframework.util.StopWatch
 import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
+import java.util.concurrent.CompletableFuture
 import javax.validation.ConstraintViolationException
 
 const val END_OF_SCRAPE = "End of Scrape"
@@ -870,6 +872,136 @@ class LaMarathonScrape(@Autowired private val stateCodes : List<String>) {
                     .findElements(By.tagName("td"))[cell].text
         } catch (e : Exception){
             logger.error("Failed to determine cell value at row=$row, cell=$cell", e)
+            throw e
+        }
+    }
+}
+
+@Component
+class MarineCorpScrape {
+    private val logger = LoggerFactory.getLogger(MarineCorpScrape::class.java)
+
+    @Async
+    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year : Int) : CompletableFuture<String>{
+        try {
+            processForm(driver, year)
+
+            var scrape = true
+            do {
+                processTable(driver, queue, year)
+
+                if(hasNextPage(driver)){
+                    advancePage(driver)
+                } else {
+                    scrape = false
+                }
+            } while(scrape)
+
+            return CompletableFuture.completedFuture("Success")
+        } catch (e : Exception){
+            logger.error("Unable to scrape", e)
+            return CompletableFuture.completedFuture("Error")
+        } finally {
+            driver.close()
+        }
+    }
+
+    private fun processTable(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
+        try {
+            for(row in 0 until numRows(driver)){
+                processRow(driver, row, queue, year)
+            }
+        } catch (e : Exception){
+            logger.error("Failed to process the table", e)
+        }
+    }
+
+    private fun processRow(driver: RemoteWebDriver, row: Int, queue: BlockingQueue<RunnerData>, year: Int) {
+        try {
+            val ageGender = findCellValue(driver, row, 4)
+            val gender = ageGender[0].toString()
+            val age = ageGender.substringAfterLast("/")
+            val finishTime = findCellValue(driver, row, 5)
+            val place = findCellValue(driver, row, 8).toInt()
+
+            val runnerData = RunnerData(age = age,
+                    finishTime = finishTime,
+                    gender = gender,
+                    marathonYear = year,
+                    nationality = "USA",
+                    place = place,
+                    source = Sources.MARINES)
+            runnerData.updateRaceYearPlace()
+            queue.put(runnerData)
+            logger.info("Produced: $runnerData")
+        } catch (e : Exception){
+            logger.error("Failed to scrape row $row", e)
+        }
+    }
+
+    private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
+        try {
+            return driver.findElementByCssSelector("#xact_results_agegroup_results > tbody")
+                    .findElements(By.tagName("tr"))[row]
+                    .findElements(By.tagName("td"))[cell].text
+        } catch (e : Exception){
+            logger.error("Failed to get cell value for row=$row, cell=$cell", e)
+            throw e
+        }
+    }
+
+    private fun advancePage(driver: RemoteWebDriver) {
+        try {
+            driver.waitUntilClickable(By.cssSelector("#xact_results_agegroup_results_next"))
+            driver.findElementByCssSelector("#xact_results_agegroup_results_next").click()
+        } catch (e : Exception){
+            logger.error("Failed to advance page", e)
+        }
+    }
+
+    private fun numRows(driver: RemoteWebDriver) : Int {
+        try {
+            return driver.findElementByCssSelector("#xact_results_agegroup_results > tbody")
+                    .findElements(By.tagName("tr")).size
+        } catch (e : Exception){
+            logger.error("Unable to find the number of rows", e)
+            throw e
+        }
+    }
+
+    fun processForm(driver: RemoteWebDriver, year : Int){
+        try {
+            driver.get("http://www.marinemarathon.com/results/marathon")
+            driver.waitUntilClickable(By.cssSelector("#xact_results_event"))
+
+            val yearText = when(year){
+                2014 -> "2014 39th Marine Corps Marathon"
+                2015 -> "2015 40th Marine Corps Marathon"
+                2016 -> "2016 41st Marine Corps Marathon"
+                2017 -> "2017 42nd Marine Corps Marathon"
+                else -> throw IllegalArgumentException("Has to be 2014-2017")
+            }
+            driver.selectComboBoxOption(By.id("xact_results_event"), yearText)
+
+            driver.waitUntilClickable(By.cssSelector("#ui-id-2"))
+            driver.findElementByCssSelector("#ui-id-2").click()
+
+            Thread.sleep(10000)
+
+            driver.waitUntilClickable(By.cssSelector("#xact_results_agegroup_results_length > label > select"))
+            driver.selectComboBoxOption(By.cssSelector("#xact_results_agegroup_results_length > label > select"), "100")
+
+            Thread.sleep(10000)
+        } catch (e : Exception){
+            logger.error("Failed on input form", e)
+        }
+    }
+
+    fun hasNextPage(driver: RemoteWebDriver) : Boolean {
+        try {
+            return !driver.findElementByCssSelector("#xact_results_agegroup_results_next").getAttribute("class").contains("ui-state-disabled")
+        } catch (e : Exception){
+            logger.error("Unable to determine if there is another page", e)
             throw e
         }
     }

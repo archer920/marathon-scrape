@@ -14,6 +14,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 
 @Configuration
@@ -29,7 +30,7 @@ class Configuration {
             corePoolSize = Runtime.getRuntime().availableProcessors()
             maxPoolSize = Runtime.getRuntime().availableProcessors()
             setQueueCapacity(500)
-            setThreadNamePrefix("Automotive-CMS")
+            setThreadNamePrefix("Marathon-Scraper")
             initialize()
             return this
         }
@@ -74,6 +75,7 @@ class Application(
         @Autowired @Qualifier("chicagoMarathonScrape") private val chicagoMarathonScrape: ChicagoMarathonScrape,
         @Autowired private val nyMarathonGuide: NyMarathonGuide,
         @Autowired private val laMarathonScrape: LaMarathonScrape,
+        @Autowired private val marineCorpScrape: MarineCorpScrape,
         @Autowired private val runnerDataConsumer: RunnerDataConsumer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -262,6 +264,18 @@ class Application(
         }
         if(args.contains("--Write-LA-Marathon")){
             writeFile(Sources.LA, 2014, 2017)
+        }
+        if(args.contains("--Scrape-Marine-Corps")){
+            runnerDataConsumer.insertValues(queue)
+            val one = marineCorpScrape.scrape(ChromeDriver(), queue, 2014)
+            val two = marineCorpScrape.scrape(ChromeDriver(), queue, 2015)
+            val three = marineCorpScrape.scrape(ChromeDriver(), queue, 2016)
+            val four = marineCorpScrape.scrape(ChromeDriver(), queue, 2017)
+            CompletableFuture.allOf(one, two, three, four).join()
+            logger.info("${Sources.MARINES} has completed")
+        }
+        if(args.contains("--Write-Marine-Corps")){
+            writeFile(Sources.MARINES, 2014, 2017)
         }
     }
 
