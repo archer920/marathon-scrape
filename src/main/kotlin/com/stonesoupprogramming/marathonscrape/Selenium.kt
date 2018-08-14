@@ -493,7 +493,7 @@ class ChicagoMarathonScrape {
                             age = age,
                             halfwayTime = half,
                             finishTime = finish,
-                            source = Sources.BOSTON,
+                            source = Sources.CHICAGO,
                             marathonYear = year,
                             gender = gender)
                     runnerData.updateRaceYearPlace()
