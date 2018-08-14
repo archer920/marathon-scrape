@@ -13,6 +13,7 @@ object Sources {
     const val BERLIN="Berlin Marathon"
     const val VIENNA = "Vienna City Marathon"
     const val BOSTON = "Boston Marathon"
+    const val CHICAGO = "Chicago"
 }
 
 @Entity
