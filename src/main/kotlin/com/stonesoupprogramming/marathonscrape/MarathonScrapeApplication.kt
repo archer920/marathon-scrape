@@ -66,6 +66,7 @@ class Application(
         @Autowired @Qualifier("viennaMarathonScrape") private val viennaMarathonScrape: WebScraper,
         @Autowired @Qualifier("bostonMarathonScrape") private val bostonMarathonScrape: WebScraper,
         @Autowired @Qualifier("chicagoMarathonScrape") private val chicagoMarathonScrape: ChicagoMarathonScrape,
+        @Autowired private val nyMarathonGuide: NyMarathonGuide,
         @Autowired @Qualifier("consumers") private val runnerDataConsumers : List<RunnerDataConsumer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -121,6 +122,20 @@ class Application(
             runnerDataConsumers.forEach { it.insertValues(queue) }
         }
         if(args.contains("--Write-Chicago-Marathon")){
+            writeFile(Sources.CHICAGO, 2014, 2017)
+        }
+        if(args.contains("--Scrape-Ny-Marathon")){
+            val urls = mapOf(2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
+                    2015 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472151101",
+                    2016 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472161106",
+                    2017 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472171105")
+            urls.forEach{ it ->
+                nyMarathonGuide.scrape(ChromeDriver(), queue, it.key, it.value)
+                Thread.sleep(5000)
+            }
+            runnerDataConsumers.forEach { it.insertValues(queue) }
+        }
+        if(args.contains("--Write-Ny-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
         }
     }
