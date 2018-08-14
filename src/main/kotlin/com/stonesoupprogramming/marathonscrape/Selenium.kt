@@ -1,6 +1,5 @@
 package com.stonesoupprogramming.marathonscrape
 
-import com.sun.xml.internal.ws.util.CompletedFuture
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
