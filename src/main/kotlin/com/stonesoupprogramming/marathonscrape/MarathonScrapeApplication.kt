@@ -116,7 +116,9 @@ class Application(
         }
         if(args.contains("--Chicago-Marathon-Scrape")){
             chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
-            //runnerDataConsumers.forEach { it.insertValues(queue) }
+            Thread.sleep(1000)
+            chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
+            runnerDataConsumers.forEach { it.insertValues(queue) }
         }
         if(args.contains("--Write-Chicago-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
