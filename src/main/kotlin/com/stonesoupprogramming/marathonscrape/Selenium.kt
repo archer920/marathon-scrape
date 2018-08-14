@@ -352,43 +352,50 @@ class BostonMarathonScrape : WebScraper {
 
     override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
         try {
-            driver.get(url)
-            driver.waitUntilClickable(By.cssSelector("select[name=RaceYearLowID"))
-            driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearLowID]"), 2014.toString())
-            driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearHighID]"), 2018.toString())
+            for(y in 2014..2018){
+                try {
+                    driver.get(url)
+                    driver.waitUntilClickable(By.cssSelector("select[name=RaceYearLowID"))
+                    driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearLowID]"), y.toString())
+                    driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearHighID]"), y.toString())
 
-            driver.scrollIntoView(By.className("submit_button"))
-            driver.findElementByCssSelector(".form_submit_pad > .submit_button").click()
+                    driver.scrollIntoView(By.className("submit_button"))
+                    driver.findElementByCssSelector(".form_submit_pad > .submit_button").click()
 
-            driver.waitUntilVisible(By.cssSelector("input[name=next]"))
+                    driver.waitUntilVisible(By.cssSelector("input[name=next]"))
 
-            while(next25Present(driver)){
-                driver.waitUntilVisible(By.className("tablegrid_list"), timeout = 60)
+                    while(next25Present(driver)){
+                        driver.waitUntilVisible(By.className("tablegrid_list"), timeout = 60)
 
-                for (i in 0 until numRows(driver)){
-                    val marathonYear = trHeaderCellValue(driver, i, 0).toInt()
-                    val age = trHeaderCellValue(driver, i, 3)
-                    val gender = trHeaderCellValue(driver, i, 4)
-                    val country = trHeaderCellValue(driver, i, 7)
-                    val finishTime = infoGridCellValue(driver, i, 4)
-                    val place = infoGridCellValue(driver, i, 0).split("/")[0].trim().toInt()
+                        for (i in 0 until numRows(driver)){
+                            val marathonYear = trHeaderCellValue(driver, i, 0).toInt()
+                            val age = trHeaderCellValue(driver, i, 3)
+                            val gender = trHeaderCellValue(driver, i, 4)
+                            val country = trHeaderCellValue(driver, i, 7)
+                            val finishTime = infoGridCellValue(driver, i, 4)
+                            val place = infoGridCellValue(driver, i, 0).split("/")[0].trim().toInt()
 
-                    val runnerData = RunnerData(marathonYear = marathonYear,
-                            place = place,
-                            source = Sources.BOSTON,
-                            age = age,
-                            gender = gender,
-                            nationality =  country,
-                            finishTime = finishTime)
-                    runnerData.updateRaceYearPlace()
-                    queue.put(runnerData)
-                    logger.info("Produced: $runnerData")
+                            val runnerData = RunnerData(marathonYear = marathonYear,
+                                    place = place,
+                                    source = Sources.BOSTON,
+                                    age = age,
+                                    gender = gender,
+                                    nationality =  country,
+                                    finishTime = finishTime)
+                            runnerData.updateRaceYearPlace()
+                            queue.put(runnerData)
+                            logger.info("Produced: $runnerData")
+                        }
+                        driver.findElementByCssSelector("input[name=next]").click()
+                    }
+                } catch (e : Exception){
+                    logger.error("Failed to scrape Boston Marathon year = $y")
                 }
-                driver.findElementByCssSelector("input[name=next]").click()
             }
         } catch (e : Exception){
             logger.error("Failed to scrape Boston Marathon", e)
         }
+
     }
 
     private fun trHeaderCellValue(driver: RemoteWebDriver, row : Int, cell : Int) : String {
