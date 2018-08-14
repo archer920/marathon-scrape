@@ -267,6 +267,8 @@ class ViennaMarathonScrape : WebScraper {
             }
         } catch (e: Exception) {
             logger.error("Failed to scrape Vienna Marathon", e)
+        } finally {
+            driver.close()
         }
     }
 
@@ -394,6 +396,8 @@ class BostonMarathonScrape : WebScraper {
             }
         } catch (e: Exception) {
             logger.error("Failed to scrape Boston Marathon", e)
+        } finally {
+            driver.close()
         }
 
     }
@@ -440,6 +444,8 @@ class ChicagoMarathonScrape {
             logger.info("")
         } catch (e: Exception) {
             logger.error("Failed to scrape Chicago", e)
+        } finally {
+            driver.close()
         }
     }
 
@@ -594,25 +600,29 @@ class NyMarathonGuide {
     private val logger = LoggerFactory.getLogger(NyMarathonGuide::class.java)
 
     @Async
-    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) = try {
-        driver.get(url)
-        val rangeOptions = findRangeOptions(driver)
-        for (range in rangeOptions) {
-            driver.waitUntilClickable(By.name("RaceRange"))
-            driver.selectComboBoxOption(By.cssSelector("select[name=RaceRange]"), range)
+    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
+        try {
+            driver.get(url)
+            val rangeOptions = findRangeOptions(driver)
+            for (range in rangeOptions) {
+                driver.waitUntilClickable(By.name("RaceRange"))
+                driver.selectComboBoxOption(By.cssSelector("select[name=RaceRange]"), range)
 
-            driver.findElementByName("SubmitButton").click()
-            when(year){
-                2014 -> processTablePlaceFirst(driver, queue, year)
-                2015 -> processTableTimeFirst(driver, queue, year)
-                2016 -> processTableTimeFirst(driver, queue, year)
-                2017 -> processTablePlaceFirst(driver, queue, year)
+                driver.findElementByName("SubmitButton").click()
+                when(year){
+                    2014 -> processTablePlaceFirst(driver, queue, year)
+                    2015 -> processTableTimeFirst(driver, queue, year)
+                    2016 -> processTableTimeFirst(driver, queue, year)
+                    2017 -> processTablePlaceFirst(driver, queue, year)
+                }
+
+                driver.navigate().back()
             }
-
-            driver.navigate().back()
+        } catch (e: Exception) {
+            logger.error("Failed to scrape $year, $url", e)
+        } finally {
+            driver.close()
         }
-    } catch (e: Exception) {
-        logger.error("Failed to scrape $year, $url", e)
     }
 
     private fun processTableTimeFirst(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
@@ -679,7 +689,6 @@ class NyMarathonGuide {
         }
     }
 
-
     private fun countRows(driver: RemoteWebDriver): Int {
         try {
             return driver.findElementsByCssSelector("body > table:nth-child(119) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr").size
@@ -716,6 +725,157 @@ class NyMarathonGuide {
 }
 
 @Component
+class LaMarathonScrape(@Autowired private val stateCodes : List<String>) {
+
+    private val logger = LoggerFactory.getLogger(LaMarathonScrape::class.java)
+
+    @Async
+    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, url : String, year : Int, gender : String){
+        try {
+            driver.get(url)
+            driver.waitUntilVisible(By.cssSelector("#f1 > p:nth-child(13) > table"))
+
+            for(row in 2 until numRows(driver)){
+                val place = findCellValue(driver, row, 4).toInt()
+                val age = findCellValue(driver, row, 3)
+                var nationality = findCellValue(driver, row, 16).substringAfterLast(",").trim()
+                if(nationality in stateCodes){
+                    nationality = "USA"
+                }
+                val finishTime = findCellValue(driver, row, 15)
+
+                val runnerData = RunnerData(age = age,
+                        finishTime = finishTime,
+                        gender = gender,
+                        marathonYear = year,
+                        nationality = nationality,
+                        place = place,
+                        source = Sources.LA)
+                runnerData.updateRaceYearPlace()
+                queue.put(runnerData)
+                logger.info("Produced: $runnerData")
+            }
+        } catch (e : Exception){
+            logger.error("Unable to scrape $url")
+        } finally {
+            driver.close()
+        }
+    }
+
+    @Async
+    fun scrape2014(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>){
+        val url = "https://www.mtecresults.com/race/show/2074/2014_LA_Marathon-ASICS_LA_Marathon"
+        try {
+            driver.get(url)
+
+            driver.waitUntilClickable(By.cssSelector("#quickresults > div > a:nth-child(4)"))
+            driver.findElementByCssSelector("#quickresults > div > a:nth-child(4)").click()
+
+            driver.waitUntilClickable(By.cssSelector("#searchResults > div > a:nth-child(5)"))
+            driver.findElementByCssSelector("#searchResults > div > a:nth-child(5)").click()
+
+            var keepScraping = true
+            do {
+                process2014Table(driver, queue)
+                if(hasNextPage(driver)){
+                    nextPage(driver)
+                } else {
+                    keepScraping = false
+                }
+            } while(keepScraping)
+
+        } catch (e : Exception){
+            logger.error("Unable to srape $url", e)
+        } finally {
+            driver.close()
+        }
+    }
+
+    private fun process2014Table(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>) {
+        for(row in 0 until find2014RowCount(driver)){
+            val gender = find2014CellValue(driver, row, 2)
+            val age = find2014CellValue(driver, row, 3)
+            val finishTime = find2014CellValue(driver, row, 9)
+            val place = find2014CellValue(driver, row, 6).substringBefore("/").trim().toInt()
+
+            val runnerData = RunnerData(
+                    age = age,
+                    finishTime = finishTime,
+                    gender = gender,
+                    marathonYear = 2014,
+                    nationality = "USA",
+                    place = place,
+                    source = Sources.LA)
+            runnerData.updateRaceYearPlace()
+            queue.put(runnerData)
+            logger.info("Produced: $runnerData")
+        }
+    }
+
+    private fun find2014RowCount(driver: RemoteWebDriver) : Int {
+        try {
+            driver.waitUntilVisible(By.cssSelector("#searchResults > div > div > table > tbody"))
+            return driver.findElementByCssSelector("#searchResults > div > div > table > tbody")
+                    .findElements(By.tagName("tr")).size
+        } catch (e : Exception){
+            logger.error("Unable to count the number of rows", e)
+            throw e
+        }
+    }
+
+    private fun find2014CellValue(driver: RemoteWebDriver, row : Int, col : Int) : String {
+        try {
+            return driver.findElementByCssSelector("#searchResults > div > div > table > tbody")
+                    .findElements(By.tagName("tr"))[row]
+                    .findElements(By.tagName("td"))[col].text
+        } catch (e : Exception){
+            logger.error("Unable to get value for $row, $col", e)
+            throw e
+        }
+    }
+
+    private fun hasNextPage(driver: RemoteWebDriver) : Boolean {
+        try {
+            return driver.findElementsByCssSelector("#searchResults > div > a:nth-child(2)").isEmpty()
+        } catch (e : Exception){
+            logger.error("Can't determine if there was a another page", e)
+            throw e
+        }
+    }
+
+    private fun nextPage(driver: RemoteWebDriver){
+        try {
+            driver.waitUntilClickable(By.cssSelector("#searchResults > div > a:nth-child(2)"))
+            driver.findElementByCssSelector("#searchResults > div > a:nth-child(2)").click()
+        } catch (e : Exception){
+            logger.error("Unable to advance to the next page", e)
+        }
+    }
+
+
+    fun numRows(driver: RemoteWebDriver) : Int {
+        try {
+            return driver.findElementByCssSelector("#f1 > p:nth-child(13) > table > tbody")
+                    .findElements(By.tagName("tr")).size
+        } catch (e : Exception){
+            logger.error("Unable to find the number of rows", e)
+            throw e
+        }
+    }
+
+    fun findCellValue(driver: RemoteWebDriver, row : Int, cell : Int) : String {
+        try {
+            return driver.findElementByCssSelector("#f1 > p:nth-child(13) > table > tbody")
+                    .findElements(By.tagName("tr"))[row]
+                    .findElements(By.tagName("td"))[cell].text
+        } catch (e : Exception){
+            logger.error("Failed to determine cell value at row=$row, cell=$cell", e)
+            throw e
+        }
+    }
+}
+
+@Component
 @Scope("prototype")
 class RunnerDataConsumer(@Autowired private val repository: RunnerDataRepository) {
 
@@ -728,7 +888,7 @@ class RunnerDataConsumer(@Autowired private val repository: RunnerDataRepository
         while (record.source != END_OF_SCRAPE) {
             try {
                 repository.save(record)
-                logger.info("Inserted $record")
+                logger.info("Inserted: $record")
             } catch (e: Exception) {
                 when (e) {
                     is ConstraintViolationException -> logger.debug("Validation Failure: $record")
