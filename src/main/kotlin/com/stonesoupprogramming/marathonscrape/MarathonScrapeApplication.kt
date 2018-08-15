@@ -72,6 +72,8 @@ class Application(
 
     override fun run(vararg args: String) {
         runnerDataConsumer.insertValues()
+        statusReporter.reportStatus()
+
         val threads = mutableListOf<CompletableFuture<String>>()
 
         if(args.contains("--Boston-Marathon-Scrape")){
@@ -116,7 +118,7 @@ class Application(
             writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
         }
 
-        statusReporter.reportStatus()
+
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
         this.runnerDataConsumer.signalShutdown = true
