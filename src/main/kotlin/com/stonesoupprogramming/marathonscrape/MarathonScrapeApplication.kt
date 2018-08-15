@@ -30,7 +30,7 @@ class Configuration {
             corePoolSize = Runtime.getRuntime().availableProcessors()
             maxPoolSize = Runtime.getRuntime().availableProcessors()
             setQueueCapacity(500)
-            setThreadNamePrefix("Marathon-Scraper")
+            setThreadNamePrefix("Marathon-Scraper-")
             initialize()
             return this
         }
@@ -123,9 +123,13 @@ class Application(
         }
         if(args.contains("--Chicago-Marathon-Scrape")){
             runnerDataConsumer.insertValues(queue)
-            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
+            //chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
+            //FIXME: Forgot 2015, 2016
             Thread.sleep(1000)
-            chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
+            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2015, "http://chicago-history.r.mikatiming.de/2015/")
+            Thread.sleep(1000)
+            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2016, "http://chicago-history.r.mikatiming.de/2015/")
+            //chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
         }
         if(args.contains("--Write-Chicago-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
