@@ -63,6 +63,8 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
     fun process() : List<CompletableFuture<String>> {
         return try {
+            logger.info("Starting New York Scrape")
+
             val urls = mapOf(2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
                     2015 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472151101",
                     2016 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472161106",
@@ -86,6 +88,8 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
     fun process() : List<CompletableFuture<String>> {
         return try {
+            logger.info("Starting Los Angelas Scrape")
+
             val mens2015 = listOf("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=DA&Ind=3",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=E&Ind=4",
@@ -201,6 +205,8 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
 
     fun process() : List<CompletableFuture<String>> {
         return try {
+            logger.info("Starting Marine Corps Scrape")
+
             listOf(2014, 2015, 2016, 2017).forEach { threads.add(marineCorpsScrape.scrape(runnerDataQueue, it)) }
             threads.toList()
         } catch (e : Exception){
@@ -219,6 +225,8 @@ class SanFranciscoProducer(@Autowired private val runnerDataQueue: LinkedBlockin
 
     fun process() : List<CompletableFuture<String>> {
         return try {
+            logger.info("Starting San Francisco Scrape")
+
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue, 2018, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2018"))
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue, 2017, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2017"))
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue, 2016, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2016"))
