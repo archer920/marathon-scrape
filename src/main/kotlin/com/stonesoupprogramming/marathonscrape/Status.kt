@@ -16,6 +16,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
         try {
             while (true){
                 val percentFormat = NumberFormat.getPercentInstance()
+                logger.info("")
 
                 val berlinCount = runnerDataRepository.countBySource(Sources.BERLIN)
                 val berlinTotal = 146965
@@ -55,7 +56,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 val sanFranciscoTotal = 5276 + 6586 + 6335 + 6071 + 6624
                 val sanFranciscoPercent = sanFranciscoCount.toDouble() / sanFranciscoTotal.toDouble()
                 logger.info("San Francisco at ${percentFormat.format(sanFranciscoPercent)}: $sanFranciscoCount / $sanFranciscoTotal")
-
+                logger.info("")
                 Thread.sleep(10000)
             }
         } catch (e : Exception) {
