@@ -23,8 +23,10 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 val berlinPercent = berlinCount.toDouble() / berlinTotal.toDouble()
                 logger.info("Berlin at ${percentFormat.format(berlinPercent)}: $berlinCount / $berlinTotal")
 
-//            val bostonCount = runnerDataRepository.countBySource(Sources.BOSTON)
-//            val bostonTotal =
+                val bostonCount = runnerDataRepository.countBySource(Sources.BOSTON)
+                val bostonTotal = 111552
+                val bostonPercent = bostonCount.toDouble() / bostonCount.toDouble()
+                logger.info("Boston at ${percentFormat.format(bostonPercent)}: $bostonCount / $bostonTotal")
 
                 val chicagoCount = runnerDataRepository.countBySource(Sources.CHICAGO)
                 val chicagoTotal = 403878

@@ -71,9 +71,7 @@ class Application(
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
-        statusReporter.reportStatus()
         runnerDataConsumer.insertValues()
-
         val threads = mutableListOf<CompletableFuture<String>>()
 
         if(args.contains("--Boston-Marathon-Scrape")){
@@ -117,6 +115,8 @@ class Application(
         if(args.contains("--Write-San-Francisco")){
             writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
         }
+
+        statusReporter.reportStatus()
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
         this.runnerDataConsumer.signalShutdown = true
