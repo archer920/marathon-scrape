@@ -76,6 +76,7 @@ class Application(
         @Autowired private val nyMarathonGuide: NyMarathonGuide,
         @Autowired private val laMarathonScrape: LaMarathonScrape,
         @Autowired private val marineCorpScrape: MarineCorpScrape,
+        @Autowired private val sanFranciscoScrape: SanFranciscoScrape,
         @Autowired private val statusReporter: StatusReporter,
         @Autowired private val runnerDataConsumer: RunnerDataConsumer) : CommandLineRunner {
 
@@ -287,6 +288,19 @@ class Application(
         }
         if(args.contains("--Write-Marine-Corps")){
             writeFile(Sources.MARINES, 2014, 2017)
+        }
+        if(args.contains("--Scrape-San-Francisco")){
+            runnerDataConsumer.insertValues(queue)
+            val one = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2018, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2018")
+            val two = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2017, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2017")
+            val three = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2016, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2016")
+            val four = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2015, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2015")
+            val five = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2014, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2014")
+            CompletableFuture.allOf(one, two, three, four, five).join()
+            logger.info("${Sources.SAN_FRANSCISO} has completed")
+        }
+        if(args.contains("--Write-San-Francisco")){
+            writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
         }
     }
 

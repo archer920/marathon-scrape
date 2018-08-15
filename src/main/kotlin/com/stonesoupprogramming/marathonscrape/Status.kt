@@ -50,7 +50,12 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
             val viennaPercent = viennaCount.toDouble() / viennaTotal.toDouble()
             logger.info("Vienna at ${percentFormat.format(viennaPercent)}: $viennaCount / $viennaTotal")
 
-            Thread.sleep(1000 * 60 * 5)
+            val sanFranciscoCount = runnerDataRepository.countBySource(Sources.SAN_FRANSCISO)
+            val sanFranciscoTotal = 5276 + 6586 + 6335 + 6071 + 6624
+            val sanFranciscoPercent = sanFranciscoCount.toDouble() / sanFranciscoTotal.toDouble()
+            logger.info("San Francisco at ${percentFormat.format(sanFranciscoPercent)}: $sanFranciscoCount / $sanFranciscoTotal")
+
+            Thread.sleep(10000)
         }
     }
 }

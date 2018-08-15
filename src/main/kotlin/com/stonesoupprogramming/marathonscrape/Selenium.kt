@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.sun.xml.internal.ws.util.CompletedFuture
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -1002,6 +1003,124 @@ class MarineCorpScrape {
         } catch (e : Exception){
             logger.error("Unable to determine if there is another page", e)
             throw e
+        }
+    }
+}
+
+@Component
+class SanFranciscoScrape {
+
+    private val logger = LoggerFactory.getLogger(SanFranciscoScrape::class.java)
+
+    @Async
+    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year : Int, url : String) : CompletableFuture<String>{
+        try {
+            driver.get(url)
+
+            clickOverall(driver)
+            val numPages = findNumPages(driver)
+
+            for(page in 0 until numPages){
+                processPage(driver, queue, year, page)
+                advancePage(driver, page)
+            }
+            return CompletableFuture.completedFuture("Success")
+        } catch (e : Exception){
+            logger.error("Failed to scrape $year", e)
+            return CompletableFuture.completedFuture("Error")
+        } finally {
+            driver.close()
+        }
+    }
+
+    private fun processPage(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, page : Int) {
+        try {
+            for(row in 1 until findNumRow(driver, page, year)){
+                driver.waitUntilVisible(By.id("result-data"))
+                processRow(driver, queue, year, page, row)
+            }
+        } catch (e : Exception){
+            logger.error("Failed to process page=$page for year=$year", e)
+        }
+    }
+
+    private fun processRow(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, page: Int, row : Int) {
+        try {
+            val place = findCellValue(driver, row, 0, page, year).toInt()
+            val nationalityParts = findCellValue(driver, row, 2, page, year).split(",")
+            val nationality = if(nationalityParts[1].isBlank()) { nationalityParts[0] } else { "USA" }
+            val finishTime = findCellValue(driver, row, 4, page, year)
+            val genderAge = findCellValue(driver, row, 7, page, year).split("-")
+            val gender = genderAge[0]
+            val age = genderAge[1]
+
+            val runnerData = RunnerData(
+                    age = age,
+                    finishTime = finishTime,
+                    gender = gender,
+                    marathonYear = year,
+                    nationality = nationality,
+                    place = place,
+                    source = Sources.SAN_FRANSCISO
+            )
+            runnerData.updateRaceYearPlace()
+            queue.put(runnerData)
+            logger.info("Produced: $runnerData")
+        } catch (e : Exception){
+            logger.error("Failed to process row=$row on page=$page for year=$year", e)
+        }
+    }
+
+    private fun findCellValue(driver : RemoteWebDriver, row : Int, cell : Int, page : Int, year : Int) : String {
+        try {
+            return driver.findElementsByCssSelector("#result-data")[1]
+                    .findElement(By.tagName("tbody"))
+                    .findElements(By.tagName("tr"))[row]
+                    .findElements(By.tagName("td"))[cell].text
+        } catch (e : Exception){
+            logger.error("Failed to find cell value at [$row][$cell] on page=$page for year=$year", e)
+            throw e
+        }
+    }
+
+    private fun findNumRow(driver: RemoteWebDriver, page : Int, year : Int): Int {
+        try {
+            driver.waitUntilVisible(By.id("result-data"))
+            return driver.findElementsById("result-data")[1]
+                    .findElement(By.tagName("tbody"))
+                    .findElements(By.tagName("tr")).size
+        } catch (e : Exception){
+            logger.error("Failed to determine the number of rows for page=$page, year=$year", e)
+            throw e
+        }
+    }
+
+    private fun advancePage(driver: RemoteWebDriver, page: Int) {
+        try {
+            driver.findElementByCssSelector("#result-data > tbody > tr:nth-child(2) > td:nth-child(3)")
+                    .findElements(By.tagName("a"))[page].click()
+        } catch (e : Exception){
+            logger.error("Failed to advance to the next page", e)
+        }
+    }
+
+    private fun findNumPages(driver: RemoteWebDriver) : Int {
+        try {
+            driver.waitUntilVisible(By.cssSelector("#result-data > tbody > tr:nth-child(2) > td:nth-child(3)"))
+            return driver.findElementByCssSelector("#result-data > tbody > tr:nth-child(2) > td:nth-child(3)")
+                    .findElements(By.tagName("a")).size
+        } catch (e : Exception){
+            logger.error("Unable to count the number of pages", e)
+            throw e
+        }
+    }
+
+    private fun clickOverall(driver: RemoteWebDriver) {
+        try {
+            driver.waitUntilClickable(By.linkText("Overall"))
+            driver.findElementByLinkText("Overall").click()
+        } catch (e : Exception) {
+            logger.error("Failed to click the overall link", e)
         }
     }
 }
