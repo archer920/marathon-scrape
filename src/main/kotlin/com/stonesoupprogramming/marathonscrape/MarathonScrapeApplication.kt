@@ -76,11 +76,14 @@ class Application(
         @Autowired private val nyMarathonGuide: NyMarathonGuide,
         @Autowired private val laMarathonScrape: LaMarathonScrape,
         @Autowired private val marineCorpScrape: MarineCorpScrape,
+        @Autowired private val statusReporter: StatusReporter,
         @Autowired private val runnerDataConsumer: RunnerDataConsumer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
+        statusReporter.reportStatus()
+
         val queue = LinkedBlockingQueue<RunnerData>()
 
         if(args.contains("--NYRR")){
@@ -123,13 +126,17 @@ class Application(
         }
         if(args.contains("--Chicago-Marathon-Scrape")){
             runnerDataConsumer.insertValues(queue)
-            //chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
-            //FIXME: Forgot 2015, 2016
+
+            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
             Thread.sleep(1000)
+
             chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2015, "http://chicago-history.r.mikatiming.de/2015/")
             Thread.sleep(1000)
+
             chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2016, "http://chicago-history.r.mikatiming.de/2015/")
-            //chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
+            Thread.sleep(1000)
+
+            chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
         }
         if(args.contains("--Write-Chicago-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
