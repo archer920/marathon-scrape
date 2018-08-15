@@ -12,23 +12,19 @@ class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueu
                      @Autowired private val bostonMarathonScrape: BostonMarathonScrape){
 
     private val logger = LoggerFactory.getLogger(BostonProducer::class.java)
-    private val threads = mutableListOf<CompletableFuture<String>>()
+    val threads = mutableListOf<CompletableFuture<String>>()
 
-    @Async
-    fun process(): CompletableFuture<String> {
+    fun process(): List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Boston Marathon")
 
             listOf(2014, 2015, 2016, 2017, 2018).forEach {
                 threads.add(bostonMarathonScrape.scrape(runnerDataQueue, it))
             }
-            CompletableFuture.allOf(*threads.toTypedArray()).join()
-
-            logger.info("Boston Marathon has finished")
-            successResult()
+            threads.toList()
         } catch (e : Exception){
-            logger.error("Boston Marathon failed", e)
-            failResult()
+            logger.error("Failed to start Boston", e)
+            emptyList()
         }
     }
 }
@@ -40,8 +36,7 @@ class ChicagoProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueu
     private val logger = LoggerFactory.getLogger(ChicagoProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    @Async
-    fun process() : CompletableFuture<String> {
+    fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Chicago Scrape")
 
@@ -51,13 +46,10 @@ class ChicagoProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueu
             threads.add(chicagoMarathonScrape.scrape2017(runnerDataQueue, "M"))
             threads.add(chicagoMarathonScrape.scrape2017(runnerDataQueue, "W"))
 
-            CompletableFuture.allOf(*threads.toTypedArray()).join()
-
-            logger.info("Chicago Marathon has finished")
-            successResult()
+            threads.toList()
         }  catch (e : Exception){
             logger.error("Chicago Marathon failed", e)
-            failResult()
+            emptyList()
         }
     }
 }
@@ -69,8 +61,7 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    @Async
-    fun process() : CompletableFuture<String> {
+    fun process() : List<CompletableFuture<String>> {
         return try {
             val urls = mapOf(2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
                     2015 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472151101",
@@ -78,12 +69,10 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
                     2017 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472171105")
 
             urls.forEach { year, url -> threads.add(nyMarathonScraper.scrape(runnerDataQueue, year, url)) }
-            CompletableFuture.allOf(*threads.toTypedArray()).join()
-
-            successResult()
+            threads.toList()
         } catch (e : Exception){
             logger.error("New York Marathon failed", e)
-            failResult()
+            emptyList()
         }
     }
 }
@@ -95,10 +84,9 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     private val logger = LoggerFactory.getLogger(LaMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    @Async
-    fun process() : CompletableFuture<String> {
+    fun process() : List<CompletableFuture<String>> {
         return try {
-                        val mens2015 = listOf("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2",
+            val mens2015 = listOf("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=DA&Ind=3",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=E&Ind=4",
                     "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=F&Ind=5",
@@ -196,12 +184,10 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
             womens2017.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2017, "W")) }
 
             threads.add(laMarathonScrape.scrape2014(runnerDataQueue))
-
-            CompletableFuture.allOf(*threads.toTypedArray()).join()
-            successResult()
+            threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
-            failResult()
+            emptyList()
         }
     }
 }
@@ -213,17 +199,13 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    @Async
-    fun process() : CompletableFuture<String> {
+    fun process() : List<CompletableFuture<String>> {
         return try {
             listOf(2014, 2015, 2016, 2017).forEach { threads.add(marineCorpsScrape.scrape(runnerDataQueue, it)) }
-
-            CompletableFuture.allOf(*threads.toTypedArray()).join()
-
-            successResult()
+            threads.toList()
         } catch (e : Exception){
             logger.error("Marine Corps Marathon failed", e)
-            failResult()
+            emptyList()
         }
     }
 }
@@ -235,8 +217,7 @@ class SanFranciscoProducer(@Autowired private val runnerDataQueue: LinkedBlockin
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    @Async
-    fun process() : CompletableFuture<String> {
+    fun process() : List<CompletableFuture<String>> {
         return try {
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue, 2018, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2018"))
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue, 2017, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2017"))
@@ -244,12 +225,10 @@ class SanFranciscoProducer(@Autowired private val runnerDataQueue: LinkedBlockin
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue,2015, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2015"))
             threads.add(sanFranciscoScrape.scrape(runnerDataQueue, 2014, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2014"))
 
-            CompletableFuture.allOf(*threads.toTypedArray()).join()
-
-            successResult()
+            threads.toList()
         } catch (e : Exception){
             logger.error("Marine Corps Marathon failed", e)
-            failResult()
+            emptyList()
         }
     }
 }

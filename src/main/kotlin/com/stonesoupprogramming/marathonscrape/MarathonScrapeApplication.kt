@@ -75,42 +75,42 @@ class Application(
         val threads = mutableListOf<CompletableFuture<String>>()
 
         if(args.contains("--Boston-Marathon-Scrape")){
-            threads.add(bostonProducer.process())
+            threads.addAll(bostonProducer.process())
         }
         if(args.contains("--Write-Boston-Marathon")){
             writeFile(Sources.BOSTON, 2014, 2018)
         }
 
         if(args.contains("--Chicago-Marathon-Scrape")){
-            threads.add(chicagoProducer.process())
+            threads.addAll(chicagoProducer.process())
         }
         if(args.contains("--Write-Chicago-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
         }
 
         if(args.contains("--Ny-Marathon-Scrape")){
-            threads.add(nyMarathonProducer.process())
+            threads.addAll(nyMarathonProducer.process())
         }
         if(args.contains("--Write-Ny-Marathon")){
             writeFile(Sources.NY_MARATHON_GUIDE, 2014, 2017)
         }
 
         if(args.contains("--La-Marathon-Scrape")){
-            threads.add(laMarathonProducer.process())
+            threads.addAll(laMarathonProducer.process())
         }
         if(args.contains("--Write-LA-Marathon")){
             writeFile(Sources.LA, 2014, 2017)
         }
 
         if(args.contains("--Marine-Corps-Scrape")){
-            threads.add(marineCorpsProducer.process())
+            threads.addAll(marineCorpsProducer.process())
         }
         if(args.contains("--Write-Marine-Corps")){
             writeFile(Sources.MARINES, 2014, 2017)
         }
 
         if(args.contains("--San-Francisco-Scrape")){
-            threads.add(sanFranciscoProducer.process())
+            threads.addAll(sanFranciscoProducer.process())
         }
         if(args.contains("--Write-San-Francisco")){
             writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
