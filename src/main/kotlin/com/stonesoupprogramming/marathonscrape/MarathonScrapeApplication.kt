@@ -27,8 +27,7 @@ class Configuration {
     fun asyncExecute () : ThreadPoolTaskExecutor {
         with (ThreadPoolTaskExecutor()){
             corePoolSize = Runtime.getRuntime().availableProcessors()
-            maxPoolSize = Runtime.getRuntime().availableProcessors()
-            setQueueCapacity(500)
+            setQueueCapacity(1000)
             setThreadNamePrefix("Marathon-Scraper-")
             initialize()
             return this
