@@ -1,19 +1,18 @@
 package com.stonesoupprogramming.marathonscrape
 
-import org.openqa.selenium.chrome.ChromeDriver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.ExitCodeGenerator
+import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -22,7 +21,7 @@ import java.util.concurrent.LinkedBlockingQueue
 class Configuration {
 
     @Bean
-    fun jquery () = BufferedReader(InputStreamReader(Configuration::class.java.getResourceAsStream("/js/jquery-3.3.1.js"))).readText()
+    fun runnerDataQueue() = LinkedBlockingQueue<RunnerData>()
 
     @Bean
     fun asyncExecute () : ThreadPoolTaskExecutor {
@@ -34,14 +33,6 @@ class Configuration {
             initialize()
             return this
         }
-    }
-
-    @Bean
-    fun nyScrapers(@Autowired first: NyWebScraper,
-                   @Autowired second: NyWebScraper,
-                   @Autowired third: NyWebScraper,
-                   @Autowired fourth: NyWebScraper): List<WebScraper> {
-        return listOf(first, second, third, fourth)
     }
 
     @Bean
@@ -67,241 +58,87 @@ fun main(args: Array<String>) {
 
 @Component
 class Application(
+        @Autowired private val applicationContext: ApplicationContext,
         @Autowired private val runnerDataRepository: RunnerDataRepository,
-        @Autowired @Qualifier("nyScrapers") private val nyScrapers: List<WebScraper>,
-        @Autowired @Qualifier("berlinMarathonScraper") private val berlinMarathonScraper: WebScraper,
-        @Autowired @Qualifier("viennaMarathonScrape") private val viennaMarathonScrape: WebScraper,
-        @Autowired @Qualifier("bostonMarathonScrape") private val bostonMarathonScrape: WebScraper,
-        @Autowired @Qualifier("chicagoMarathonScrape") private val chicagoMarathonScrape: ChicagoMarathonScrape,
-        @Autowired private val nyMarathonGuide: NyMarathonGuide,
-        @Autowired private val laMarathonScrape: LaMarathonScrape,
-        @Autowired private val marineCorpScrape: MarineCorpScrape,
-        @Autowired private val sanFranciscoScrape: SanFranciscoScrape,
         @Autowired private val statusReporter: StatusReporter,
-        @Autowired private val runnerDataConsumer: RunnerDataConsumer) : CommandLineRunner {
+        @Autowired private val runnerDataConsumer: RunnerDataConsumer,
+        @Autowired private val bostonProducer: BostonProducer,
+        @Autowired private val nyMarathonProducer: NyMarathonProducer,
+        @Autowired private val laMarathonProducer: LaMarathonProducer,
+        @Autowired private val marineCorpsProducer: MarineCorpsProducer,
+        @Autowired private val sanFranciscoProducer: SanFranciscoProducer,
+        @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
         statusReporter.reportStatus()
+        runnerDataConsumer.insertValues()
 
-        val queue = LinkedBlockingQueue<RunnerData>()
+        val threads = mutableListOf<CompletableFuture<String>>()
 
-        if(args.contains("--NYRR")){
-            runnerDataConsumer.insertValues(queue)
-            nyScrapers[0].scrape(ChromeDriver(), queue,2014, "https://results.nyrr.org/event/M2014/finishers")
-            Thread.sleep(10000)
-
-            nyScrapers[1].scrape(ChromeDriver(), queue, 2015, "https://results.nyrr.org/event/M2015/finishers")
-            Thread.sleep(10000)
-
-            nyScrapers[2].scrape(ChromeDriver(), queue, 2016, "https://results.nyrr.org/event/M2016/finishers")
-            Thread.sleep(10000)
-
-            nyScrapers[3].scrape(ChromeDriver(), queue, 2017, "https://results.nyrr.org/event/M2017/finishers")
-        }
-        if(args.contains("--Write-NYRR-CSV")){
-            writeFile(Sources.NY, 2014, 2017)
-        }
-        if(args.contains("--Berlin-Marathon-Scrape")){
-            runnerDataConsumer.insertValues(queue)
-            val url = "https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html"
-            berlinMarathonScraper.scrape(ChromeDriver(), queue, 2014, url)
-        }
-        if(args.contains("--Write-Berlin-Marathon-Scrape")) {
-            writeFile(Sources.BERLIN, 2014, 2017)
-        }
-        if(args.contains("--Vienna-City-Marathon-Scrape")){
-            runnerDataConsumer.insertValues(queue)
-            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
-        }
-        if(args.contains("--Write-Vienna-City-Marathon")){
-            writeFile(Sources.VIENNA, 2014, 2018)
-        }
         if(args.contains("--Boston-Marathon-Scrape")){
-            runnerDataConsumer.insertValues(queue)
-            bostonMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
+            threads.add(bostonProducer.process())
         }
         if(args.contains("--Write-Boston-Marathon")){
             writeFile(Sources.BOSTON, 2014, 2018)
         }
+
         if(args.contains("--Chicago-Marathon-Scrape")){
-            runnerDataConsumer.insertValues(queue)
-
-            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2014, "http://chicago-history.r.mikatiming.de/2015/")
-            Thread.sleep(1000)
-
-            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2015, "http://chicago-history.r.mikatiming.de/2015/")
-            Thread.sleep(1000)
-
-            chicagoMarathonScrape.scrape(ChromeDriver(), queue, 2016, "http://chicago-history.r.mikatiming.de/2015/")
-            Thread.sleep(1000)
-
-            chicagoMarathonScrape.scrape2017(ChromeDriver(), queue)
+            threads.add(chicagoProducer.process())
         }
         if(args.contains("--Write-Chicago-Marathon")){
             writeFile(Sources.CHICAGO, 2014, 2017)
         }
-        if(args.contains("--Scrape-Ny-Marathon")){
-            runnerDataConsumer.insertValues(queue)
-            val urls = mapOf(2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
-                    2015 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472151101",
-                    2016 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472161106",
-                    2017 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472171105")
-            urls.forEach{ it ->
-                nyMarathonGuide.scrape(ChromeDriver(), queue, it.key, it.value)
-                Thread.sleep(5000)
-            }
+
+        if(args.contains("--Ny-Marathon-Scrape")){
+            threads.add(nyMarathonProducer.process())
         }
         if(args.contains("--Write-Ny-Marathon")){
             writeFile(Sources.NY_MARATHON_GUIDE, 2014, 2017)
         }
-        if(args.contains("--Scrape-LA-Marathon")){
-            runnerDataConsumer.insertValues(queue)
-            val mens2015 = listOf("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=DA&Ind=3",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=E&Ind=4",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=F&Ind=5",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=G&Ind=6",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=H&Ind=7",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=I&Ind=8",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=J&Ind=9",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=K&Ind=10",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=L&Ind=11",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=M&Ind=12",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=MA&Ind=13",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=N&Ind=14",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=NA&Ind=15",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=NB&Ind=16")
-            val womens2015 = listOf("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=O&Ind=17",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=R&Ind=18",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=S&Ind=19",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=SA&Ind=20",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=U&Ind=21",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=V&Ind=22",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=W&Ind=23",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=X&Ind=24",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=Y&Ind=25",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=Z&Ind=26",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZA&Ind=27",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZB&Ind=28",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZC&Ind=29",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZD&Ind=30",
-                    "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZE&Ind=31")
-            val mens2016 = listOf("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=0",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=DA&Ind=1",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=E&Ind=2",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=F&Ind=3",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=G&Ind=4",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=H&Ind=5",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=I&Ind=6",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=J&Ind=7",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=K&Ind=8",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=L&Ind=9",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=M&Ind=10",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=MA&Ind=11",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=N&Ind=12",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=NA&Ind=13",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=NB&Ind=14")
-            val womens2016 = listOf("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=OA&Ind=15",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=R&Ind=16",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=S&Ind=17",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=SA&Ind=18",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=U&Ind=19",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=V&Ind=20",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=W&Ind=21",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=X&Ind=22",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=Y&Ind=23",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=Z&Ind=24",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZA&Ind=25",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZB&Ind=26",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZC&Ind=27",
-                    "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZD&Ind=28")
-            val mens2017 = listOf("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=0",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=DA&Ind=1",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=E&Ind=2",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=F&Ind=3",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=G&Ind=4",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=H&Ind=5",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=I&Ind=6",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=J&Ind=7",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=K&Ind=8",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=L&Ind=9",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=M&Ind=10",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=MA&Ind=11",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=N&Ind=12",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=NA&Ind=13",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=NB&Ind=14")
-            val womens2017 = listOf("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=OA&Ind=15",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=R&Ind=16",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=S&Ind=17",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=SA&Ind=18",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=U&Ind=19",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=V&Ind=20",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=W&Ind=21",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=X&Ind=22",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=Y&Ind=23",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=Z&Ind=24",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZA&Ind=25",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZB&Ind=26",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZC&Ind=27",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZD&Ind=28",
-                    "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZE&Ind=29")
-            mens2015.forEach { it ->
-                laMarathonScrape.scrape(ChromeDriver(), queue, it, 2015, "M")
-                Thread.sleep(10000)
-            }
-            mens2016.forEach { it ->
-                laMarathonScrape.scrape(ChromeDriver(), queue, it, 2016, "M")
-                Thread.sleep(10000)
-            }
-            mens2017.forEach { it ->
-                laMarathonScrape.scrape(ChromeDriver(), queue, it, 2017, "M")
-                Thread.sleep(10000)
-            }
-            womens2015.forEach { it ->
-                laMarathonScrape.scrape(ChromeDriver(), queue, it, 2015, "W")
-                Thread.sleep(10000)
-            }
-            womens2016.forEach { it ->
-                laMarathonScrape.scrape(ChromeDriver(), queue, it, 2016, "W")
-                Thread.sleep(10000)
-            }
-            womens2017.forEach { it ->
-                laMarathonScrape.scrape(ChromeDriver(), queue, it, 2017, "W")
-                Thread.sleep(10000)
-            }
-            Thread.sleep(10000)
-            laMarathonScrape.scrape2014(ChromeDriver(), queue)
+
+        if(args.contains("--La-Marathon-Scrape")){
+            threads.add(laMarathonProducer.process())
         }
         if(args.contains("--Write-LA-Marathon")){
             writeFile(Sources.LA, 2014, 2017)
         }
-        if(args.contains("--Scrape-Marine-Corps")){
-            runnerDataConsumer.insertValues(queue)
-            val one = marineCorpScrape.scrape(ChromeDriver(), queue, 2014)
-            val two = marineCorpScrape.scrape(ChromeDriver(), queue, 2015)
-            val three = marineCorpScrape.scrape(ChromeDriver(), queue, 2016)
-            val four = marineCorpScrape.scrape(ChromeDriver(), queue, 2017)
-            CompletableFuture.allOf(one, two, three, four).join()
-            logger.info("${Sources.MARINES} has completed")
+
+        if(args.contains("--Marine-Corps-Scrape")){
+            threads.add(marineCorpsProducer.process())
         }
         if(args.contains("--Write-Marine-Corps")){
             writeFile(Sources.MARINES, 2014, 2017)
         }
-        if(args.contains("--Scrape-San-Francisco")){
-            runnerDataConsumer.insertValues(queue)
-            val one = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2018, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2018")
-            val two = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2017, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2017")
-            val three = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2016, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2016")
-            val four = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2015, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2015")
-            val five = sanFranciscoScrape.scrape(ChromeDriver(), queue, 2014, "https://www.runraceresults.com/Secure/RaceResults.cfm?ID=RCLF2014")
-            CompletableFuture.allOf(one, two, three, four, five).join()
-            logger.info("${Sources.SAN_FRANSCISO} has completed")
+
+        if(args.contains("--San-Francisco-Scrape")){
+            threads.add(sanFranciscoProducer.process())
         }
         if(args.contains("--Write-San-Francisco")){
             writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
         }
+
+        CompletableFuture.allOf(*threads.toTypedArray()).join()
+        this.runnerDataConsumer.signalShutdown = true
+        SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
+
+
+//        if(args.contains("--Berlin-Marathon-Scrape")){
+//            runnerDataConsumer.insertValues(queue)
+//            val url = "https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html"
+//            berlinMarathonScraper.scrape(ChromeDriver(), queue, 2014, url)
+//        }
+//        if(args.contains("--Write-Berlin-Marathon-Scrape")) {
+//            writeFile(Sources.BERLIN, 2014, 2017)
+//        }
+//        if(args.contains("--Vienna-City-Marathon-Scrape")){
+//            runnerDataConsumer.insertValues(queue)
+//            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
+//        }
+//        if(args.contains("--Write-Vienna-City-Marathon")){
+//            writeFile(Sources.VIENNA, 2014, 2018)
+//        }
     }
 
     private fun writeFile(source : String, startYear : Int, endYear : Int){
