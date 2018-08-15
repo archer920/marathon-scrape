@@ -151,6 +151,14 @@
                 </executions>
                 <configuration>
                     <mainClass>com.stonesoupprogramming.marathonscrape.MarathonScrapeApplicationKt</mainClass>
+                    <arguments>
+                        <argument>--Boston-Marathon-Scrape</argument>
+                        <argument>--Chicago-Marathon-Scrape</argument>
+                        <argument>--Ny-Marathon-Scrape</argument>
+                        <argument>--La-Marathon-Scrape</argument>
+                        <argument>--Marine-Corps-Scrape</argument>
+                        <argument>--San-Francisco-Scrape</argument>
+                    </arguments>
                 </configuration>
             </plugin>
 
