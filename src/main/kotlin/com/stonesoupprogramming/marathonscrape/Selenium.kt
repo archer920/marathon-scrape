@@ -1,6 +1,7 @@
 package com.stonesoupprogramming.marathonscrape
 
 import org.openqa.selenium.By
+import org.openqa.selenium.NoSuchElementException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -43,11 +44,138 @@ private fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut: Long =
 
 }
 
-//TODO: Get rid of this
-@Deprecated("The scrape method isn't applicable to all sites so do not use this.")
-interface WebScraper {
+@Component
+class MedtronicMarathonScraper(@Autowired private val stateCodes: List<String>) {
+
+    private val logger = LoggerFactory.getLogger(MedtronicMarathonScraper::class.java)
+
     @Async
-    fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String = "")
+    fun scrape(queue: BlockingQueue<RunnerData>, url:  String, year : Int) : CompletableFuture<String>{
+        sleepRandom()
+
+        val driver = ChromeDriver()
+
+        return try {
+            driver.get(url)
+            selectOverallResults(driver)
+            selectMaxResultsPage(driver)
+
+            do {
+                processPage(driver, queue, year)
+            } while(advancePage(driver))
+
+            successResult()
+        } catch (e : Exception){
+            logger.error("Failed to scrape url=$url, year=$year")
+            failResult()
+        } finally {
+            driver.close()
+        }
+    }
+
+    private fun processPage(driver: ChromeDriver, queue: BlockingQueue<RunnerData>, year: Int) {
+        try {
+            val numRows = findNumRows(driver)
+            for(row in 0 until numRows){
+                processRow(driver, queue, row, year)
+            }
+        } catch (e : Exception){
+            logger.error("Failed to process the page", e)
+        }
+    }
+
+    private fun processRow(driver: ChromeDriver, queue: BlockingQueue<RunnerData>, row: Int, year: Int) {
+        try {
+            val gender = findCellValue(driver, row, 2)
+            val age = findCellValue(driver, row, 3)
+            var nationality = findCellValue(driver, row, 5)
+            nationality = if(stateCodes.contains(nationality)){ "USA" } else { "International" }
+            val place = findCellValue(driver, row, 6).split("/")[0].trim().toInt()
+            val finishTime = findCellValue(driver, row, 9)
+
+            queue.insertRunnerData(
+                    logger = logger,
+                    age = age,
+                    finishTime = finishTime,
+                    gender = gender,
+                    year = year,
+                    nationality = nationality,
+                    place = place,
+                    source = Sources.MEDTRONIC)
+        } catch (e : Exception){
+            logger.error("Unable to process row = $row for year = $year", e)
+        }
+    }
+
+    private fun findCellValue(driver: ChromeDriver, row: Int, cell: Int): String {
+        try {
+            return driver.findElementByCssSelector("#searchResults > div > div > table > tbody")
+                    .findElements(By.tagName("tr"))[row]
+                    .findElements(By.tagName("td"))[cell].text
+        } catch (e : Exception){
+            logger.error("Unable to determine cell value at row=$row, cell=$cell", e)
+            throw e
+        }
+    }
+
+    private fun findNumRows(driver: ChromeDriver): Int {
+        try {
+            driver.waitUntilVisible(By.cssSelector("#searchResults > div > div > table > tbody"))
+            return driver.findElementByCssSelector("#searchResults > div > div > table > tbody")
+                    .findElements(By.tagName("tr")).size
+        } catch (e : Exception){
+            logger.error("Unable to find row count", e)
+            throw e
+        }
+    }
+
+    private fun advancePage(driver: ChromeDriver): Boolean {
+        try {
+            driver.waitUntilClickable(By.cssSelector("#searchResults > div > a:nth-child(2) > span"))
+            val twoText = driver.findElementByCssSelector("#searchResults > div > a:nth-child(2) > span").text
+            if(twoText.contains("→")){
+                driver.findElementByCssSelector("#searchResults > div > a:nth-child(2) > span").click()
+                return true
+            }
+            try {
+                val threeText = driver.findElementByCssSelector("#searchResults > div > a:nth-child(3) > span").text
+                if(threeText.contains("→")){
+                    driver.findElementByCssSelector("#searchResults > div > a:nth-child(3) > span").click()
+                    return true
+                }
+            } catch (e : Exception) {
+                when (e) {
+                    is NoSuchElementException -> return false
+                    else ->{
+                        logger.error("Failed to determine if there is another page", e)
+                        throw e
+                    }
+                }
+            }
+            return false
+        } catch (e : Exception){
+            logger.error("Failed to determine if there is another page")
+            throw e
+        }
+    }
+
+    private fun selectMaxResultsPage(driver: ChromeDriver) {
+        try {
+            driver.waitUntilClickable(By.cssSelector("#searchResults > div > a:nth-child(5) > span"))
+            driver.findElementByCssSelector("#searchResults > div > a:nth-child(5) > span").click()
+        } catch (e : Exception){
+            logger.error("Unable to increase page size to 500", e)
+        }
+    }
+
+    private fun selectOverallResults(driver: ChromeDriver) {
+        try {
+            driver.waitUntilClickable(By.cssSelector("#quickresults > div > a:nth-child(4) > span"))
+            driver.findElementByCssSelector("#quickresults > div > a:nth-child(4) > span").click()
+        } catch (e : Exception){
+            logger.error("Unable to select all results", e)
+        }
+    }
 }
 
 @Component

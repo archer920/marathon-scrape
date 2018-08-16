@@ -9,7 +9,6 @@ import javax.validation.constraints.Max
 import javax.validation.constraints.NotBlank
 
 object Sources {
-    const val NY = "NYRR"
     const val BERLIN="Berlin Marathon"
     const val VIENNA = "Vienna City Marathon"
     const val BOSTON = "Boston Marathon"
@@ -18,6 +17,7 @@ object Sources {
     const val LA = "La Marathon"
     const val MARINES = "Marine Corp"
     const val SAN_FRANSCISO = "San Fransisco"
+    const val MEDTRONIC = "Medtronic Twin Cities Marathon"
 }
 
 enum class Gender(val code : String){

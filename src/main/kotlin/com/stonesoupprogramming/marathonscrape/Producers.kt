@@ -287,3 +287,27 @@ class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
         }
     }
 }
+
+@Component
+class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val medtronicMarathonScraper: MedtronicMarathonScraper) {
+
+    private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Berlin Scrape")
+
+            threads.add(medtronicMarathonScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2569/2014_Medtronic_Twin_Cities_Marathon-Marathon", 2014))
+            threads.add(medtronicMarathonScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/3410/2015_Medtronic_Twin_Cities_Marathon-Marathon", 2015))
+            threads.add(medtronicMarathonScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/4497/2016_Medtronic_Twin_Cities_Marathon-Marathon", 2016))
+            threads.add(medtronicMarathonScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/5828/2017_Medtronic_Twin_Cities_Marathon-Marathon", 2017))
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Berlin Marathon failed", e)
+            emptyList()
+        }
+    }
+}

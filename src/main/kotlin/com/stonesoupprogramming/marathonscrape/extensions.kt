@@ -1,5 +1,7 @@
 package com.stonesoupprogramming.marathonscrape
 
+import org.slf4j.Logger
+import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ThreadLocalRandom
 
@@ -16,4 +18,21 @@ fun sleepRandom(){
     try {
         Thread.sleep(amount.toLong())
     } catch (e : Exception) {}
+}
+
+fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age : String, finishTime : String, gender : String, year : Int, nationality : String, place : Int, source : String, company : String = "", halfwayTime : String = ""){
+    val runnerData = RunnerData(
+            source = source,
+            age = age,
+            gender = gender,
+            nationality = nationality,
+            finishTime = finishTime,
+            halfwayTime = halfwayTime,
+            company = company,
+            marathonYear = year,
+            place = place
+    )
+    runnerData.updateRaceYearPlace()
+    put(runnerData)
+    logger.info("Produced: $runnerData")
 }
