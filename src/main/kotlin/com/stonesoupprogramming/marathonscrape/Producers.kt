@@ -325,17 +325,20 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Disney Scrape")
+            val mens2014 = mutableListOf<String>()
             val mens2015 = mutableListOf<String>()
             val mens2016 = mutableListOf<String>()
             val mens2017 = mutableListOf<String>()
             val mens2018 = mutableListOf<String>()
 
+            val womens2014 = mutableListOf<String>()
             val womens2015 = mutableListOf<String>()
             val womens2016 = mutableListOf<String>()
             val womens2017 = mutableListOf<String>()
             val womens2018 = mutableListOf<String>()
 
             for(i in 4..16){
+                mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=$i")
                 mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
                 mens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
                 mens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
@@ -343,6 +346,7 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
             }
 
             for(i in 17..29){
+                womens2014.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=N&Ind=$i")
                 womens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
                 womens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
                 womens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
@@ -351,11 +355,13 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
 
             val columnInfo = TrackShackColumnInfo(nationality = 12, finishTime = 11, age = 3, place = 4)
 
+            mens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "M", Sources.DISNEY, columnInfo)) }
             mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.DISNEY, columnInfo)) }
             mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", Sources.DISNEY, columnInfo)) }
             mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", Sources.DISNEY, columnInfo)) }
             mens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2018, "M", Sources.DISNEY, columnInfo)) }
 
+            womens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "W", Sources.DISNEY, columnInfo)) }
             womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", Sources.DISNEY, columnInfo)) }
             womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", Sources.DISNEY, columnInfo)) }
             womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }

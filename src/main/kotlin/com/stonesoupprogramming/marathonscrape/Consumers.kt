@@ -27,8 +27,8 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
                     logger.info("Inserted: $record")
                 } catch (e: Exception) {
                     when (e) {
-                        is ConstraintViolationException -> logger.debug("Validation Failure: $record")
-                        is DataIntegrityViolationException -> logger.debug("Duplicate Entry: $record")
+                        is ConstraintViolationException -> logger.info("Validation Failure: $record")
+                        is DataIntegrityViolationException -> logger.info("Duplicate Entry: $record")
                         else -> logger.error("Exception: $record", e)
                     }
                 }
