@@ -152,6 +152,7 @@
                 <configuration>
                     <mainClass>com.stonesoupprogramming.marathonscrape.MarathonScrapeApplicationKt</mainClass>
                     <arguments>
+                        <argument>--Medtronic-Scrape</argument>
                         <argument>--Vienna-Marathon-Scrape</argument>
                         <argument>--Berlin-Scrape"</argument>
                         <argument>--Boston-Marathon-Scrape</argument>
