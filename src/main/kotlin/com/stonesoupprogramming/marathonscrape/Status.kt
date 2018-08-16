@@ -62,7 +62,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 val medtronicCount = runnerDataRepository.countBySource(Sources.MEDTRONIC)
                 val medtronicTotal = 8853 + 8546 + 8561 + 7490
                 val medtronicPercent = medtronicCount.toDouble() / medtronicTotal.toDouble()
-                logger.info("Medtronic at ${percentFormat.format(sanFranciscoPercent)}: $sanFranciscoCount / $sanFranciscoTotal")
+                logger.info("Medtronic at ${percentFormat.format(medtronicPercent)}: $medtronicCount / $medtronicTotal")
 
                 logger.info("")
                 Thread.sleep(10000)
