@@ -17,8 +17,6 @@ import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
 
-const val END_OF_SCRAPE = "End of Scrape"
-
 private fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
     Select(this.findElement(selector)).selectByVisibleText(value)
 }
@@ -54,129 +52,236 @@ interface WebScraper {
     fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String = "")
 }
 
-@Deprecated("FIXME")
 @Component
-@Scope("prototype")
-class BerlinMarathonScraper : WebScraper {
+class BerlinMarathonScraper {
+
     private val logger = LoggerFactory.getLogger(BerlinMarathonScraper::class.java)
 
-    override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
-        try {
-            driver.get(url)
+    @Async
+    fun scrape(queue: BlockingQueue<RunnerData>, year : Int) : CompletableFuture<String> {
+        val driver = ChromeDriver()
+        //sleepRandom()
 
-            for (i in 2014 until 2018) {
-                scrapeForYear(driver, queue, year)
-            }
-        } catch (e: Exception) {
-            logger.error("Exception while processing $url", e)
+        return try {
+            driver.get("https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html")
+            loadYear(driver, year)
+            loadCompetition(driver)
+            processRows(driver, queue, year)
+
+            successResult()
+        } catch (e : Exception){
+            logger.error("Failed to scrape Berlin for year = $year", e)
+            failResult()
         } finally {
             driver.close()
         }
     }
 
-    private fun scrapeForYear(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
-        val sw = StopWatch()
-        sw.start()
+    private fun processRows(driver: ChromeDriver, queue: BlockingQueue<RunnerData>, year: Int) {
         try {
-            driver.waitUntilClickable(By.id("gridEventChooser"))
+            var row = 0
+            val totalRows = when(year){
+                2017 -> 39233
+                2016 -> 35998
+                2015 -> 36767
+                2014 -> 28945
+                else -> throw IllegalArgumentException()
+            }
+            processRow@while(row < totalRows){
+                if(row > 0){
+                    if(row % 50 == 0){
+                        try{
+                            advanceRows(driver, row, year)
+                        } catch (e : Exception){
+                            logger.error("Rolling back 10 rows", e)
+                            //Back up to a visible row and try to advance again
+                            row -= 1
+                            continue@processRow
+                        }
+
+                    }
+                }
+
+
+                row++
+            }
+            logger.info("Row is $row")
+        } catch (e : Exception){
+            logger.error("Failed to process rows for year = $year", e)
+        }
+    }
+
+    private fun advanceRows(driver: ChromeDriver, row : Int, year: Int) {
+        try {
+            driver.findElementByCssSelector("#resultGrid")
+                    .findElement(By.tagName("tbody"))
+                    .findElements(By.tagName("tr"))[row].scrollIntoView(driver)
+            Thread.sleep(1000)
+        } catch (e : Exception){
+            logger.error("Failed to advance to next set of rows. row = $row, year = $year", e)
+            throw e
+        }
+    }
+
+    private fun countNumRows(driver: ChromeDriver, year : Int): Int {
+        try {
+            driver.waitUntilVisible(By.id("resultGrid"))
+            return driver.findElementByCssSelector("#resultGrid")
+                    .findElement(By.tagName("tbody"))
+                    .findElements(By.tagName("tr")).size
+        } catch (e : Exception){
+            logger.error("Failed to determine row count for year = $year", e)
+            throw e
+        }
+    }
+
+    private fun loadCompetition(driver: ChromeDriver) {
+        try {
+            driver.waitUntilClickable(By.cssSelector("#gridCompetitionChooser"))
+            driver.selectComboBoxOption(By.cssSelector("#gridCompetitionChooser"), "Runner")
+        } catch (e : Exception){
+            logger.error("Failed to load the runner competition", e)
+        }
+    }
+
+    private fun loadYear(driver: ChromeDriver, year: Int) {
+        try {
+            driver.waitUntilClickable(By.cssSelector("#gridEventChooser"))
             when (year) {
                 2014 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2014 | 41. BMW BERLIN-MARATHON")
                 2015 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2015 | 42. BMW BERLIN-MARATHON")
                 2016 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2016 | 43. BMW BERLIN-MARATHON")
                 2017 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2017 | 44. BMW BERLIN-MARATHON")
-                else -> throw IllegalArgumentException("Illegal year $year")
             }
-
-            driver.waitUntilVisible(By.id("gridCompetitionChooser"))
-            driver.waitUntilClickable(By.id("gridCompetitionChooser"))
-            driver.selectComboBoxOption(By.id("gridCompetitionChooser"), "Runner")
-
-            driver.waitUntilVisible(By.id("resultGrid"))
-
-            try {
-                var rowIndex = 1 //The first row doesn't have any data
-                while (rowIndex < 40000) {
-                    val row = driver
-                            .findElementById("resultGrid")
-                            .findElement(By.tagName("tbody"))
-                            .findElements(By.tagName("tr"))[rowIndex]
-                    row.scrollIntoView(driver)
-
-                    val runnerData = RunnerData(
-                            source = Sources.BERLIN,
-                            marathonYear = year,
-                            place = findPlace(driver, rowIndex),
-                            company = findCompany(driver, rowIndex),
-                            nationality = findNationality(driver, rowIndex),
-                            age = findAge(driver, rowIndex),
-                            gender = findGender(driver, rowIndex),
-                            finishTime = findFinishTime(driver, rowIndex))
-
-                    runnerData.updateRaceYearPlace()
-                    queue.put(runnerData)
-                    logger.info("Produced: $runnerData")
-
-                    rowIndex++
-                }
-            } catch (e: Exception) {
-                logger.error(e.toString(), e)
-            }
-        } catch (e: Exception) {
-            logger.error("Exception while scraping year $year")
+        } catch (e : Exception){
+            logger.error("Failed to load year = $year", e)
         }
-        sw.stop()
-        logger.info("Finished $year in ${sw.totalTimeSeconds} seconds")
-    }
-
-    private fun findFinishTime(driver: RemoteWebDriver, rowIndex: Int): String {
-        return driver
-                .findElementById("resultGrid")
-                .findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"))[rowIndex]
-                .findElements(By.tagName("td"))[12].text
-    }
-
-    private fun findGender(driver: RemoteWebDriver, rowIndex: Int): String {
-        return driver
-                .findElementById("resultGrid")
-                .findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"))[rowIndex]
-                .findElements(By.tagName("td"))[9].text
-    }
-
-    private fun findPlace(driver: RemoteWebDriver, rowIndex: Int): Int {
-        return driver
-                .findElementById("resultGrid")
-                .findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"))[rowIndex]
-                .findElements(By.tagName("td"))[2].text.toInt()
-    }
-
-    private fun findCompany(driver: RemoteWebDriver, rowIndex: Int): String {
-        return driver
-                .findElementById("resultGrid")
-                .findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"))[rowIndex]
-                .findElements(By.tagName("td"))[6].text
-    }
-
-    private fun findNationality(driver: RemoteWebDriver, rowIndex: Int): String {
-        return driver
-                .findElementById("resultGrid")
-                .findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"))[rowIndex]
-                .findElements(By.tagName("td"))[7].text
-    }
-
-    private fun findAge(driver: RemoteWebDriver, rowIndex: Int): String {
-        return (LocalDateTime.now().year -
-                driver
-                        .findElementById("resultGrid")
-                        .findElement(By.tagName("tbody"))
-                        .findElements(By.tagName("tr"))[rowIndex]
-                        .findElements(By.tagName("td"))[8].text.toInt()).toString()
     }
 }
+
+//@Deprecated("FIXME")
+//@Component
+//@Scope("prototype")
+//class BerlinMarathonScraper : WebScraper {
+//    private val logger = LoggerFactory.getLogger(BerlinMarathonScraper::class.java)
+//
+//    override fun scrape(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, url: String) {
+//        try {
+//            driver.get(url)
+//
+//            for (i in 2014 until 2018) {
+//                scrapeForYear(driver, queue, year)
+//            }
+//        } catch (e: Exception) {
+//            logger.error("Exception while processing $url", e)
+//        } finally {
+//            driver.close()
+//        }
+//    }
+//
+//    private fun scrapeForYear(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
+//        val sw = StopWatch()
+//        sw.start()
+//        try {
+//            driver.waitUntilClickable(By.id("gridEventChooser"))
+//            when (year) {
+//                2014 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2014 | 41. BMW BERLIN-MARATHON")
+//                2015 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2015 | 42. BMW BERLIN-MARATHON")
+//                2016 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2016 | 43. BMW BERLIN-MARATHON")
+//                2017 -> driver.selectComboBoxOption(By.id("gridEventChooser"), "2017 | 44. BMW BERLIN-MARATHON")
+//                else -> throw IllegalArgumentException("Illegal year $year")
+//            }
+//
+//            driver.waitUntilVisible(By.id("gridCompetitionChooser"))
+//            driver.waitUntilClickable(By.id("gridCompetitionChooser"))
+//            driver.selectComboBoxOption(By.id("gridCompetitionChooser"), "Runner")
+//
+//            driver.waitUntilVisible(By.id("resultGrid"))
+//
+//            try {
+//                var rowIndex = 1 //The first row doesn't have any data
+//                while (rowIndex < 40000) {
+//                    val row = driver
+//                            .findElementById("resultGrid")
+//                            .findElement(By.tagName("tbody"))
+//                            .findElements(By.tagName("tr"))[rowIndex]
+//                    row.scrollIntoView(driver)
+//
+//                    val runnerData = RunnerData(
+//                            source = Sources.BERLIN,
+//                            marathonYear = year,
+//                            place = findPlace(driver, rowIndex),
+//                            company = findCompany(driver, rowIndex),
+//                            nationality = findNationality(driver, rowIndex),
+//                            age = findAge(driver, rowIndex),
+//                            gender = findGender(driver, rowIndex),
+//                            finishTime = findFinishTime(driver, rowIndex))
+//
+//                    runnerData.updateRaceYearPlace()
+//                    queue.put(runnerData)
+//                    logger.info("Produced: $runnerData")
+//
+//                    rowIndex++
+//                }
+//            } catch (e: Exception) {
+//                logger.error(e.toString(), e)
+//            }
+//        } catch (e: Exception) {
+//            logger.error("Exception while scraping year $year")
+//        }
+//        sw.stop()
+//        logger.info("Finished $year in ${sw.totalTimeSeconds} seconds")
+//    }
+//
+//    private fun findFinishTime(driver: RemoteWebDriver, rowIndex: Int): String {
+//        return driver
+//                .findElementById("resultGrid")
+//                .findElement(By.tagName("tbody"))
+//                .findElements(By.tagName("tr"))[rowIndex]
+//                .findElements(By.tagName("td"))[12].text
+//    }
+//
+//    private fun findGender(driver: RemoteWebDriver, rowIndex: Int): String {
+//        return driver
+//                .findElementById("resultGrid")
+//                .findElement(By.tagName("tbody"))
+//                .findElements(By.tagName("tr"))[rowIndex]
+//                .findElements(By.tagName("td"))[9].text
+//    }
+//
+//    private fun findPlace(driver: RemoteWebDriver, rowIndex: Int): Int {
+//        return driver
+//                .findElementById("resultGrid")
+//                .findElement(By.tagName("tbody"))
+//                .findElements(By.tagName("tr"))[rowIndex]
+//                .findElements(By.tagName("td"))[2].text.toInt()
+//    }
+//
+//    private fun findCompany(driver: RemoteWebDriver, rowIndex: Int): String {
+//        return driver
+//                .findElementById("resultGrid")
+//                .findElement(By.tagName("tbody"))
+//                .findElements(By.tagName("tr"))[rowIndex]
+//                .findElements(By.tagName("td"))[6].text
+//    }
+//
+//    private fun findNationality(driver: RemoteWebDriver, rowIndex: Int): String {
+//        return driver
+//                .findElementById("resultGrid")
+//                .findElement(By.tagName("tbody"))
+//                .findElements(By.tagName("tr"))[rowIndex]
+//                .findElements(By.tagName("td"))[7].text
+//    }
+//
+//    private fun findAge(driver: RemoteWebDriver, rowIndex: Int): String {
+//        return (LocalDateTime.now().year -
+//                driver
+//                        .findElementById("resultGrid")
+//                        .findElement(By.tagName("tbody"))
+//                        .findElements(By.tagName("tr"))[rowIndex]
+//                        .findElements(By.tagName("td"))[8].text.toInt()).toString()
+//    }
+//}
 
 @Deprecated("FIXME")
 @Component

@@ -66,13 +66,14 @@ class Application(
         @Autowired private val laMarathonProducer: LaMarathonProducer,
         @Autowired private val marineCorpsProducer: MarineCorpsProducer,
         @Autowired private val sanFranciscoProducer: SanFranciscoProducer,
+        @Autowired private val berlinProducer: BerlinProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
         runnerDataConsumer.insertValues()
-        statusReporter.reportStatus()
+        //statusReporter.reportStatus()
 
         val threads = mutableListOf<CompletableFuture<String>>()
 
@@ -118,6 +119,12 @@ class Application(
             writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
         }
 
+        if(args.contains("--Berlin-Scrape")){
+            threads.addAll(berlinProducer.process())
+        }
+        if(args.contains("--Write-Berlin")){
+            writeFile(Sources.BERLIN, 2014, 2018)
+        }
 
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
@@ -145,7 +152,7 @@ class Application(
     private fun writeFile(source : String, startYear : Int, endYear : Int){
         logger.info("Starting file export...")
         for(i in startYear..endYear){
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).distinctBy { runnerData: RunnerData -> runnerData.place }.writeToCsv("$source-$i.csv")
         }
         logger.info("Finished file export...")
     }

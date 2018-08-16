@@ -25,7 +25,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
 
                 val bostonCount = runnerDataRepository.countBySource(Sources.BOSTON)
                 val bostonTotal = 111552
-                val bostonPercent = bostonCount.toDouble() / bostonCount.toDouble()
+                val bostonPercent = bostonCount.toDouble() / bostonTotal.toDouble()
                 logger.info("Boston at ${percentFormat.format(bostonPercent)}: $bostonCount / $bostonTotal")
 
                 val chicagoCount = runnerDataRepository.countBySource(Sources.CHICAGO)

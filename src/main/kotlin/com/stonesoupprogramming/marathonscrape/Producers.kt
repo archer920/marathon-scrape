@@ -240,3 +240,27 @@ class SanFranciscoProducer(@Autowired private val runnerDataQueue: LinkedBlockin
         }
     }
 }
+
+@Component
+class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                           @Autowired private val berlinMarathonScraper: BerlinMarathonScraper) {
+
+    private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting San Francisco Scrape")
+
+            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2017))
+//            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2016))
+//            threads.add(berlinMarathonScraper.scrape(runnerDataQueue,2015))
+//            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2014))
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Berlin Marathon failed", e)
+            emptyList()
+        }
+    }
+}
