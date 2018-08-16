@@ -80,7 +80,7 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
 @Component
 class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                         @Autowired private val laMarathonScrape: LaMarathonScrape){
+                         @Autowired private val trackShackResults: TrackShackResults){
 
     private val logger = LoggerFactory.getLogger(LaMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
@@ -178,15 +178,18 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
                     "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZC&Ind=27",
                     "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZD&Ind=28",
                     "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZE&Ind=29")
-            mens2015.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2015, "M")) }
-            mens2016.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2016, "M")) }
-            mens2017.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2017, "M")) }
 
-            womens2015.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2015, "W")) }
-            womens2016.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2016, "W")) }
-            womens2017.forEach { threads.add(laMarathonScrape.scrape(runnerDataQueue, it, 2017, "W")) }
+            val columnInfo = TrackShackColumnInfo(place = 4, age = 3, finishTime = 15, nationality = 16)
 
-            threads.add(laMarathonScrape.scrape2014(runnerDataQueue))
+            mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.LA, columnInfo)) }
+            mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", Sources.LA, columnInfo)) }
+            mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", Sources.LA, columnInfo)) }
+
+            womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", Sources.LA, columnInfo)) }
+            womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", Sources.LA, columnInfo)) }
+            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.LA, columnInfo)) }
+
+            threads.add(trackShackResults.scrape2014(runnerDataQueue))
             threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
@@ -297,7 +300,7 @@ class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQu
 
     fun process() : List<CompletableFuture<String>> {
         return try {
-            logger.info("Starting Berlin Scrape")
+            logger.info("Starting Medtronic Scrape")
 
             threads.add(medtronicMarathonScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2569/2014_Medtronic_Twin_Cities_Marathon-Marathon", 2014))
             threads.add(medtronicMarathonScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/3410/2015_Medtronic_Twin_Cities_Marathon-Marathon", 2015))
@@ -307,6 +310,61 @@ class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQu
             threads.toList()
         } catch (e : Exception){
             logger.error("Berlin Marathon failed", e)
+            emptyList()
+        }
+    }
+}
+
+@Component
+class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                         @Autowired private val trackShackResults: TrackShackResults){
+
+    private val logger = LoggerFactory.getLogger(DisneyMarathonProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Disney Scrape")
+            val mens2015 = mutableListOf<String>()
+            val mens2016 = mutableListOf<String>()
+            val mens2017 = mutableListOf<String>()
+            val mens2018 = mutableListOf<String>()
+
+            val womens2015 = mutableListOf<String>()
+            val womens2016 = mutableListOf<String>()
+            val womens2017 = mutableListOf<String>()
+            val womens2018 = mutableListOf<String>()
+
+            for(i in 4..16){
+                mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
+                mens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
+                mens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
+                mens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
+            }
+
+            for(i in 17..29){
+                womens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
+                womens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
+                womens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
+                womens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
+            }
+
+            val columnInfo = TrackShackColumnInfo(nationality = 12, finishTime = 11, age = 3, place = 4)
+
+            mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.DISNEY, columnInfo)) }
+            mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", Sources.DISNEY, columnInfo)) }
+            mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", Sources.DISNEY, columnInfo)) }
+            mens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2018, "M", Sources.DISNEY, columnInfo)) }
+
+            womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", Sources.DISNEY, columnInfo)) }
+            womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", Sources.DISNEY, columnInfo)) }
+            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
+            womens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
+
+            threads.add(trackShackResults.scrape2014(runnerDataQueue))
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Los Angelas Marathon Failed", e)
             emptyList()
         }
     }

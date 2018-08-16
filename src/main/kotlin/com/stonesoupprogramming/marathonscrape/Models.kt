@@ -18,6 +18,7 @@ object Sources {
     const val MARINES = "Marine Corp"
     const val SAN_FRANSCISO = "San Fransisco"
     const val MEDTRONIC = "Medtronic Twin Cities Marathon"
+    const val DISNEY = "Disney World Marathon"
 }
 
 enum class Gender(val code : String){
@@ -47,9 +48,8 @@ data class RunnerData(
     }
 }
 
-fun List<RunnerData>.writeToCsv(fileName : String){
-    val printer = CSVPrinter(FileWriter(fileName), CSVFormat.DEFAULT.withHeader("Age",
-            "Gender", "Nationality", "Finish Time", "Halfway Time", "Company, Team, or Sponsor", "Year"))
-    this.forEach { printer.printRecord(it.age, it.gender, it.nationality, it.finishTime, it.halfwayTime, it.company, it.marathonYear) }
-    printer.close()
-}
+data class TrackShackColumnInfo(
+        val nationality : Int,
+        val finishTime : Int,
+        val place : Int = 4,
+        val age : Int = 3)

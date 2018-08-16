@@ -64,6 +64,11 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 val medtronicPercent = medtronicCount.toDouble() / medtronicTotal.toDouble()
                 logger.info("Medtronic at ${percentFormat.format(medtronicPercent)}: $medtronicCount / $medtronicTotal")
 
+                val disneyCount = runnerDataRepository.countBySource(Sources.DISNEY)
+                val disneyTotal = 97025
+                val disneyPercent = disneyCount.toDouble() / disneyTotal.toDouble()
+                logger.info("Disney at ${percentFormat.format(disneyPercent)}: $disneyCount / $disneyTotal")
+
                 logger.info("")
                 Thread.sleep(10000)
             }

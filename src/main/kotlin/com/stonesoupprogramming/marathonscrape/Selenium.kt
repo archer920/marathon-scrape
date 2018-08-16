@@ -845,39 +845,39 @@ class NyMarathonScraper {
     }
 }
 
+//Used for LA and Disney
 @Component
-class LaMarathonScrape(@Autowired private val stateCodes: List<String>) {
+class TrackShackResults(@Autowired private val stateCodes: List<String>) {
 
-    private val logger = LoggerFactory.getLogger(LaMarathonScrape::class.java)
+    private val logger = LoggerFactory.getLogger(TrackShackResults::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, gender: String) : CompletableFuture<String> {
-        val driver = ChromeDriver()
+    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, gender: String, source : String, trackShackColumnInfo: TrackShackColumnInfo) : CompletableFuture<String> {
         sleepRandom()
+
+        val driver = ChromeDriver()
 
         try {
             driver.get(url)
             driver.waitUntilVisible(By.cssSelector("#f1 > p:nth-child(13) > table"))
 
             for (row in 2 until numRows(driver)) {
-                val place = findCellValue(driver, row, 4).toInt()
-                val age = findCellValue(driver, row, 3)
-                var nationality = findCellValue(driver, row, 16).substringAfterLast(",").trim()
+                val place = findCellValue(driver, row, trackShackColumnInfo.place).toInt()
+                val age = findCellValue(driver, row, trackShackColumnInfo.age)
+                var nationality = findCellValue(driver, row, trackShackColumnInfo.nationality).substringAfterLast(",").trim()
                 if (stateCodes.contains(nationality)) {
                     nationality = "USA"
                 }
-                val finishTime = findCellValue(driver, row, 15)
-
-                val runnerData = RunnerData(age = age,
-                        finishTime = finishTime,
-                        gender = gender,
-                        marathonYear = year,
-                        nationality = nationality,
+                val finishTime = findCellValue(driver, row, trackShackColumnInfo.finishTime)
+                queue.insertRunnerData(
+                        logger = logger,
                         place = place,
-                        source = Sources.LA)
-                runnerData.updateRaceYearPlace()
-                queue.put(runnerData)
-                logger.info("Produced: $runnerData")
+                        age = age,
+                        nationality = nationality,
+                        finishTime = finishTime,
+                        year = year,
+                        source = source,
+                        gender = gender)
             }
             return successResult()
         } catch (e: Exception) {
