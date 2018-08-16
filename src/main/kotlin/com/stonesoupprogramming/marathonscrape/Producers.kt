@@ -2,7 +2,6 @@ package com.stonesoupprogramming.marathonscrape
 
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
@@ -250,13 +249,37 @@ class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
 
     fun process() : List<CompletableFuture<String>> {
         return try {
-            logger.info("Starting San Francisco Scrape")
+            logger.info("Starting Berlin Scrape")
 
             threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2017))
             threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2016))
             threads.add(berlinMarathonScraper.scrape(runnerDataQueue,2015))
             threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2014))
 
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Berlin Marathon failed", e)
+            emptyList()
+        }
+    }
+}
+
+@Component
+class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val viennaMarathonScraper: ViennaMarathonScraper) {
+
+    private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Vienna Scrape")
+            for (i in 3..14){
+                for(year in 2014..2018){
+                    threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, Gender.MALE, i))
+                    threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, Gender.FEMALE, i))
+                }
+            }
             threads.toList()
         } catch (e : Exception){
             logger.error("Berlin Marathon failed", e)

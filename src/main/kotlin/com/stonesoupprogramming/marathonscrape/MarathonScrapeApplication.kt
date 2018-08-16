@@ -67,6 +67,7 @@ class Application(
         @Autowired private val marineCorpsProducer: MarineCorpsProducer,
         @Autowired private val sanFranciscoProducer: SanFranciscoProducer,
         @Autowired private val berlinProducer: BerlinProducer,
+        @Autowired private val viennaProducer: ViennaProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -76,6 +77,20 @@ class Application(
         statusReporter.reportStatus()
 
         val threads = mutableListOf<CompletableFuture<String>>()
+
+        if(args.contains("--Vienna-Marathon-Scrape")){
+            threads.addAll(viennaProducer.process())
+        }
+        if(args.contains("--Write-Vienna")){
+            writeFile(Sources.VIENNA, 2014, 2018)
+        }
+
+        if(args.contains("--Berlin-Scrape")){
+            threads.addAll(berlinProducer.process())
+        }
+        if(args.contains("--Write-Berlin")){
+            writeFile(Sources.BERLIN, 2014, 2018)
+        }
 
         if(args.contains("--Boston-Marathon-Scrape")){
             threads.addAll(bostonProducer.process())
@@ -119,25 +134,11 @@ class Application(
             writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
         }
 
-        if(args.contains("--Berlin-Scrape")){
-            threads.addAll(berlinProducer.process())
-        }
-        if(args.contains("--Write-Berlin")){
-            writeFile(Sources.BERLIN, 2014, 2018)
-        }
 
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
         this.runnerDataConsumer.signalShutdown = true
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
-
-//        if(args.contains("--Vienna-City-Marathon-Scrape")){
-//            runnerDataConsumer.insertValues(queue)
-//            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
-//        }
-//        if(args.contains("--Write-Vienna-City-Marathon")){
-//            writeFile(Sources.VIENNA, 2014, 2018)
-//        }
     }
 
     private fun writeFile(source : String, startYear : Int, endYear : Int){

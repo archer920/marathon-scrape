@@ -20,6 +20,11 @@ object Sources {
     const val SAN_FRANSCISO = "San Fransisco"
 }
 
+enum class Gender(val code : String){
+    MALE("M"),
+    FEMALE("W")
+}
+
 @Entity
 data class RunnerData(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
