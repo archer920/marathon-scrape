@@ -73,7 +73,7 @@ class Application(
 
     override fun run(vararg args: String) {
         runnerDataConsumer.insertValues()
-        //statusReporter.reportStatus()
+        statusReporter.reportStatus()
 
         val threads = mutableListOf<CompletableFuture<String>>()
 
@@ -131,15 +131,6 @@ class Application(
         this.runnerDataConsumer.signalShutdown = true
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
 
-
-//        if(args.contains("--Berlin-Marathon-Scrape")){
-//            runnerDataConsumer.insertValues(queue)
-//            val url = "https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html"
-//            berlinMarathonScraper.scrape(ChromeDriver(), queue, 2014, url)
-//        }
-//        if(args.contains("--Write-Berlin-Marathon-Scrape")) {
-//            writeFile(Sources.BERLIN, 2014, 2017)
-//        }
 //        if(args.contains("--Vienna-City-Marathon-Scrape")){
 //            runnerDataConsumer.insertValues(queue)
 //            viennaMarathonScrape.scrape(ChromeDriver(), queue, 2014, "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")

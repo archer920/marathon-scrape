@@ -253,9 +253,9 @@ class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
             logger.info("Starting San Francisco Scrape")
 
             threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2017))
-//            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2016))
-//            threads.add(berlinMarathonScraper.scrape(runnerDataQueue,2015))
-//            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2014))
+            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2016))
+            threads.add(berlinMarathonScraper.scrape(runnerDataQueue,2015))
+            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2014))
 
             threads.toList()
         } catch (e : Exception){

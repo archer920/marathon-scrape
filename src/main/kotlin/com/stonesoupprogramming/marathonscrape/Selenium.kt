@@ -59,8 +59,8 @@ class BerlinMarathonScraper {
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year : Int) : CompletableFuture<String> {
+        sleepRandom()
         val driver = ChromeDriver()
-        //sleepRandom()
 
         return try {
             driver.get("https://www.bmw-berlin-marathon.com/en/facts-and-figures/results-archive.html")
@@ -79,36 +79,73 @@ class BerlinMarathonScraper {
 
     private fun processRows(driver: ChromeDriver, queue: BlockingQueue<RunnerData>, year: Int) {
         try {
-            var row = 0
+            driver.waitUntilVisible(By.id("resultGrid"))
+
+            var row = 1
             val totalRows = when(year){
-                2017 -> 39233
-                2016 -> 35998
-                2015 -> 36767
-                2014 -> 28945
+                2017 -> 39234
+                2016 -> 35999
+                2015 -> 36768
+                2014 -> 28946
                 else -> throw IllegalArgumentException()
             }
             processRow@while(row < totalRows){
+                if(row < 1){
+                    row = 1
+                }
                 if(row > 0){
-                    if(row % 50 == 0){
-                        try{
-                            advanceRows(driver, row, year)
+                    try{
+                        advanceRows(driver, row, year)
+                    } catch (e : Exception){
+                        try {
+                            advanceRows(driver, row - 1, year)
                         } catch (e : Exception){
-                            logger.error("Rolling back 10 rows", e)
-                            //Back up to a visible row and try to advance again
                             row -= 1
                             continue@processRow
                         }
-
                     }
                 }
-
-
-                row++
+                row = processRow(driver, queue, row, year)
             }
-            logger.info("Row is $row")
         } catch (e : Exception){
             logger.error("Failed to process rows for year = $year", e)
         }
+    }
+
+    private fun processRow(driver: ChromeDriver, queue: BlockingQueue<RunnerData>, row: Int, year: Int): Int {
+        return try {
+            val place = getCellValue(driver, row, 2).toInt()
+            val team = getCellValue(driver, row, 6)
+            val nation = getCellValue(driver, row, 7)
+            val age = (LocalDateTime.now().year - getCellValue(driver, row, 8).toInt()).toString()
+            val gender = getCellValue(driver, row, 9)
+            val finishTime = getCellValue(driver, row, 12)
+
+            val runnerData = RunnerData(
+                    age = age,
+                    company = team,
+                    finishTime = finishTime,
+                    gender = gender,
+                    marathonYear =  year,
+                    place = place,
+                    source = Sources.BERLIN,
+                    nationality = nation
+            )
+            runnerData.updateRaceYearPlace()
+            queue.put(runnerData)
+            logger.info("Produced $runnerData")
+
+            row + 1
+        } catch (e : Exception){
+            logger.error("Failed to process row=$row, in year = $year, rolling back", e)
+            row - 1
+        }
+    }
+
+    private fun getCellValue(driver: ChromeDriver, row: Int, cell: Int): String {
+        return driver.findElementByCssSelector("#resultGrid > tbody")
+                .findElements(By.tagName("tr"))[row]
+                .findElements(By.tagName("td"))[cell].text
     }
 
     private fun advanceRows(driver: ChromeDriver, row : Int, year: Int) {
@@ -119,18 +156,6 @@ class BerlinMarathonScraper {
             Thread.sleep(1000)
         } catch (e : Exception){
             logger.error("Failed to advance to next set of rows. row = $row, year = $year", e)
-            throw e
-        }
-    }
-
-    private fun countNumRows(driver: ChromeDriver, year : Int): Int {
-        try {
-            driver.waitUntilVisible(By.id("resultGrid"))
-            return driver.findElementByCssSelector("#resultGrid")
-                    .findElement(By.tagName("tbody"))
-                    .findElements(By.tagName("tr")).size
-        } catch (e : Exception){
-            logger.error("Failed to determine row count for year = $year", e)
             throw e
         }
     }
