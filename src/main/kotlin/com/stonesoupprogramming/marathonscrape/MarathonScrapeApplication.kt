@@ -75,8 +75,8 @@ class Application(
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
-        runnerDataConsumer.insertValues()
-        statusReporter.reportStatus()
+        val consumer = runnerDataConsumer.insertValues()
+        val status = statusReporter.reportStatus()
 
         val threads = mutableListOf<CompletableFuture<String>>()
 
@@ -151,7 +151,12 @@ class Application(
         }
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
+
         this.runnerDataConsumer.signalShutdown = true
+        this.statusReporter.shutdown = true
+
+        CompletableFuture.allOf(status, consumer)
+
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 

@@ -5,16 +5,19 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.text.NumberFormat
+import java.util.concurrent.CompletableFuture
 
 @Component
 class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepository){
 
     private val logger = LoggerFactory.getLogger(StatusReporter::class.java)
 
+    var shutdown = false
+
     @Async
-    fun reportStatus(){
+    fun reportStatus(): CompletableFuture<String> {
         try {
-            while (true){
+            while (!shutdown){
                 val percentFormat = NumberFormat.getPercentInstance()
                 logger.info("")
 
@@ -72,8 +75,10 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 logger.info("")
                 Thread.sleep(10000)
             }
+            return successResult()
         } catch (e : Exception) {
             logger.error("Error in Status Reporter", e)
+            return failResult()
         }
     }
 }
