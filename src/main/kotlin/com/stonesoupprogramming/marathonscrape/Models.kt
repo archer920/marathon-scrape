@@ -45,7 +45,7 @@ data class RunnerData(
     }
 
     fun updateRaceYearPlace(){
-        raceYearPlace = hashCode().toString()
+        raceYearPlace = "$source,$age,$gender,$nationality,$finishTime,$halfwayTime,$company,$marathonYear,$place"
     }
 }
 
