@@ -80,20 +80,6 @@ class Application(
 
         val threads = mutableListOf<CompletableFuture<String>>()
 
-        if(args.contains("--Disney-Scrape")){
-            threads.addAll(disneyMarathonProducer.process())
-        }
-        if(args.contains("--Write-Disney")){
-            writeFile(Sources.MEDTRONIC, 2014, 2018)
-        }
-
-        if(args.contains("--Marine-Corps-Scrape")){
-            threads.addAll(marineCorpsProducer.process())
-        }
-        if(args.contains("--Write-Marine-Corps")){
-            writeFile(Sources.MARINES, 2014, 2017)
-        }
-
         if(args.contains("--San-Francisco-Scrape")){
             threads.addAll(sanFranciscoProducer.process())
         }
@@ -106,6 +92,13 @@ class Application(
         }
         if(args.contains("--Write-Medtronic")){
             writeFile(Sources.MEDTRONIC, 2014, 2017)
+        }
+
+        if(args.contains("--Marine-Corps-Scrape")){
+            threads.addAll(marineCorpsProducer.process())
+        }
+        if(args.contains("--Write-Marine-Corps")){
+            writeFile(Sources.MARINES, 2014, 2017)
         }
 
         if(args.contains("--Vienna-Marathon-Scrape")){
@@ -148,6 +141,13 @@ class Application(
         }
         if(args.contains("--Write-LA-Marathon")){
             writeFile(Sources.LA, 2014, 2017)
+        }
+
+        if(args.contains("--Disney-Scrape")){
+            threads.addAll(disneyMarathonProducer.process())
+        }
+        if(args.contains("--Write-Disney")){
+            writeFile(Sources.MEDTRONIC, 2014, 2018)
         }
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
