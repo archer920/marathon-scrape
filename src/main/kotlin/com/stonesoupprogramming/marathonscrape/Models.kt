@@ -19,6 +19,7 @@ object Sources {
     const val SAN_FRANSCISO = "San Fransisco"
     const val MEDTRONIC = "Medtronic Twin Cities Marathon"
     const val DISNEY = "Disney World Marathon"
+    const val HONOLULU = "Honolulu Marathon"
 }
 
 enum class Gender(val code : String){
@@ -48,8 +49,9 @@ data class RunnerData(
     }
 }
 
-data class TrackShackColumnInfo(
+data class ColumnPositions(
         val nationality : Int,
         val finishTime : Int,
-        val place : Int = 4,
-        val age : Int = 3)
+        val place : Int,
+        val age : Int,
+        val ageGender : Int)

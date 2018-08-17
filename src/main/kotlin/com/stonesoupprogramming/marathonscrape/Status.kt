@@ -55,7 +55,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 logger.info("Vienna at ${percentFormat.format(viennaPercent)}: $viennaCount / $viennaTotal")
 
                 val sanFranciscoCount = runnerDataRepository.countBySource(Sources.SAN_FRANSCISO)
-                val sanFranciscoTotal = 5276 + 6586 + 6335 + 6071 + 6624
+                val sanFranciscoTotal = 6624 + 6071 + 6335 + 6586 + 5276
                 val sanFranciscoPercent = sanFranciscoCount.toDouble() / sanFranciscoTotal.toDouble()
                 logger.info("San Francisco at ${percentFormat.format(sanFranciscoPercent)}: $sanFranciscoCount / $sanFranciscoTotal")
 
@@ -65,7 +65,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 logger.info("Medtronic at ${percentFormat.format(medtronicPercent)}: $medtronicCount / $medtronicTotal")
 
                 val disneyCount = runnerDataRepository.countBySource(Sources.DISNEY)
-                val disneyTotal = 97025
+                val disneyTotal = 97025 + 19235
                 val disneyPercent = disneyCount.toDouble() / disneyTotal.toDouble()
                 logger.info("Disney at ${percentFormat.format(disneyPercent)}: $disneyCount / $disneyTotal")
 

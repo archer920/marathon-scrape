@@ -710,15 +710,17 @@ class ChicagoMarathonScrape {
     }
 }
 
+//Used for New York and Honolulu
 @Component
-class NyMarathonScraper {
+class MarathonGuideScraper {
 
-    private val logger = LoggerFactory.getLogger(NyMarathonScraper::class.java)
+    private val logger = LoggerFactory.getLogger(MarathonGuideScraper::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String) : CompletableFuture<String> {
-        val driver = ChromeDriver()
+    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String, source : String, columnPositions: ColumnPositions) : CompletableFuture<String> {
         sleepRandom()
+
+        val driver = ChromeDriver()
 
         try {
             driver.get(url)
@@ -728,12 +730,8 @@ class NyMarathonScraper {
                 driver.selectComboBoxOption(By.cssSelector("select[name=RaceRange]"), range)
 
                 driver.findElementByName("SubmitButton").click()
-                when (year) {
-                    2014 -> processTablePlaceFirst(driver, queue, year)
-                    2015 -> processTableTimeFirst(driver, queue, year)
-                    2016 -> processTableTimeFirst(driver, queue, year)
-                    2017 -> processTablePlaceFirst(driver, queue, year)
-                }
+
+                processTable(driver, queue, year, source, columnPositions)
 
                 driver.navigate().back()
             }
@@ -746,67 +744,31 @@ class NyMarathonScraper {
         }
     }
 
-    private fun processTableTimeFirst(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
+    private fun processTable(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, source: String, columnPositions: ColumnPositions) {
         try {
             driver.waitUntilVisible(By.className("BoxTitleOrange"))
 
             for (row in 2 until countRows(driver)) {
-                val ageGender = findCellValue(driver, row, 0)
+                val ageGender = findCellValue(driver, row, columnPositions.ageGender)
                 val gender = ageGender.substringAfter("(")[0].toString()
                 val age = ageGender.substringAfter("(").substring(1, 3)
-                val place = findCellValue(driver, row, 2).toInt()
-                val finishTime = findCellValue(driver, row, 1)
-                val nationality = findCellValue(driver, row, 5)
+                val place = findCellValue(driver, row, columnPositions.place).toInt()
+                val finishTime = findCellValue(driver, row, columnPositions.finishTime)
+                val nationality = findCellValue(driver, row, columnPositions.nationality)
 
-                val runnerData = RunnerData(
-                        source = Sources.NY_MARATHON_GUIDE,
-                        marathonYear = year,
-                        gender = gender,
+                queue.insertRunnerData(
+                        logger = logger,
                         age = age,
-                        place = place,
                         finishTime = finishTime,
-                        nationality = nationality)
-                runnerData.updateRaceYearPlace()
-                queue.put(runnerData)
-                logger.info("Produced: $runnerData")
+                        gender = gender,
+                        year = year,
+                        nationality = nationality,
+                        place = place,
+                        source = source
+                )
             }
         } catch (e: Exception) {
             logger.error("Failed to process table for $year", e)
-        }
-    }
-
-    private fun processTablePlaceFirst(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
-        try {
-            driver.waitUntilVisible(By.className("BoxTitleOrange"))
-
-            for (row in 2 until countRows(driver)) {
-                val ageGender = findCellValue(driver, row, 0)
-                val gender = ageGender.substringAfter("(")[0].toString()
-                val age = ageGender.substringAfter("(").substring(1, 3)
-
-                val place = try {
-                    findCellValue(driver, row, 1).toInt()
-                } catch (e: Exception) {
-                    logger.error("Row=$row, Cell=1, Year=$year", e)
-                    throw e
-                }
-                val finishTime = findCellValue(driver, row, 4)
-                val nationality = findCellValue(driver, row, 5).substringAfterLast(",").trim()
-
-                val runnerData = RunnerData(
-                        source = Sources.NY_MARATHON_GUIDE,
-                        marathonYear = year,
-                        gender = gender,
-                        age = age,
-                        place = place,
-                        finishTime = finishTime,
-                        nationality = nationality)
-                runnerData.updateRaceYearPlace()
-                queue.put(runnerData)
-                logger.info("Produced: $runnerData")
-            }
-        } catch (e: Exception) {
-            logger.error("Failed to process table year=$year", e)
         }
     }
 
@@ -852,7 +814,7 @@ class TrackShackResults(@Autowired private val stateCodes: List<String>) {
     private val logger = LoggerFactory.getLogger(TrackShackResults::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, gender: String, source : String, trackShackColumnInfo: TrackShackColumnInfo) : CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, gender: String, source : String, columnPositions: ColumnPositions) : CompletableFuture<String> {
         sleepRandom()
 
         val driver = ChromeDriver()
@@ -862,13 +824,13 @@ class TrackShackResults(@Autowired private val stateCodes: List<String>) {
             driver.waitUntilVisible(By.cssSelector("#f1 > p:nth-child(13) > table"))
 
             for (row in 2 until numRows(driver)) {
-                val place = findCellValue(driver, row, trackShackColumnInfo.place).toInt()
-                val age = findCellValue(driver, row, trackShackColumnInfo.age)
-                var nationality = findCellValue(driver, row, trackShackColumnInfo.nationality).substringAfterLast(",").trim()
+                val place = findCellValue(driver, row, columnPositions.place).toInt()
+                val age = findCellValue(driver, row, columnPositions.age)
+                var nationality = findCellValue(driver, row, columnPositions.nationality).substringAfterLast(",").trim()
                 if (stateCodes.contains(nationality)) {
                     nationality = "USA"
                 }
-                val finishTime = findCellValue(driver, row, trackShackColumnInfo.finishTime)
+                val finishTime = findCellValue(driver, row, columnPositions.finishTime)
                 queue.insertRunnerData(
                         logger = logger,
                         place = place,
@@ -1246,7 +1208,7 @@ class SanFranciscoScrape {
         try {
             driver.waitUntilVisible(By.cssSelector("#result-data > tbody > tr:nth-child(2) > td:nth-child(3)"))
             return driver.findElementByCssSelector("#result-data > tbody > tr:nth-child(2) > td:nth-child(3)")
-                    .findElements(By.tagName("a")).size
+                    .findElements(By.tagName("a")).size + 1
         } catch (e: Exception) {
             logger.error("Unable to count the number of pages", e)
             throw e

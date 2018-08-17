@@ -161,7 +161,7 @@
                         <argument>--Ny-Marathon-Scrape</argument>
                         <argument>--La-Marathon-Scrape</argument>
                         <argument>--Marine-Corps-Scrape</argument>
-                        <argument>--San-Francisco-Scrape</argument>
+                        <argument>--San-Francisco-Scrape</argument> Pending verification
                     </arguments>
                 </configuration>
             </plugin>

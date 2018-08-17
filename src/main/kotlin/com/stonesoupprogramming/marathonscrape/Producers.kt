@@ -55,7 +55,7 @@ class ChicagoProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueu
 
 @Component
 class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                         @Autowired private val nyMarathonScraper: NyMarathonScraper) {
+                         @Autowired private val marathonGuideScraper: MarathonGuideScraper) {
 
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
@@ -69,7 +69,28 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
                     2016 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472161106",
                     2017 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472171105")
 
-            urls.forEach { year, url -> threads.add(nyMarathonScraper.scrape(runnerDataQueue, year, url)) }
+            val placeFirstPositions = ColumnPositions(
+                    ageGender = 0,
+                    place = 1,
+                    finishTime = 4,
+                    nationality = 5,
+                    age = -1)
+            val timeFirstPositions = ColumnPositions(
+                    ageGender = 0,
+                    place = 2,
+                    finishTime = 1,
+                    nationality = 5,
+                    age = -1
+            )
+
+            urls.forEach { year, url ->
+                when(year){
+                    2014 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions))
+                    2015 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions))
+                    2016 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions))
+                    2017 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions))
+                }
+            }
             threads.toList()
         } catch (e : Exception){
             logger.error("New York Marathon failed", e)
@@ -179,7 +200,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
                     "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZD&Ind=28",
                     "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZE&Ind=29")
 
-            val columnInfo = TrackShackColumnInfo(place = 4, age = 3, finishTime = 15, nationality = 16)
+            val columnInfo = ColumnPositions(place = 4, age = 3, finishTime = 15, nationality = 16, ageGender = -1)
 
             mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.LA, columnInfo)) }
             mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", Sources.LA, columnInfo)) }
@@ -353,7 +374,7 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
                 womens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
             }
 
-            val columnInfo = TrackShackColumnInfo(nationality = 12, finishTime = 11, age = 3, place = 4)
+            val columnInfo = ColumnPositions(nationality = 12, finishTime = 11, age = 3, place = 4, ageGender = -1)
 
             mens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "M", Sources.DISNEY, columnInfo)) }
             mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.DISNEY, columnInfo)) }
