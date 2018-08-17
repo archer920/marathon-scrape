@@ -481,8 +481,7 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
         return try {
             logger.info("Starting Budapest Scrape")
 
-            //links.forEach { url, year -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year)) }
-            threads.add(budapestScrape.scrape(runnerDataQueue, "http://results.runinbudapest.com/?start=0&race=marathon&lt=results&verseny=2014_spar_e&rajtszam=&nev=&nem=&egyesulet=&varos=&orszag=&min_ido=&max_ido=&min_hely=&max_hely=&oldal=50", 2014))
+            links.forEach { url, year -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year)) }
 
             threads.toList()
         } catch (e : Exception){
