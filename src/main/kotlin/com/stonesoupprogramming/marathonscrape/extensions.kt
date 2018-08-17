@@ -71,3 +71,7 @@ fun RemoteWebDriver.findCellValue(tableBody: By, row : Int, cell : Int, logger: 
         throw e
     }
 }
+
+fun String.toCss() : By {
+    return By.cssSelector(this)
+}

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
+import javax.annotation.PostConstruct
 
 //TODO: Debug
 @Component
@@ -449,6 +450,43 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
             threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
+            emptyList()
+        }
+    }
+}
+
+@Component
+class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val budapestScrape: BudapestScrape) {
+
+    private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+    private val links = mutableMapOf<String, Int>()
+
+    @PostConstruct
+    fun init(){
+        generateLinks(2014, 4300)
+        generateLinks(2015, 5600)
+        generateLinks(2016, 4950)
+        generateLinks(2017, 5400)
+    }
+
+    fun generateLinks(year : Int, max : Int){
+        for(i in 0..max step 50){
+            links["http://results.runinbudapest.com/?start=$i&race=marathon&lt=results&verseny=${year}_spar_e&rajtszam=&nev=&nem=&egyesulet=&varos=&orszag=&min_ido=&max_ido=&min_hely=&max_hely=&oldal=50"] = 2014
+        }
+    }
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Budapest Scrape")
+
+            //links.forEach { url, year -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year)) }
+            threads.add(budapestScrape.scrape(runnerDataQueue, "http://results.runinbudapest.com/?start=0&race=marathon&lt=results&verseny=2014_spar_e&rajtszam=&nev=&nem=&egyesulet=&varos=&orszag=&min_ido=&max_ido=&min_hely=&max_hely=&oldal=50", 2014))
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Budapest failed", e)
             emptyList()
         }
     }

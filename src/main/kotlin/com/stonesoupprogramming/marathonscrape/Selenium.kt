@@ -1336,3 +1336,47 @@ class SportStatsScrape {
         }
     }
 }
+
+@Component
+class BudapestScrape {
+
+    private val logger = LoggerFactory.getLogger(BudapestScrape::class.java)
+
+    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int) : CompletableFuture<String> {
+        //sleepRandom()
+
+        val driver = createDriver()
+
+        return try {
+            driver.get(url)
+
+            val numRows = driver.countTableRows(By.cssSelector("body > table:nth-child(7) > tbody:nth-child(1)"), logger)
+            for(row in 2 until numRows){
+                processRow(driver, queue, row, year)
+            }
+
+            successResult()
+        } catch (e : Exception){
+            logger.error("Failed to scrape $year, $url", e)
+            failResult()
+        } finally {
+            driver.close()
+        }
+    }
+
+    private fun processRow(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, row : Int, year: Int) {
+        try {
+            val cssSelector = "body > table:nth-child(7) > tbody:nth-child(1)"
+            val place = driver.findCellValue(cssSelector.toCss(), row, 0, logger).replace(".", "").toInt()
+            val age = (LocalDateTime.now().year - driver.findCellValue(cssSelector.toCss(), row, 2, logger).toInt()).toString()
+            val nationality = driver.findCellValue(cssSelector.toCss(), row, 3, logger)
+            val gender = driver.findCellValue(cssSelector.toCss(), row, 6, logger)
+            val finishTime = driver.findCellValue(cssSelector.toCss(), row, 12, logger)
+
+            queue.insertRunnerData(logger,
+                    age, finishTime, gender, year, nationality, place, Sources.BUDAPEST)
+        } catch (e : Exception){
+            logger.error("Failed to process row=$row", e)
+        }
+    }
+}

@@ -1,11 +1,8 @@
 package com.stonesoupprogramming.marathonscrape
 
-import org.apache.commons.csv.CSVFormat
-import org.apache.commons.csv.CSVPrinter
-import java.io.FileWriter
 import javax.persistence.*
-import javax.validation.constraints.Min
 import javax.validation.constraints.Max
+import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 
 object Sources {
@@ -21,6 +18,7 @@ object Sources {
     const val DISNEY = "Disney World Marathon"
     const val HONOLULU = "Honolulu Marathon"
     const val OTTAWA = "Ottawa Marathon"
+    const val BUDAPEST = "Budapest"
 }
 
 enum class Gender(val code : String){

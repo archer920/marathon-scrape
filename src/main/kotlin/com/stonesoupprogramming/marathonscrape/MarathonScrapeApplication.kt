@@ -71,6 +71,7 @@ class Application(
         @Autowired private val medtronicProducer: MedtronicProducer,
         @Autowired private val disneyMarathonProducer: DisneyMarathonProducer,
         @Autowired private val ottawaMarathonProducer: OttawaMarathonProducer,
+        @Autowired private val budapestProducer: BudapestProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -80,6 +81,13 @@ class Application(
         val status = statusReporter.reportStatus()
 
         val threads = mutableListOf<CompletableFuture<String>>()
+
+        if(args.contains("--Budapest-Scrape")){
+            threads.addAll(budapestProducer.process())
+        }
+        if(args.contains("--Write-Budapest")){
+            writeFile(Sources.BUDAPEST, 2014, 2017)
+        }
 
         if(args.contains("--Ottawa-Scrape")){
             threads.addAll(ottawaMarathonProducer.process())
