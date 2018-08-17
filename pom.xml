@@ -5,7 +5,7 @@
 
     <groupId>com.stonesoupprogramming</groupId>
     <artifactId>marathon-scrape</artifactId>
-    <version>2.0.5</version>
+    <version>2.0.6</version>
     <packaging>jar</packaging>
 
     <name>marathon-scrape</name>
@@ -152,10 +152,10 @@
                 <configuration>
                     <mainClass>com.stonesoupprogramming.marathonscrape.MarathonScrapeApplicationKt</mainClass>
                     <arguments>
+                        <argument>--Ottawa-Scrape</argument>
                         <argument>--Disney-Scrape</argument>
-                        <argument>--Medtronic-Scrape</argument>
                         <argument>--Vienna-Marathon-Scrape</argument>
-                        <argument>--Berlin-Scrape"</argument>
+                        <argument>--Berlin-Scrape</argument>
                         <argument>--Boston-Marathon-Scrape</argument>
                         <argument>--Chicago-Marathon-Scrape</argument>
                         <argument>--Ny-Marathon-Scrape</argument>

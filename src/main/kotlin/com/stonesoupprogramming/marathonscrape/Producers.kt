@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 
+//TODO: Debug
 @Component
 class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueue<RunnerData>,
                      @Autowired private val bostonMarathonScrape: BostonMarathonScrape){
@@ -85,15 +86,70 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
             urls.forEach { year, url ->
                 when(year){
-                    2014 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions))
-                    2015 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions))
-                    2016 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions))
-                    2017 -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions))
+                    2014 -> {
+                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
+                        rangeOptions.forEach{ range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions, range))}
+
+                    }
+                    2015 -> {
+                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
+                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions, range))}
+                    }
+                    2016 -> {
+                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
+                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions, range))}
+                    }
+                    2017 -> {
+                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
+                        rangeOptions.forEach { range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions, range)) }
+                    }
                 }
             }
             threads.toList()
         } catch (e : Exception){
             logger.error("New York Marathon failed", e)
+            emptyList()
+        }
+    }
+}
+
+@Component
+class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                         @Autowired private val sportStatsScrape: SportStatsScrape) {
+
+    private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Ottawa Marathon Scrape")
+
+            val urls = mapOf(2014 to "https://www.sportstats.ca/display-results.xhtml?raceid=166",
+                    2015 to "https://www.sportstats.ca/display-results.xhtml?raceid=26006",
+                    2016 to "https://www.sportstats.ca/display-results.xhtml?raceid=29494",
+                    2017 to "https://www.sportstats.ca/display-results.xhtml?raceid=42854")
+
+            val columnPositions = ColumnPositions(nationality = 5, ageGender = 6, place = 7, finishTime = 14)
+
+            urls.forEach { year, url ->
+                when(year){
+                    2014 -> {
+                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 140, ColumnPositions(ageGender = 5, place = 6, finishTime = 9)))
+                    }
+                    2015 -> {
+                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 117, ColumnPositions(ageGender = 5, place = 6, finishTime = 13)))
+                    }
+                    2016 -> {
+                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 110, columnPositions))
+                    }
+                    2017 -> {
+                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 115, columnPositions))
+                    }
+                }
+            }
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Ottawa Marathon failed", e)
             emptyList()
         }
     }
@@ -219,6 +275,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     }
 }
 
+//TODO: Debug
 @Component
 class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                          @Autowired private val marineCorpsScrape: MarineCorpsScrape) {

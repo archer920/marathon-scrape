@@ -20,6 +20,7 @@ object Sources {
     const val MEDTRONIC = "Medtronic Twin Cities Marathon"
     const val DISNEY = "Disney World Marathon"
     const val HONOLULU = "Honolulu Marathon"
+    const val OTTAWA = "Ottawa Marathon"
 }
 
 enum class Gender(val code : String){
@@ -49,9 +50,10 @@ data class RunnerData(
     }
 }
 
+//-1 will trigger IndexOutBoundsException so these are ok defaults
 data class ColumnPositions(
-        val nationality : Int,
-        val finishTime : Int,
-        val place : Int,
-        val age : Int,
-        val ageGender : Int)
+        val nationality : Int = -1,
+        val finishTime : Int = -1,
+        val place : Int = -1,
+        val age : Int = -1,
+        val ageGender : Int = -1)
