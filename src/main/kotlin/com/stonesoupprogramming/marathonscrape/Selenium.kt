@@ -1346,7 +1346,7 @@ class BudapestScrape {
     private val logger = LoggerFactory.getLogger(BudapestScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int) : CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, columnPositions: ColumnPositions) : CompletableFuture<String> {
         sleepRandom()
 
         val driver = createDriver()
@@ -1356,7 +1356,7 @@ class BudapestScrape {
 
             val numRows = driver.countTableRows(By.cssSelector("body > table:nth-child(7) > tbody:nth-child(1)"), logger)
             for(row in 2 until numRows){
-                processRow(driver, queue, row, year)
+                processRow(driver, queue, row, year, columnPositions)
             }
 
             successResult()
@@ -1368,14 +1368,14 @@ class BudapestScrape {
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, row : Int, year: Int) {
+    private fun processRow(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, row : Int, year: Int, columnPositions: ColumnPositions) {
         try {
             val cssSelector = "body > table:nth-child(7) > tbody:nth-child(1)"
-            val place = driver.findCellValue(cssSelector.toCss(), row, 0, logger).replace(".", "").toInt()
-            val age = (LocalDateTime.now().year - driver.findCellValue(cssSelector.toCss(), row, 2, logger).toInt()).toString()
-            val nationality = driver.findCellValue(cssSelector.toCss(), row, 3, logger)
-            val gender = driver.findCellValue(cssSelector.toCss(), row, 6, logger)
-            val finishTime = driver.findCellValue(cssSelector.toCss(), row, 12, logger)
+            val place = driver.findCellValue(cssSelector.toCss(), row, columnPositions.place, logger).replace(".", "").toInt()
+            val age = (LocalDateTime.now().year - driver.findCellValue(cssSelector.toCss(), row, columnPositions.age, logger).toInt()).toString()
+            val nationality = driver.findCellValue(cssSelector.toCss(), row, columnPositions.nationality, logger)
+            val gender = driver.findCellValue(cssSelector.toCss(), row, columnPositions.gender, logger)
+            val finishTime = driver.findCellValue(cssSelector.toCss(), row, columnPositions.finishTime, logger)
 
             queue.insertRunnerData(logger,
                     age, finishTime, gender, year, nationality, place, Sources.BUDAPEST)

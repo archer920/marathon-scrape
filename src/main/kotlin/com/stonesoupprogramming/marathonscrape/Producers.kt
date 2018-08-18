@@ -481,7 +481,19 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
         return try {
             logger.info("Starting Budapest Scrape")
 
-            links.forEach { url, year -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year)) }
+            val thirteenColumns = ColumnPositions(place = 0, age = 2, nationality = 3, gender = 6, finishTime = 13)
+            val twelveColumns = ColumnPositions(place = 0, age = 2, nationality = 3, gender = 6, finishTime = 12)
+            val elevenColumns = ColumnPositions(place = 0, age = 2, nationality = 3, gender = 6, finishTime = 11)
+
+            links.forEach { url, year ->
+                when(year){
+                    2014 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, twelveColumns))
+                    2015 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, elevenColumns))
+                    2016 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, elevenColumns))
+                    2017 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, thirteenColumns))
+                }
+
+            }
 
             threads.toList()
         } catch (e : Exception){

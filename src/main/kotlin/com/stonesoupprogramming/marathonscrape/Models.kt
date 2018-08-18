@@ -54,4 +54,5 @@ data class ColumnPositions(
         val finishTime : Int = -1,
         val place : Int = -1,
         val age : Int = -1,
-        val ageGender : Int = -1)
+        val ageGender : Int = -1,
+        val gender : Int = -1)
