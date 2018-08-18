@@ -4,8 +4,10 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.io.FileWriter
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
@@ -51,7 +53,13 @@ fun List<RunnerData>.writeToCsv(fileName : String){
 }
 
 fun createDriver() : RemoteWebDriver {
-    return ChromeDriver()
+    return try {
+        ChromeDriver()
+    } catch (e : Exception){
+        LoggerFactory.getLogger("createDriver()").error("Failed to start Chrome, falling back to firefox", e)
+
+        FirefoxDriver()
+    }
 }
 
 fun RemoteWebDriver.countTableRows(tableBody : By, logger: Logger) : Int {
