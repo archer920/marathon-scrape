@@ -988,8 +988,9 @@ class MarineCorpsScrape {
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
-        val driver = ChromeDriver()
         sleepRandom()
+
+        val driver = ChromeDriver()
 
         try {
             processForm(driver, year)
@@ -1122,8 +1123,10 @@ class SanFranciscoScrape {
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String): CompletableFuture<String> {
-        val driver = ChromeDriver()
         sleepRandom()
+
+        val driver = ChromeDriver()
+
 
         try {
             driver.get(url)
