@@ -1342,8 +1342,9 @@ class BudapestScrape {
 
     private val logger = LoggerFactory.getLogger(BudapestScrape::class.java)
 
+    @Async
     fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int) : CompletableFuture<String> {
-        //sleepRandom()
+        sleepRandom()
 
         val driver = createDriver()
 
