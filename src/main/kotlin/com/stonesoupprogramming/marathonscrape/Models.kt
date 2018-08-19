@@ -48,6 +48,14 @@ data class RunnerData(
     }
 }
 
+@Entity
+data class MarathonGuideStatus(
+        @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
+        @field: NotBlank @field: Column(nullable=false) var url : String = "",
+        @field: NotBlank @field: Column(nullable=false) var rangeOption : String = "",
+        @field: Column(nullable=false) @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014
+)
+
 //-1 will trigger IndexOutBoundsException so these are ok defaults
 data class ColumnPositions(
         val nationality : Int = -1,

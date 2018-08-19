@@ -45,6 +45,23 @@ fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age : String, fin
     logger.info("Produced: $runnerData")
 }
 
+fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age : String, finishTime : String, gender : String, year : Int, nationality : String, place : Int, source : String, company : String = "", halfwayTime : String = ""){
+    val runnerData = RunnerData(
+            source = source,
+            age = age,
+            gender = gender,
+            nationality = nationality,
+            finishTime = finishTime,
+            halfwayTime = halfwayTime,
+            company = company,
+            marathonYear = year,
+            place = place
+    )
+    runnerData.updateRaceYearPlace()
+    add(runnerData)
+    logger.info("Produced: $runnerData")
+}
+
 fun List<RunnerData>.writeToCsv(fileName : String){
     val printer = CSVPrinter(FileWriter(fileName), CSVFormat.DEFAULT.withHeader("Age",
             "Gender", "Nationality", "Finish Time", "Halfway Time", "Company, Team, or Sponsor", "Year"))

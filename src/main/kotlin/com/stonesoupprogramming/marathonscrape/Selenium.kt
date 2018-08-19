@@ -52,7 +52,7 @@ private fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut: Long =
 class DriverFactory {
 
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
-    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
+    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors() - 2)
 
     fun createDriver() : RemoteWebDriver {
         return try {
@@ -76,7 +76,7 @@ class DriverFactory {
             semaphore.release()
             logger.info("Permit has been released")
             driver.close()
-
+            System.gc()
         } catch (e : Exception){
             logger.error("Failed to destroy driver", e)
         }
@@ -791,9 +791,10 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
 
             processTable(driver, queue, year, source, columnPositions)
 
+            logger.info("Finished $url, $year, $rangeOption successfully")
             return successResult()
         } catch (e: Exception) {
-            logger.error("Failed to scrape $year, $rangeOption, $url", e)
+            logger.error("Failed to scrape $url, $year, $rangeOption, $url", e)
             return failResult()
         } finally {
             driverFactory.destroy(driver)
@@ -1404,10 +1405,11 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory) {
 class BudapestScrape(@Autowired private val driverFactory: DriverFactory) {
 
     private val logger = LoggerFactory.getLogger(BudapestScrape::class.java)
+    private val resultsPage = mutableListOf<RunnerData>()
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, columnPositions: ColumnPositions): CompletableFuture<String> {
-        sleepRandom()
+        sleepRandom() //TODO: Move this to driver factory
 
         val driver = driverFactory.createDriver()
 
@@ -1416,8 +1418,11 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory) {
 
             val numRows = driver.countTableRows(By.cssSelector("body > table:nth-child(7) > tbody:nth-child(1)"), logger)
             for (row in 2 until numRows) {
-                processRow(driver, queue, row, year, columnPositions)
+                processRow(driver, row, year, columnPositions)
             }
+
+            queue.addAll(resultsPage)
+            logger.info("Successfully scraped $url")
 
             successResult()
         } catch (e: Exception) {
@@ -1428,7 +1433,7 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory) {
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, row: Int, year: Int, columnPositions: ColumnPositions) {
+    private fun processRow(driver: RemoteWebDriver, row: Int, year: Int, columnPositions: ColumnPositions) {
         try {
             val cssSelector = "body > table:nth-child(7) > tbody:nth-child(1)"
             val place = try {
@@ -1447,7 +1452,7 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory) {
             val gender = driver.findCellValue(cssSelector.toCss(), row, columnPositions.gender, logger)
             val finishTime = driver.findCellValue(cssSelector.toCss(), row, columnPositions.finishTime, logger)
 
-            queue.insertRunnerData(logger,
+            resultsPage.insertRunnerData(logger,
                     age, finishTime, gender, year, nationality, place, Sources.BUDAPEST)
 
         } catch (e: Exception) {
