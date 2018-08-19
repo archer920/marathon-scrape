@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
+import javax.annotation.PreDestroy
 import javax.validation.ConstraintViolationException
 
 @Component
@@ -15,6 +16,8 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
 
     private val logger = LoggerFactory.getLogger(RunnerDataConsumer::class.java)
     var signalShutdown = false
+
+    var duplicates = mutableListOf<RunnerData>()
 
     @Async
     fun insertValues(): CompletableFuture<String> {
@@ -45,9 +48,19 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
         } catch (e: Exception) {
             when (e) {
                 is ConstraintViolationException -> logger.info("Validation Failure: $record")
-                is DataIntegrityViolationException -> logger.info("Duplicate Entry: $record")
+                is DataIntegrityViolationException -> saveDuplicate(record)
                 else -> logger.error("Exception: $record", e)
             }
         }
+    }
+
+    @Synchronized
+    fun saveDuplicate(runnerData: RunnerData){
+        duplicates.add(runnerData)
+    }
+
+    @PreDestroy
+    fun destroy(){
+        duplicates.saveDuplicates("Duplicates.csv")
     }
 }

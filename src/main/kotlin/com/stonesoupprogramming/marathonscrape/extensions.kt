@@ -52,6 +52,12 @@ fun List<RunnerData>.writeToCsv(fileName : String){
     printer.close()
 }
 
+fun List<RunnerData>.saveDuplicates(fileName : String){
+    val printer = CSVPrinter(FileWriter(fileName), CSVFormat.DEFAULT.withHeader("source, age, gender, nationality, finishTime, halfwayTime, company, marathonYear, place"))
+    this.forEach { printer.printRecord(it.source, it.age, it.gender, it.nationality, it.finishTime, it.halfwayTime, it.company, it.marathonYear, it.place) }
+    printer.close()
+}
+
 fun createDriver() : RemoteWebDriver {
     return try {
         ChromeDriver()
