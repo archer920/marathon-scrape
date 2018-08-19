@@ -3,6 +3,7 @@ package com.stonesoupprogramming.marathonscrape
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.openqa.selenium.By
+import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -83,13 +84,32 @@ fun RemoteWebDriver.countTableRows(tableBody : By, logger: Logger) : Int {
     }
 }
 
-fun RemoteWebDriver.findCellValue(tableBody: By, row : Int, cell : Int, logger: Logger) : String {
+fun RemoteWebDriver.findCellValue(tableBody: By, row : Int, cell : Int, logger: Logger, attemptNum : Int = 0, giveUp : Int = 20) : String {
     return try {
         findElement(tableBody).findElements(By.tagName("tr"))[row].findElements(By.tagName("td"))[cell].text
     } catch (e : Exception){
-        logger.error("Failed to determine value for cell [$row][$cell]", e)
-        throw e
+        when(e){
+            is StaleElementReferenceException -> {
+                if(attemptNum < giveUp){
+                    Thread.sleep(1000)
+                    return this.findCellValue(tableBody, row, cell, logger, attemptNum + 1)
+                } else {
+                    logger.error("Unable to find a non-stale reference", e)
+                    throw e
+                }
+            }
+            else -> {
+                logger.error("Failed to determine value for cell [$row][$cell]", e)
+                throw e
+            }
+        }
     }
+}
+
+@Synchronized
+fun BlockingQueue<RunnerData>.addResultsPage(page : MutableList<RunnerData>){
+    addAll(page)
+    page.clear()
 }
 
 fun String.toCss() : By {

@@ -12,3 +12,7 @@ interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 interface UrlPageRepository : JpaRepository<UrlPage, Long>{
     fun findBySource(source : String) : List<UrlPage>
 }
+
+interface PagedResultsRepository : JpaRepository<PagedResults, Long>{
+    fun findBySourceAndMarathonYear(source : String, year : Int) : List<PagedResults>
+}

@@ -1013,53 +1013,66 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
 
 //TODO: FIXME
 @Component
-class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
+class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
+                        @Autowired private val pagedResultsRepository: PagedResultsRepository) {
+
     private val logger = LoggerFactory.getLogger(MarineCorpsScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, startPage : Int): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
+        val resultsPage = mutableListOf<RunnerData>()
+        var pageNum = 0
 
         try {
             processForm(driver, year)
 
-            var scrape = true
-            do {
-                processTable(driver, queue, year)
+            while(hasNextPage(driver)){
+                if(pageNum > startPage){
+                    processTable(driver, resultsPage, year)
+                    val numberedPage = PagedResults(null, Sources.MARINES, year, "http://www.marinemarathon.com/results/marathon", pageNum)
 
-                if (hasNextPage(driver)) {
-                    advancePage(driver)
-                } else {
-                    scrape = false
+                    try {
+                        pagedResultsRepository.save(numberedPage)
+                        queue.addResultsPage(resultsPage)
+                        logger.info("Successfully scraped: $numberedPage")
+                    } catch (e : Exception){
+                        logger.error("Failed to record page: $numberedPage", e)
+                    }
                 }
-            } while (scrape)
+                advancePage(driver)
+                pageNum++
+            }
 
             return CompletableFuture.completedFuture("Success")
         } catch (e: Exception) {
-            logger.error("Unable to scrape", e)
+            logger.error("Unable to scrape year=$year", e)
             return CompletableFuture.completedFuture("Error")
         } finally {
             driverFactory.destroy(driver)
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int) {
+    private fun processTable(driver: RemoteWebDriver, resultPage : MutableList<RunnerData>, year: Int) {
         try {
-            for (row in 0 until numRows(driver)) {
-                processRow(driver, row, queue, year)
+            val numRows = driver.countTableRows("#xact_results_agegroup_results > tbody".toCss(), logger)
+            for (row in 0 until numRows) {
+                processRow(driver, row, resultPage, year)
             }
         } catch (e: Exception) {
             logger.error("Failed to process the table", e)
+            throw e
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, row: Int, queue: BlockingQueue<RunnerData>, year: Int) {
+    private fun processRow(driver: RemoteWebDriver, row: Int, resultPage : MutableList<RunnerData>, year: Int) {
         try {
-            val ageGender = findCellValue(driver, row, 4)
+            val tbody = "#xact_results_agegroup_results > tbody"
+            val ageGender = driver.findCellValue(tbody.toCss(), row, 4, logger)//findCellValue(driver, row, 4)
             val gender = ageGender[0].toString()
             val age = ageGender.substringAfterLast("/")
-            val finishTime = findCellValue(driver, row, 5)
-            val place = findCellValue(driver, row, 8).toInt()
+            val finishTime = driver.findCellValue(tbody.toCss(), row, 5, logger)//findCellValue(driver, row, 5)
+            val place = driver.findCellValue(tbody.toCss(), row, 8, logger).toInt() //findCellValue(driver, row, 8).toInt()
 
             val runnerData = RunnerData(age = age,
                     finishTime = finishTime,
@@ -1068,16 +1081,17 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
                     nationality = "USA",
                     place = place,
                     source = Sources.MARINES)
-            queue.put(runnerData)
+            resultPage.insertRunnerData(logger, age, finishTime, gender, year, "USA", place, Sources.MARINES)
             logger.info("Produced: $runnerData")
         } catch (e: Exception) {
             logger.error("Failed to scrape row $row", e)
+            throw e
         }
     }
 
     private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
         try {
-            return driver.findElementByCssSelector("#xact_results_agegroup_results > tbody")
+            return driver.findElementByCssSelector("")
                     .findElements(By.tagName("tr"))[row]
                     .findElements(By.tagName("td"))[cell].text
         } catch (e: Exception) {
@@ -1090,17 +1104,9 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
         try {
             driver.waitUntilClickable(By.cssSelector("#xact_results_agegroup_results_next"))
             driver.findElementByCssSelector("#xact_results_agegroup_results_next").click()
+            Thread.sleep(1000)
         } catch (e: Exception) {
             logger.error("Failed to advance page", e)
-        }
-    }
-
-    private fun numRows(driver: RemoteWebDriver): Int {
-        try {
-            return driver.findElementByCssSelector("#xact_results_agegroup_results > tbody")
-                    .findElements(By.tagName("tr")).size
-        } catch (e: Exception) {
-            logger.error("Unable to find the number of rows", e)
             throw e
         }
     }
@@ -1130,6 +1136,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
             Thread.sleep(10000)
         } catch (e: Exception) {
             logger.error("Failed on input form", e)
+            throw e
         }
     }
 

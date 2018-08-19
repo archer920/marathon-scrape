@@ -52,6 +52,14 @@ data class UrlPage(
         @field: NotBlank var url : String = ""
 )
 
+@Entity
+data class PagedResults(
+        @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
+        @field: NotBlank var source : String = "",
+        @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
+        @field: NotBlank var url : String = "",
+        @field: Min(0) var pageNum: Int = 0)
+
 //-1 will trigger IndexOutBoundsException so these are ok defaults
 data class ColumnPositions(
         val nationality : Int = -1,
