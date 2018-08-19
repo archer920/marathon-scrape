@@ -58,16 +58,6 @@ fun List<RunnerData>.saveDuplicates(fileName : String){
     printer.close()
 }
 
-fun createDriver() : RemoteWebDriver {
-    return try {
-        ChromeDriver()
-    } catch (e : Exception){
-        LoggerFactory.getLogger("createDriver()").error("Failed to start Chrome, falling back to firefox", e)
-
-        FirefoxDriver()
-    }
-}
-
 fun RemoteWebDriver.countTableRows(tableBody : By, logger: Logger) : Int {
     return try {
         findElement(tableBody).findElements(By.tagName("tr")).size
