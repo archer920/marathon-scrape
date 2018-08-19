@@ -8,3 +8,7 @@ interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
     fun countBySource(source : String) : Long
 }
+
+interface UrlPageRepository : JpaRepository<UrlPage, Long>{
+    fun findBySource(source : String) : List<UrlPage>
+}

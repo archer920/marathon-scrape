@@ -7,7 +7,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 import javax.annotation.PostConstruct
 
-//TODO: Debug
 @Component
 class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueue<RunnerData>,
                      @Autowired private val bostonMarathonScrape: BostonMarathonScrape){
@@ -455,16 +454,21 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
     }
 }
 
+//Verifying Results
 @Component
 class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                     @Autowired private val budapestScrape: BudapestScrape) {
+                       @Autowired private val urlPageRepository: UrlPageRepository,
+                       @Autowired private val budapestScrape: BudapestScrape) {
 
     private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
-    private val links = mutableMapOf<String, Int>()
+    private val links = mutableListOf<UrlPage>()
+    private lateinit var pages : List<UrlPage>
 
     @PostConstruct
     fun init(){
+        pages = urlPageRepository.findBySource(Sources.BUDAPEST)
+
         generateLinks(2014, 4300)
         generateLinks(2015, 5600)
         generateLinks(2016, 4950)
@@ -473,7 +477,8 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
 
     fun generateLinks(year : Int, max : Int){
         for(i in 0..max step 50){
-            links["http://results.runinbudapest.com/?start=$i&race=marathon&lt=results&verseny=${year}_spar_e&rajtszam=&nev=&nem=&egyesulet=&varos=&orszag=&min_ido=&max_ido=&min_hely=&max_hely=&oldal=50"] = 2014
+            val url = "http://results.runinbudapest.com/?start=$i&race=marathon&lt=results&verseny=${year}_spar_e&rajtszam=&nev=&nem=&egyesulet=&varos=&orszag=&min_ido=&max_ido=&min_hely=&max_hely=&oldal=50"
+            links.add(UrlPage(source = Sources.BUDAPEST, marathonYear = year, url = url))
         }
     }
 
@@ -485,14 +490,17 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
             val twelveColumns = ColumnPositions(place = 0, age = 2, nationality = 3, gender = 6, finishTime = 12)
             val elevenColumns = ColumnPositions(place = 0, age = 2, nationality = 3, gender = 6, finishTime = 11)
 
-            links.forEach { url, year ->
-                when(year){
-                    2014 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, twelveColumns))
-                    2015 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, elevenColumns))
-                    2016 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, elevenColumns))
-                    2017 -> threads.add(budapestScrape.scrape(runnerDataQueue, url, year, thirteenColumns))
+            links.forEach{ page ->
+                if(pages.none { page.url == it.url }){
+                    when(page.marathonYear){
+                        2014 -> threads.add(budapestScrape.scrape(runnerDataQueue, page, twelveColumns))
+                        2015 -> threads.add(budapestScrape.scrape(runnerDataQueue, page, elevenColumns))
+                        2016 -> threads.add(budapestScrape.scrape(runnerDataQueue, page, elevenColumns))
+                        2017 -> threads.add(budapestScrape.scrape(runnerDataQueue, page, thirteenColumns))
+                    }
+                } else {
+                    logger.info("Skipping already completed page: $page")
                 }
-
             }
 
             threads.toList()

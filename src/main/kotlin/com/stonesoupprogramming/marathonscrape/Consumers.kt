@@ -17,7 +17,8 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
     private val logger = LoggerFactory.getLogger(RunnerDataConsumer::class.java)
     var signalShutdown = false
 
-    var duplicates = mutableListOf<RunnerData>()
+    private var duplicates = mutableListOf<RunnerData>()
+    private var validationFailures = mutableListOf<RunnerData>()
 
     @Async
     fun insertValues(): CompletableFuture<String> {
@@ -47,7 +48,7 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
             logger.info("Inserted: $record")
         } catch (e: Exception) {
             when (e) {
-                is ConstraintViolationException -> logger.info("Validation Failure: $record")
+                is ConstraintViolationException -> saveValidationFailure(record)
                 is DataIntegrityViolationException -> saveDuplicate(record)
                 else -> logger.error("Exception: $record", e)
             }
@@ -56,11 +57,19 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
 
     @Synchronized
     fun saveDuplicate(runnerData: RunnerData){
+        logger.debug("Duplicate record: $runnerData")
         duplicates.add(runnerData)
+    }
+
+    @Synchronized
+    fun saveValidationFailure(runnerData : RunnerData){
+        logger.debug("Validation Failure: $runnerData")
+        validationFailures.add(runnerData)
     }
 
     @PreDestroy
     fun destroy(){
-        duplicates.saveDuplicates("Duplicates.csv")
+        duplicates.saveToCSV("Duplicates.csv")
+        validationFailures.saveToCSV("Validation_Failures.csv")
     }
 }

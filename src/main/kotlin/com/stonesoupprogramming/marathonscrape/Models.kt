@@ -37,23 +37,19 @@ data class RunnerData(
         var halfwayTime : String = "",
         var company : String = "",
         @field: Column(nullable=false) @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
-        @field: Column(nullable=false) @field: Min(1) var place : Int = 1,
-        @field: Column(unique = true, nullable = false) @field: NotBlank var raceYearPlace : String = "") {
-    override fun toString(): String {
-        return "RunnerData(place=$place, Year=$marathonYear, id=$id, source='$source', age='$age', gender='$gender', nationality='$nationality', finishTime='$finishTime', halfwayTime='$halfwayTime', company='$company', raceYearPlace=$raceYearPlace)"
-    }
+        @field: Column(nullable=false) @field: Min(1) var place : Int = 1) {
 
-    fun updateRaceYearPlace(){
-        raceYearPlace = "$source,$age,$gender,$nationality,$finishTime,$halfwayTime,$company,$marathonYear,$place"
+    override fun toString(): String {
+        return "RunnerData(place=$place, Year=$marathonYear, id=$id, source='$source', age='$age', gender='$gender', nationality='$nationality', finishTime='$finishTime', halfwayTime='$halfwayTime', company='$company')"
     }
 }
 
 @Entity
-data class MarathonGuideStatus(
+data class UrlPage(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-        @field: NotBlank @field: Column(nullable=false) var url : String = "",
-        @field: NotBlank @field: Column(nullable=false) var rangeOption : String = "",
-        @field: Column(nullable=false) @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014
+        @field: NotBlank var source : String = "",
+        @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
+        @field: NotBlank var url : String = ""
 )
 
 //-1 will trigger IndexOutBoundsException so these are ok defaults

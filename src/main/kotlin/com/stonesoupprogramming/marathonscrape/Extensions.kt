@@ -28,6 +28,7 @@ fun sleepRandom(){
     } catch (e : Exception) {}
 }
 
+@Deprecated("Each page of results should be processed atomically. Use List.insertRunnerData and then add the finished list to the Queue")
 fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age : String, finishTime : String, gender : String, year : Int, nationality : String, place : Int, source : String, company : String = "", halfwayTime : String = ""){
     val runnerData = RunnerData(
             source = source,
@@ -40,7 +41,6 @@ fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age : String, fin
             marathonYear = year,
             place = place
     )
-    runnerData.updateRaceYearPlace()
     put(runnerData)
     logger.info("Produced: $runnerData")
 }
@@ -57,7 +57,6 @@ fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age : String, finis
             marathonYear = year,
             place = place
     )
-    runnerData.updateRaceYearPlace()
     add(runnerData)
     logger.info("Produced: $runnerData")
 }
@@ -69,7 +68,7 @@ fun List<RunnerData>.writeToCsv(fileName : String){
     printer.close()
 }
 
-fun List<RunnerData>.saveDuplicates(fileName : String){
+fun List<RunnerData>.saveToCSV(fileName : String){
     val printer = CSVPrinter(FileWriter(fileName), CSVFormat.DEFAULT.withHeader("source, age, gender, nationality, finishTime, halfwayTime, company, marathonYear, place"))
     this.forEach { printer.printRecord(it.source, it.age, it.gender, it.nationality, it.finishTime, it.halfwayTime, it.company, it.marathonYear, it.place) }
     printer.close()

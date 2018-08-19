@@ -59,6 +59,8 @@ class DriverFactory {
             logger.info("Waiting on Permit")
             semaphore.acquire()
             logger.info("Permit Acquired")
+
+            sleepRandom()
             ChromeDriver()
         } catch (e : Exception){
             when(e){
@@ -83,6 +85,7 @@ class DriverFactory {
     }
 }
 
+//Complete
 @Component
 class MedtronicMarathonScraper(@Autowired private val driverFactory : DriverFactory,
                                @Autowired private val stateCodes: List<String>) {
@@ -91,8 +94,6 @@ class MedtronicMarathonScraper(@Autowired private val driverFactory : DriverFact
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         return try {
@@ -222,6 +223,7 @@ class MedtronicMarathonScraper(@Autowired private val driverFactory : DriverFact
     }
 }
 
+//TODO: Fixme
 @Component
 class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory) {
 
@@ -229,7 +231,6 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
-        sleepRandom()
         val driver = driverFactory.createDriver()
 
         return try {
@@ -301,7 +302,6 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
                     source = Sources.BERLIN,
                     nationality = nation
             )
-            runnerData.updateRaceYearPlace()
             queue.put(runnerData)
             logger.info("Produced $runnerData")
 
@@ -354,6 +354,7 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
     }
 }
 
+//Requires Verification
 @Component
 class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory) {
 
@@ -364,8 +365,6 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
         if (categoryIndex < 3 || categoryIndex > 14) {
             throw IllegalArgumentException("Must be between 3 and 14")
         }
-
-        sleepRandom()
 
         val driver = driverFactory.createDriver()
         driver.get("https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
@@ -425,7 +424,6 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
                     place = place,
                     source = Sources.VIENNA
             )
-            runnerData.updateRaceYearPlace()
 
             queue.put(runnerData)
             logger.info("Produced: $runnerData")
@@ -492,8 +490,6 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) 
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         try {
@@ -525,7 +521,6 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) 
                             gender = gender,
                             nationality = country,
                             finishTime = finishTime)
-                    runnerData.updateRaceYearPlace()
                     queue.put(runnerData)
                     logger.info("Produced: $runnerData")
                 }
@@ -565,6 +560,7 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) 
     }
 }
 
+//TODO: Fixme
 @Component
 class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory) {
 
@@ -572,8 +568,6 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int, gender: String): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         try {
@@ -599,8 +593,6 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
 
     @Async
     fun scrape2017(queue: BlockingQueue<RunnerData>, gender: String): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         try {
@@ -663,7 +655,6 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
                             source = Sources.CHICAGO,
                             marathonYear = year,
                             gender = gender)
-                    runnerData.updateRaceYearPlace()
                     queue.put(runnerData)
                     logger.info("Produced: $runnerData")
                 }
@@ -755,14 +746,13 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
     }
 }
 
-//Used for New York
+//TODO: Fixme
 @Component
 class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) {
 
     private val logger = LoggerFactory.getLogger(MarathonGuideScraper::class.java)
 
     fun findRangeOptionsForUrl(url: String): List<String> {
-        sleepRandom()
         val driver = driverFactory.createDriver()
 
         return try {
@@ -778,8 +768,6 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String, source: String, columnPositions: ColumnPositions, rangeOption: String): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         try {
@@ -864,7 +852,7 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
     }
 }
 
-//Used for LA and Disney
+//TODO: Fixme
 @Component
 class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val stateCodes: List<String>) {
@@ -873,8 +861,6 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, gender: String, source: String, columnPositions: ColumnPositions): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         try {
@@ -957,7 +943,6 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
                     nationality = "USA",
                     place = place,
                     source = Sources.LA)
-            runnerData.updateRaceYearPlace()
             queue.put(runnerData)
             logger.info("Produced: $runnerData")
         }
@@ -1033,8 +1018,6 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
         try {
@@ -1085,7 +1068,6 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
                     nationality = "USA",
                     place = place,
                     source = Sources.MARINES)
-            runnerData.updateRaceYearPlace()
             queue.put(runnerData)
             logger.info("Produced: $runnerData")
         } catch (e: Exception) {
@@ -1161,6 +1143,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory) {
     }
 }
 
+//Completed
 @Component
 class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
 
@@ -1168,8 +1151,6 @@ class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String): CompletableFuture<String> {
-        sleepRandom()
-
         val driver = driverFactory.createDriver()
 
 
@@ -1226,7 +1207,6 @@ class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
                     place = place,
                     source = Sources.SAN_FRANSCISO
             )
-            runnerData.updateRaceYearPlace()
             queue.put(runnerData)
             logger.info("Produced: $runnerData")
         } catch (e: Exception) {
@@ -1288,6 +1268,7 @@ class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
     }
 }
 
+//Ottawa: Requires Verification
 @Component
 class SportStatsScrape(@Autowired private val driverFactory: DriverFactory) {
 
@@ -1295,7 +1276,6 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory) {
 
     @Async
     fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, source: String, numPages: Int, columnPositions: ColumnPositions): CompletableFuture<String> {
-        sleepRandom()
         val driver = driverFactory.createDriver()
 
         return try {
@@ -1401,39 +1381,49 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory) {
     }
 }
 
+//Running
 @Component
-class BudapestScrape(@Autowired private val driverFactory: DriverFactory) {
+class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
+                     @Autowired private val urlPageRepository: UrlPageRepository) {
 
     private val logger = LoggerFactory.getLogger(BudapestScrape::class.java)
-    private val resultsPage = mutableListOf<RunnerData>()
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, columnPositions: ColumnPositions): CompletableFuture<String> {
-        sleepRandom() //TODO: Move this to driver factory
-
+    fun scrape(queue: BlockingQueue<RunnerData>, urlPage: UrlPage, columnPositions: ColumnPositions): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
+        val resultsPage = mutableListOf<RunnerData>()
 
         return try {
-            driver.get(url)
+            driver.get(urlPage.url)
 
             val numRows = driver.countTableRows(By.cssSelector("body > table:nth-child(7) > tbody:nth-child(1)"), logger)
             for (row in 2 until numRows) {
-                processRow(driver, row, year, columnPositions)
+                processRow(driver, resultsPage, row, urlPage.marathonYear, columnPositions)
             }
 
-            queue.addAll(resultsPage)
-            logger.info("Successfully scraped $url")
+            try {
+                urlPageRepository.save(urlPage)
+                addResultsToQueue(queue, resultsPage)
+                logger.info("Successfully scraped: $urlPage")
+            } catch (e : Exception){
+                logger.error("Failed to record page: $urlPage", e)
+            }
 
             successResult()
         } catch (e: Exception) {
-            logger.error("Failed to scrape $year, $url", e)
+            logger.error("Failed to scrape $urlPage", e)
             failResult()
         } finally {
             driverFactory.destroy(driver)
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, row: Int, year: Int, columnPositions: ColumnPositions) {
+    @Synchronized
+    private fun addResultsToQueue(queue: BlockingQueue<RunnerData>, resultsPage : MutableList<RunnerData>){
+        queue.addAll(resultsPage)
+    }
+
+    private fun processRow(driver: RemoteWebDriver, resultsPage : MutableList<RunnerData>, row: Int, year: Int, columnPositions: ColumnPositions) {
         try {
             val cssSelector = "body > table:nth-child(7) > tbody:nth-child(1)"
             val place = try {
@@ -1457,6 +1447,7 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory) {
 
         } catch (e: Exception) {
             logger.error("Failed to process row=$row", e)
+            throw e
         }
     }
 }

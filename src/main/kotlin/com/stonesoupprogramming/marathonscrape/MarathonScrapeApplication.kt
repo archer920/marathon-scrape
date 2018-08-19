@@ -76,107 +76,118 @@ class Application(
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
+    object Args {
+        const val BUDAPEST = "--budapest"
+        const val OTTAWA = "--ottawa"
+        const val SAN_FRANSCISCO = "--san-francisco"
+        const val MEDTRONIC = "--medtronic"
+        const val MARINES = "--marine-corps"
+        const val VIENNA = "--vienna"
+        const val BERLIN = "--berlin"
+        const val BOSTON = "--boston"
+        const val CHICAGO = "--chicago"
+        const val NEW_YORK = "--new-york"
+        const val LOS_ANGELES = "--los-angeles"
+        const val DISNEY = "--disney"
+    }
     override fun run(vararg args: String) {
         val consumer = runnerDataConsumer.insertValues()
         val status = statusReporter.reportStatus()
 
-        val threads = mutableListOf<CompletableFuture<String>>()
-
-        if(args.contains("--Budapest-Scrape")){
-            threads.addAll(budapestProducer.process())
-        }
-        if(args.contains("--Write-Budapest")){
-            writeFile(Sources.BUDAPEST, 2014, 2017)
-        }
-
-        if(args.contains("--Ottawa-Scrape")){
-            threads.addAll(ottawaMarathonProducer.process())
-        }
-        if(args.contains("--Write-Ottawa")){
-            writeFile(Sources.OTTAWA, 2014, 2018)
-        }
-
-        if(args.contains("--San-Francisco-Scrape")){
-            threads.addAll(sanFranciscoProducer.process())
-        }
-        if(args.contains("--Write-San-Francisco")){
-            writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
-        }
-
-        if(args.contains("--Medtronic-Scrape")){
-            threads.addAll(medtronicProducer.process())
-        }
-        if(args.contains("--Write-Medtronic")){
-            writeFile(Sources.MEDTRONIC, 2014, 2017)
-        }
-
-        if(args.contains("--Marine-Corps-Scrape")){
-            threads.addAll(marineCorpsProducer.process())
-        }
-        if(args.contains("--Write-Marine-Corps")){
-            writeFile(Sources.MARINES, 2014, 2017)
-        }
-
-        if(args.contains("--Vienna-Marathon-Scrape")){
-            threads.addAll(viennaProducer.process())
-        }
-        if(args.contains("--Write-Vienna")){
-            writeFile(Sources.VIENNA, 2014, 2018)
-        }
-
-        if(args.contains("--Berlin-Scrape")){
-            threads.addAll(berlinProducer.process())
-        }
-        if(args.contains("--Write-Berlin")){
-            writeFile(Sources.BERLIN, 2014, 2018)
-        }
-
-        if(args.contains("--Boston-Marathon-Scrape")){
-            threads.addAll(bostonProducer.process())
-        }
-        if(args.contains("--Write-Boston-Marathon")){
-            writeFile(Sources.BOSTON, 2014, 2018)
-        }
-
-        if(args.contains("--Chicago-Marathon-Scrape")){
-            threads.addAll(chicagoProducer.process())
-        }
-        if(args.contains("--Write-Chicago-Marathon")){
-            writeFile(Sources.CHICAGO, 2014, 2017)
-        }
-
-        if(args.contains("--Ny-Marathon-Scrape")){
-            threads.addAll(nyMarathonProducer.process())
-        }
-        if(args.contains("--Write-Ny-Marathon")){
-            writeFile(Sources.NY_MARATHON_GUIDE, 2014, 2017)
-        }
-
-        if(args.contains("--La-Marathon-Scrape")){
-            threads.addAll(laMarathonProducer.process())
-        }
-        if(args.contains("--Write-LA-Marathon")){
-            writeFile(Sources.LA, 2014, 2017)
-        }
-
-        if(args.contains("--Disney-Scrape")){
-            threads.addAll(disneyMarathonProducer.process())
-        }
-        if(args.contains("--Write-Disney")){
-            writeFile(Sources.MEDTRONIC, 2014, 2018)
-        }
-
-        CompletableFuture.allOf(*threads.toTypedArray()).join()
+        process(*args)
 
         this.runnerDataConsumer.signalShutdown = true
         this.statusReporter.shutdown = true
 
         CompletableFuture.allOf(status, consumer)
+        writeCompleted(*args)
 
         println("Press any key to quit")
         readLine()
 
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
+    }
+
+    private fun process(vararg args : String){
+        val threads = mutableListOf<CompletableFuture<String>>()
+
+        if(args.contains(Args.BUDAPEST)){
+            threads.addAll(budapestProducer.process())
+        }
+        if(args.contains(Args.DISNEY)){
+            threads.addAll(disneyMarathonProducer.process())
+        }
+        if(args.contains(Args.LOS_ANGELES)){
+            threads.addAll(laMarathonProducer.process())
+        }
+        if(args.contains(Args.NEW_YORK)){
+            threads.addAll(nyMarathonProducer.process())
+        }
+        if(args.contains(Args.CHICAGO)){
+            threads.addAll(chicagoProducer.process())
+        }
+        if(args.contains(Args.BOSTON)){
+            threads.addAll(bostonProducer.process())
+        }
+        if(args.contains(Args.BERLIN)){
+            threads.addAll(berlinProducer.process())
+        }
+        if(args.contains(Args.VIENNA)){
+            threads.addAll(viennaProducer.process())
+        }
+        if(args.contains(Args.MARINES)){
+            threads.addAll(marineCorpsProducer.process())
+        }
+        if(args.contains(Args.MEDTRONIC)){
+            threads.addAll(medtronicProducer.process())
+        }
+        if(args.contains(Args.SAN_FRANSCISCO)){
+            threads.addAll(sanFranciscoProducer.process())
+        }
+        if(args.contains(Args.OTTAWA)){
+            threads.addAll(ottawaMarathonProducer.process())
+        }
+
+        CompletableFuture.allOf(*threads.toTypedArray()).join()
+    }
+
+    private fun writeCompleted(vararg args: String){
+        if(args.contains(Args.BUDAPEST)){
+            writeFile(Sources.BUDAPEST, 2014, 2017)
+        }
+        if(args.contains(Args.OTTAWA)){
+            writeFile(Sources.OTTAWA, 2014, 2018)
+        }
+        if(args.contains(Args.SAN_FRANSCISCO)){
+            writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
+        }
+        if(args.contains(Args.MEDTRONIC)){
+            writeFile(Sources.MEDTRONIC, 2014, 2017)
+        }
+        if(args.contains(Args.MARINES)){
+            writeFile(Sources.MARINES, 2014, 2017)
+        }
+        if(args.contains(Args.VIENNA)){
+            writeFile(Sources.VIENNA, 2014, 2018)
+        }
+        if(args.contains(Args.BERLIN)){
+            writeFile(Sources.BERLIN, 2014, 2018)
+        }
+        if(args.contains(Args.BOSTON)){
+            writeFile(Sources.BOSTON, 2014, 2018)
+        }
+        if(args.contains(Args.CHICAGO)){
+            writeFile(Sources.CHICAGO, 2014, 2017)
+        }
+        if(args.contains(Args.NEW_YORK)){
+            writeFile(Sources.NY_MARATHON_GUIDE, 2014, 2017)
+        }
+        if(args.contains(Args.LOS_ANGELES)){
+            writeFile(Sources.LA, 2014, 2017)
+        }
+        if(args.contains(Args.DISNEY)){
+            writeFile(Sources.DISNEY, 2014, 2018)
+        }
     }
 
     private fun writeFile(source : String, startYear : Int, endYear : Int){
