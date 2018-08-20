@@ -102,8 +102,7 @@ class Application(
         CompletableFuture.allOf(status, consumer)
         writeCompleted(*args)
 
-        println("Press any key to quit")
-        readLine()
+        logger.info("Exiting...")
 
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }

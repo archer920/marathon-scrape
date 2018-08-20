@@ -301,9 +301,9 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
         return try {
             logger.info("Starting Marine Corps Scrape")
             //threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2014, lastPageNum2014, 197))
-            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2015, lastPageNum2015, 232))
+            //threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2015, lastPageNum2015, 232))
             threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2016, lastPageNum2016, 197))
-            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2017, lastPageNum2017, 201))
+            //threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2017, lastPageNum2017, 201))
 
             threads.toList()
         } catch (e : Exception){

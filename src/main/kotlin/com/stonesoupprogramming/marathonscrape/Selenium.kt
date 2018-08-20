@@ -1025,15 +1025,30 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, resultPage : MutableList<RunnerData>, year: Int) {
+    private fun processTable(driver: RemoteWebDriver, resultPage : MutableList<RunnerData>, year: Int, attempt : Int = 0, maxAttempts : Int = 60) {
         try {
+            val tempResultsPage = mutableListOf<RunnerData>()
             val numRows = driver.countTableRows("#xact_results_agegroup_results > tbody".toCss(), logger)
             for (row in 0 until numRows) {
-                processRow(driver, row, resultPage, year)
+                processRow(driver, row, tempResultsPage, year)
             }
+            resultPage.addAll(tempResultsPage)
         } catch (e: Exception) {
-            logger.error("Failed to process the table", e)
-            throw e
+            when(e){
+                is IndexOutOfBoundsException -> {
+                    Thread.sleep(1000)
+                    if(attempt < maxAttempts){
+                        processTable(driver, resultPage, year, attempt + 1)
+                    } else {
+                        logger.error("Unable to process on page", e)
+                        throw e
+                    }
+                }
+                else -> {
+                    logger.error("Failed to process the table", e)
+                    throw e
+                }
+            }
         }
     }
 
