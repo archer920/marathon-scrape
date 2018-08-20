@@ -20,33 +20,7 @@ import java.util.concurrent.Semaphore
 
 const val UNAVAILABLE = "Unavailable"
 
-private fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
-    Select(this.findElement(selector)).selectByVisibleText(value)
-}
 
-private fun RemoteWebDriver.waitUntilClickable(selector: By, timeout: Long = 60) {
-    WebDriverWait(this, timeout).until(ExpectedConditions.elementToBeClickable(selector))
-}
-
-private fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 60) {
-    WebDriverWait(this, timeout).until(ExpectedConditions.visibilityOfElementLocated(selector))
-}
-
-private fun RemoteWebDriver.scrollIntoView(selector: By) {
-    val elem = this.findElement(selector)
-    this.executeScript("arguments[0].scrollIntoView(true);", elem)
-    this.waitUntilVisible(selector)
-}
-
-private fun WebElement.scrollIntoView(driver: RemoteWebDriver) {
-    driver.executeScript("arguments[0].scrollIntoView(true);", this)
-    this.waitUntilVisible(driver)
-}
-
-private fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut: Long = 60) {
-    WebDriverWait(driver, timeOut).until(ExpectedConditions.visibilityOf(this))
-
-}
 
 @Component
 class DriverFactory {
@@ -852,7 +826,6 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
     }
 }
 
-//TODO: Fixme
 @Component
 class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val urlPageRepository: UrlPageRepository,
@@ -988,17 +961,6 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-
-    fun numRows(driver: RemoteWebDriver): Int {
-        try {
-            return driver.findElementByCssSelector("#f1 > p:nth-child(13) > table > tbody")
-                    .findElements(By.tagName("tr")).size
-        } catch (e: Exception) {
-            logger.error("Unable to find the number of rows", e)
-            throw e
-        }
-    }
-
     fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
         try {
             return driver.findElementByCssSelector("#f1 > p:nth-child(13) > table > tbody")
@@ -1011,7 +973,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
     }
 }
 
-//TODO: FIXME
+//Processing
 @Component
 class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val pagedResultsRepository: PagedResultsRepository) {
@@ -1019,15 +981,14 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
     private val logger = LoggerFactory.getLogger(MarineCorpsScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, startPage : Int): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, startPage : Int, endPage : Int): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
         val resultsPage = mutableListOf<RunnerData>()
-        var pageNum = 0
 
         try {
             processForm(driver, year)
 
-            while(hasNextPage(driver)){
+            for(pageNum in 1 .. endPage){
                 if(pageNum > startPage){
                     processTable(driver, resultsPage, year)
                     val numberedPage = PagedResults(null, Sources.MARINES, year, "http://www.marinemarathon.com/results/marathon", pageNum)
@@ -1040,8 +1001,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
                         logger.error("Failed to record page: $numberedPage", e)
                     }
                 }
-                advancePage(driver)
-                pageNum++
+                driver.click("#xact_results_agegroup_results_next".toCss(), logger)
             }
 
             return CompletableFuture.completedFuture("Success")
@@ -1085,17 +1045,6 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
             logger.info("Produced: $runnerData")
         } catch (e: Exception) {
             logger.error("Failed to scrape row $row", e)
-            throw e
-        }
-    }
-
-    private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        try {
-            return driver.findElementByCssSelector("")
-                    .findElements(By.tagName("tr"))[row]
-                    .findElements(By.tagName("td"))[cell].text
-        } catch (e: Exception) {
-            logger.error("Failed to get cell value for row=$row, cell=$cell", e)
             throw e
         }
     }

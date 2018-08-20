@@ -162,19 +162,36 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
     private val logger = LoggerFactory.getLogger(LaMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
+
     private lateinit var completedPages : MutableList<UrlPage>
+    private val mensLinks = mutableListOf<UrlPage>()
+    private val womensLinks = mutableListOf<UrlPage>()
 
     @PostConstruct
     fun init(){
         completedPages = urlPageRepository.findAll()
+
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 0, 14, 2017))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 15, 29, 2017))
+
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 0, 14, 2016))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 15, 29, 2016))
+
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 2, 16, 2015))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 17, 31, 2015))
+    }
+
+    private fun buildUrlPages(url : String, start : Int, end : Int, year: Int) : List<UrlPage>{
+        val urlPages = mutableListOf<UrlPage>()
+        for(i in start .. end){
+            urlPages.add(UrlPage(source = Sources.LA, marathonYear = year, url = url + i))
+        }
+        return urlPages.toList()
     }
 
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Los Angeles Scrape")
-
-            val mensLinks = mutableListOf<UrlPage>()
-            val womensLinks = mutableListOf<UrlPage>()
 
             createThreads(mensLinks, "M")
             createThreads(womensLinks, "W")
@@ -200,7 +217,6 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     }
 }
 
-//TODO: Debug
 @Component
 class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                           @Autowired private val pagedResultsRepository: PagedResultsRepository,
@@ -225,10 +241,10 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Marine Corps Scrape")
-            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2014, lastPageNum2014))
-            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2015, lastPageNum2015))
-            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2016, lastPageNum2016))
-            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2017, lastPageNum2017))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2014, lastPageNum2014, 197))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2015, lastPageNum2015, 232))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2016, lastPageNum2016, 197))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2017, lastPageNum2017, 201))
 
             threads.toList()
         } catch (e : Exception){
