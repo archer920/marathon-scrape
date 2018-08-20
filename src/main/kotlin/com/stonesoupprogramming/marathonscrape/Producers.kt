@@ -1,6 +1,5 @@
 package com.stonesoupprogramming.marathonscrape
 
-import com.sun.tools.javah.Gen
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -10,18 +9,37 @@ import javax.annotation.PostConstruct
 
 @Component
 class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val pagedResultsRepository: PagedResultsRepository,
                      @Autowired private val bostonMarathonScrape: BostonMarathonScrape){
 
     private val logger = LoggerFactory.getLogger(BostonProducer::class.java)
-    val threads = mutableListOf<CompletableFuture<String>>()
+
+    private val threads = mutableListOf<CompletableFuture<String>>()
+    private var lastPageNum2014 : Int = 0
+    private var lastPageNum2015 : Int = 0
+    private var lastPageNum2016 : Int = 0
+    private var lastPageNum2017 : Int = 0
+    private var lastPageNum2018 : Int = 0
+
+    @PostConstruct
+    private fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2018).maxBy { it.pageNum }?.pageNum ?: 0
+    }
 
     fun process(): List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Boston Marathon")
 
-            listOf(2014, 2015, 2016, 2017, 2018).forEach {
-                threads.add(bostonMarathonScrape.scrape(runnerDataQueue, it))
-            }
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2014, 2014))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2015, 2015))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2016, 2016))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2017, 2017))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2018, 2018))
+
             threads.toList()
         } catch (e : Exception){
             logger.error("Failed to start Boston", e)
