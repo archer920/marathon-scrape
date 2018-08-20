@@ -836,7 +836,6 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
     fun scrape(queue: BlockingQueue<RunnerData>, url : String, year : Int, source : String, startPage: Int, endPage: Int) : CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
-
         try {
             driver.get(url)
 
