@@ -1294,7 +1294,7 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory) {
     }
 }
 
-//Running
+//Completed
 @Component
 class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
                      @Autowired private val urlPageRepository: UrlPageRepository) {

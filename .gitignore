@@ -1,0 +1,13 @@
+.idea
+target
+.idea/compiler.xml
+.idea/dataSources.local.xml
+.idea/dataSources.xml
+.idea/dataSources/68a2a839-1fa9-4c66-8b76-1c1e5e7460c9.xml
+.idea/encodings.xml
+*.iml
+*.log
+*.gz
+*.log
+*.log
+*.csv
