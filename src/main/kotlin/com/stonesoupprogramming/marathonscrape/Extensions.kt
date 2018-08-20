@@ -4,9 +4,13 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.openqa.selenium.By
 import org.openqa.selenium.StaleElementReferenceException
+import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
+import org.openqa.selenium.support.ui.ExpectedConditions
+import org.openqa.selenium.support.ui.Select
+import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.FileWriter
@@ -84,7 +88,7 @@ fun RemoteWebDriver.countTableRows(tableBody : By, logger: Logger) : Int {
     }
 }
 
-fun RemoteWebDriver.findCellValue(tableBody: By, row : Int, cell : Int, logger: Logger, attemptNum : Int = 0, giveUp : Int = 20) : String {
+fun RemoteWebDriver.findCellValue(tableBody: By, row : Int, cell : Int, logger: Logger, attemptNum : Int = 0, giveUp : Int = 100) : String {
     return try {
         findElement(tableBody).findElements(By.tagName("tr"))[row].findElements(By.tagName("td"))[cell].text
     } catch (e : Exception){
@@ -114,4 +118,41 @@ fun BlockingQueue<RunnerData>.addResultsPage(page : MutableList<RunnerData>){
 
 fun String.toCss() : By {
     return By.cssSelector(this)
+}
+
+fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
+    Select(this.findElement(selector)).selectByVisibleText(value)
+}
+
+fun RemoteWebDriver.waitUntilClickable(selector: By, timeout: Long = 60) {
+    WebDriverWait(this, timeout).until(ExpectedConditions.elementToBeClickable(selector))
+}
+
+fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 60) {
+    WebDriverWait(this, timeout).until(ExpectedConditions.visibilityOfElementLocated(selector))
+}
+
+fun RemoteWebDriver.scrollIntoView(selector: By) {
+    val elem = this.findElement(selector)
+    this.executeScript("arguments[0].scrollIntoView(true);", elem)
+    this.waitUntilVisible(selector)
+}
+
+fun WebElement.scrollIntoView(driver: RemoteWebDriver) {
+    driver.executeScript("arguments[0].scrollIntoView(true);", this)
+    this.waitUntilVisible(driver)
+}
+
+fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut: Long = 60) {
+    WebDriverWait(driver, timeOut).until(ExpectedConditions.visibilityOf(this))
+}
+
+fun RemoteWebDriver.click(element : By, logger: Logger){
+    try {
+        this.waitUntilClickable(element)
+        this.findElement(element).click()
+    } catch (e : Exception){
+        logger.error("Failed to click element", e)
+        throw e
+    }
 }
