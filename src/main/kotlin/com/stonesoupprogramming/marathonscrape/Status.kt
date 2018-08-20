@@ -41,7 +41,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
 
                 logger.printProgress("San Francisco", Sources.SAN_FRANSCISO, 6624, 6071, 6335, 6586, 5276)
                 logger.printProgress("Medtronic", Sources.MEDTRONIC, 8853, 8546, 8561, 7490)
-                logger.printProgress("Disney", Sources.DISNEY, 97025, 19235)
+                logger.printProgress("Disney", Sources.DISNEY, 19325, 20093, 19851, 17755, 20091)
                 logger.printProgress("Ottawa", Sources.OTTAWA, 5594, 4664, 4370, 4564)
                 logger.printProgress("Budapest", Sources.BUDAPEST, 4348, 5604, 4969, 5415)
 

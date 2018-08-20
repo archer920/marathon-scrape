@@ -1,6 +1,5 @@
 package com.stonesoupprogramming.marathonscrape
 
-import com.sun.tools.javah.Gen
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -166,7 +165,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     private val logger = LoggerFactory.getLogger(LaMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    private lateinit var completedPages : MutableList<UrlPage>
+    private lateinit var completedPages : List<UrlPage>
     private var lastPageNum2014 = 0
 
     private val mensLinks = mutableListOf<UrlPage>()
@@ -174,34 +173,26 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
     @PostConstruct
     fun init(){
-        completedPages = urlPageRepository.findAll()
+        completedPages = urlPageRepository.findBySource(Sources.LA)
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 0, 14, 2017))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 15, 29, 2017))
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 0, 14, 2017, Sources.LA))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 15, 29, 2017, Sources.LA))
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 0, 14, 2016))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 15, 29, 2016))
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 0, 14, 2016, Sources.LA))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 15, 29, 2016, Sources.LA))
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 2, 16, 2015))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 17, 31, 2015))
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=", 2, 16, 2015, Sources.LA))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=", 17, 31, 2015, Sources.LA))
 
         lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.LA, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-    }
-
-    private fun buildUrlPages(url : String, start : Int, end : Int, year: Int) : List<UrlPage>{
-        val urlPages = mutableListOf<UrlPage>()
-        for(i in start .. end){
-            urlPages.add(UrlPage(source = Sources.LA, marathonYear = year, url = url + i))
-        }
-        return urlPages.toList()
     }
 
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Los Angeles Scrape")
 
-            createThreads(mensLinks, "M")
-            createThreads(womensLinks, "W")
+            createThreads(mensLinks, Gender.MALE)
+            createThreads(womensLinks, Gender.FEMALE)
 
             threads.add(mtecResultScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2074/2014_LA_Marathon-ASICS_LA_Marathon", 2014, Sources.LA, lastPageNum2014, 43))
             threads.toList()
@@ -211,7 +202,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
         }
     }
 
-    private fun createThreads(links: MutableList<UrlPage>, gender: String) {
+    private fun createThreads(links: MutableList<UrlPage>, gender: Gender) {
         val columnInfo = ColumnPositions(place = 4, age = 3, finishTime = 15, nationality = 16, ageGender = -1)
 
         links.forEach{ page ->
@@ -389,61 +380,56 @@ class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQu
 
 @Component
 class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                         @Autowired private val trackShackResults: TrackShackResults){
+                             @Autowired private val urlPageRepository : UrlPageRepository,
+                             @Autowired private val trackShackResults: TrackShackResults){
 
     private val logger = LoggerFactory.getLogger(DisneyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
+    private lateinit var completedPages : List<UrlPage>
+    private val mensLinks = mutableListOf<UrlPage>()
+    private val womensLinks = mutableListOf<UrlPage>()
+
+    @PostConstruct
+    fun init(){
+        completedPages = urlPageRepository.findBySource(Sources.DISNEY)
+    }
+
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Disney Scrape")
-            val mens2014 = mutableListOf<String>()
-            val mens2015 = mutableListOf<String>()
-            val mens2016 = mutableListOf<String>()
-            val mens2017 = mutableListOf<String>()
-            val mens2018 = mutableListOf<String>()
 
-            val womens2014 = mutableListOf<String>()
-            val womens2015 = mutableListOf<String>()
-            val womens2016 = mutableListOf<String>()
-            val womens2017 = mutableListOf<String>()
-            val womens2018 = mutableListOf<String>()
+            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2014, Sources.DISNEY))
+            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2015, Sources.DISNEY))
+            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2016, Sources.DISNEY))
+            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2017, Sources.DISNEY))
+            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2018, Sources.DISNEY))
 
-            for(i in 4..16){
-                mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=$i")
-                mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
-                mens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
-                mens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
-                mens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
-            }
+            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2014, Sources.DISNEY))
+            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2015, Sources.DISNEY))
+            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2016, Sources.DISNEY))
+            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2017, Sources.DISNEY))
+            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2018, Sources.DISNEY))
 
-            for(i in 17..29){
-                womens2014.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=N&Ind=$i")
-                womens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
-                womens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
-                womens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
-                womens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
-            }
+            createThreads(mensLinks, Gender.MALE)
+            createThreads(womensLinks, Gender.FEMALE)
 
-            val columnInfo = ColumnPositions(nationality = 12, finishTime = 11, age = 3, place = 4, ageGender = -1)
-
-//            mens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "M", Sources.DISNEY, columnInfo)) }
-//            mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.DISNEY, columnInfo)) }
-//            mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", Sources.DISNEY, columnInfo)) }
-//            mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", Sources.DISNEY, columnInfo)) }
-//            mens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2018, "M", Sources.DISNEY, columnInfo)) }
-//
-//            womens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "W", Sources.DISNEY, columnInfo)) }
-//            womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", Sources.DISNEY, columnInfo)) }
-//            womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", Sources.DISNEY, columnInfo)) }
-//            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
-//            womens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
-
-            //threads.add(trackShackResults.scrape2014(runnerDataQueue))
             threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
             emptyList()
+        }
+    }
+
+    private fun createThreads(links: List<UrlPage>, gender: Gender){
+        val columnInfo = ColumnPositions(nationality = 12, finishTime = 11, age = 3, place = 4, ageGender = -1)
+
+        links.forEach{ page ->
+            if(completedPages.none { page.url == it.url }){
+                threads.add(trackShackResults.scrape(runnerDataQueue, page, gender, columnInfo ))
+            } else {
+                logger.info("Skipping already completed page: $page")
+            }
         }
     }
 }

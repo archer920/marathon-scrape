@@ -26,7 +26,7 @@ const val UNAVAILABLE = "Unavailable"
 class DriverFactory {
 
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
-    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors() - 2)
+    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
 
     fun createDriver() : RemoteWebDriver {
         return try {
@@ -902,7 +902,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
     private val logger = LoggerFactory.getLogger(TrackShackResults::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, page: UrlPage, gender : String, columnPositions: ColumnPositions): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, page: UrlPage, gender : Gender, columnPositions: ColumnPositions): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
@@ -921,7 +921,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
                 nationality = stateCodes.toCountry(nationality)
                 val finishTime = driver.findCellValue(tbody.toCss(), row, columnPositions.finishTime, logger)
 
-                resultsPage.insertRunnerData(logger, age, finishTime, gender, page.marathonYear, nationality, place, page.source)
+                resultsPage.insertRunnerData(logger, age, finishTime, gender.code, page.marathonYear, nationality, place, page.source)
             }
 
             page.markComplete(urlPageRepository, queue, resultsPage, logger)

@@ -207,3 +207,10 @@ fun RemoteWebDriver.click(element: By, logger: Logger) {
     }
 }
 
+fun buildUrlPages(url : String, start : Int, end : Int, year : Int, source : String) : List<UrlPage>{
+    val pages = mutableListOf<UrlPage>()
+    for(i in start .. end){
+        pages.add(UrlPage(source = source, marathonYear = year, url = url + i))
+    }
+    return pages.toList()
+}
