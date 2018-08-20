@@ -160,6 +160,16 @@ fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, qu
     }
 }
 
+fun GenderPagedResults.markComplete(genderPagedResultsRepository: GenderPagedResultsRepository, queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger : Logger){
+    try {
+        genderPagedResultsRepository.save(this)
+        queue.addResultsPage(resultsPage)
+        logger.info(("Successfully scraped: $this"))
+    } catch (e : Exception){
+        logger.error("Failed to mark complete: $this)")
+    }
+}
+
 fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
     Select(this.findElement(selector)).selectByVisibleText(value)
 }

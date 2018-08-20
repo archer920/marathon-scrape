@@ -4,6 +4,7 @@ import javax.persistence.*
 import javax.validation.constraints.Max
 import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 object Sources {
     const val BERLIN="Berlin Marathon"
@@ -23,7 +24,8 @@ object Sources {
 
 enum class Gender(val code : String){
     MALE("M"),
-    FEMALE("W")
+    FEMALE("W"),
+    UNASSIGNED("U")
 }
 
 @Entity
@@ -59,6 +61,15 @@ data class PagedResults(
         @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
         @field: NotBlank var url : String = "",
         @field: Min(0) var pageNum: Int = 0)
+
+@Entity
+data class GenderPagedResults(
+        @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
+        @field: NotBlank var source : String = "",
+        @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
+        @field: NotBlank var url : String = "",
+        @field: Min(0) var pageNum: Int = 0,
+        @field: NotNull var gender : Gender = Gender.UNASSIGNED)
 
 //-1 will trigger IndexOutBoundsException so these are ok defaults
 data class ColumnPositions(

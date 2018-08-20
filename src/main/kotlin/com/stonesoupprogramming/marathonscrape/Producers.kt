@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.sun.tools.javah.Gen
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -311,24 +312,53 @@ class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
 
 @Component
 class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val genderPagedResultsRepository: GenderPagedResultsRepository,
                      @Autowired private val viennaMarathonScraper: ViennaMarathonScraper) {
 
     private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
+    private lateinit var completedPages : List<GenderPagedResults>
+
+    @PostConstruct
+    fun init(){
+        completedPages = genderPagedResultsRepository.findBySource(Sources.VIENNA)
+    }
+
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Vienna Scrape")
-            for (i in 3..14){
-                for(year in 2014..2018){
-                    threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, Gender.MALE, i))
-                    threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, Gender.FEMALE, i))
-                }
-            }
+            buildThreads(2014, Gender.FEMALE, 4) //1000-1499
+            buildThreads(2014, Gender.MALE, 12) //5000-5499
+
+            buildThreads(2015, Gender.FEMALE, 4)
+            buildThreads(2015, Gender.MALE, 11) //4500-4999
+
+            buildThreads(2016, Gender.FEMALE, 4)
+            buildThreads(2016, Gender.MALE, 12)
+
+            buildThreads(2017, Gender.FEMALE, 4)
+            buildThreads(2017, Gender.MALE, 11)
+
+            buildThreads(2018, Gender.FEMALE, 4)
+            buildThreads(2018, Gender.MALE, 11)
+
             threads.toList()
         } catch (e : Exception){
             logger.error("Berlin Marathon failed", e)
             emptyList()
+        }
+    }
+
+    private fun buildThreads(year : Int, gender: Gender, maxCategory: Int){
+        for(i in 3..maxCategory){
+            if(completedPages.none { page -> page.pageNum == i &&
+                            page.marathonYear == year && page.gender == gender}){
+                threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, gender, i))
+            } else {
+                logger.info("Skipping completed: page=$i, year=$year, gender=$gender")
+            }
+
         }
     }
 }
