@@ -4,11 +4,8 @@ import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.openqa.selenium.By
 import org.openqa.selenium.StaleElementReferenceException
-import org.openqa.selenium.chrome.ChromeDriver
-import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.io.FileWriter
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
@@ -114,4 +111,22 @@ fun BlockingQueue<RunnerData>.addResultsPage(page : MutableList<RunnerData>){
 
 fun String.toCss() : By {
     return By.cssSelector(this)
+}
+
+fun List<String>.toCountry(code : String) : String {
+    return if(this.contains(code)){
+        "USA"
+    } else {
+        code
+    }
+}
+
+fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQueue<RunnerData>, resultsPage : MutableList<RunnerData>, logger: Logger){
+    try {
+        urlPageRepository.save(this)
+        queue.addResultsPage(resultsPage)
+        logger.info("Successfully scraped: $this")
+    } catch (e : Exception){
+        logger.error("Failed to mark complete: $this")
+    }
 }

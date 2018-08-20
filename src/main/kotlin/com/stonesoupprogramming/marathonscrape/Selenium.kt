@@ -855,39 +855,39 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
 //TODO: Fixme
 @Component
 class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
+                        @Autowired private val urlPageRepository: UrlPageRepository,
                         @Autowired private val stateCodes: List<String>) {
 
     private val logger = LoggerFactory.getLogger(TrackShackResults::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, gender: String, source: String, columnPositions: ColumnPositions): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, page: UrlPage, gender : String, columnPositions: ColumnPositions): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
-            driver.get(url)
+            driver.get(page.url)
             driver.waitUntilVisible(By.cssSelector("#f1 > p:nth-child(13) > table"))
 
-            for (row in 2 until numRows(driver)) {
-                val place = findCellValue(driver, row, columnPositions.place).toInt()
-                val age = findCellValue(driver, row, columnPositions.age)
-                var nationality = findCellValue(driver, row, columnPositions.nationality).substringAfterLast(",").trim()
-                if (stateCodes.contains(nationality)) {
-                    nationality = "USA"
-                }
-                val finishTime = findCellValue(driver, row, columnPositions.finishTime)
-                queue.insertRunnerData(
-                        logger = logger,
-                        place = place,
-                        age = age,
-                        nationality = nationality,
-                        finishTime = finishTime,
-                        year = year,
-                        source = source,
-                        gender = gender)
+            val resultsPage = mutableListOf<RunnerData>()
+            val rows = driver.countTableRows("#f1 > p:nth-child(13) > table > tbody".toCss(), logger)
+
+            for (row in 2 until rows) {
+                val tbody = "#f1 > p:nth-child(13) > table > tbody"
+
+                val place = driver.findCellValue(tbody.toCss(), row, columnPositions.place, logger).toInt()
+                val age = driver.findCellValue(tbody.toCss(), row, columnPositions.age, logger)
+                var nationality = driver.findCellValue(tbody.toCss(), row, columnPositions.nationality, logger).substringAfterLast(",").trim()
+                nationality = stateCodes.toCountry(nationality)
+                val finishTime = driver.findCellValue(tbody.toCss(), row, columnPositions.finishTime, logger)
+
+                resultsPage.insertRunnerData(logger, age, finishTime, gender, page.marathonYear, nationality, place, page.source)
             }
+
+            page.markComplete(urlPageRepository, queue, resultsPage, logger)
+
             return successResult()
         } catch (e: Exception) {
-            logger.error("Unable to scrape $url")
+            logger.error("Unable to scrape: $page")
             return failResult()
         } finally {
             driverFactory.destroy(driver)
