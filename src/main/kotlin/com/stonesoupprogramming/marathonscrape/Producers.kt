@@ -399,17 +399,20 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
         return try {
             logger.info("Starting Disney Scrape")
 
-            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2014, Sources.DISNEY))
-            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2015, Sources.DISNEY))
-            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2016, Sources.DISNEY))
-            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2017, Sources.DISNEY))
-            mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",4, 16, 2018, Sources.DISNEY))
+            buildMens2014()
+            buildWomens2014()
 
-            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2014, Sources.DISNEY))
-            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2015, Sources.DISNEY))
-            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2016, Sources.DISNEY))
-            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2017, Sources.DISNEY))
-            womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=",17, 29, 2018, Sources.DISNEY))
+            buildMens2015()
+            buildWomens2015()
+
+            buildMens2016()
+            buildWomens2016()
+
+            buildMens2017()
+            buildWomens2017()
+
+            buildMens2018()
+            buildWomens2018()
 
             createThreads(mensLinks, Gender.MALE)
             createThreads(womensLinks, Gender.FEMALE)
@@ -419,6 +422,163 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
             logger.error("Los Angelas Marathon Failed", e)
             emptyList()
         }
+    }
+
+    private fun buildWomens2018() {
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=N&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=O&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=P&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=Q&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=R&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=S&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=T&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=U&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=V&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=W&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=X&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=Y&Ind=28"))
+    }
+
+    private fun buildMens2018() {
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=C&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=D&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=E&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=F&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=G&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=H&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=I&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=J&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=K&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=L&Ind=14"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=LA&Ind=15"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2018, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=LB&Ind=16"))
+    }
+
+    private fun buildWomens2017() {
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=M&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=N&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=O&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=P&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=Q&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=R&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=S&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=T&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=U&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=V&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=W&Ind=28"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=X&Ind=29"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=Y&Ind=30"))
+    }
+
+    private fun buildMens2017() {
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=B&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=C&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=D&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=E&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=F&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=G&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=H&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=I&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=J&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=K&Ind=14"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=L&Ind=15"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=LA&Ind=16"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2017, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=LB&Ind=17"))
+    }
+
+    private fun buildWomens2016() {
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=M&Ind=16"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=N&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=O&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=P&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=Q&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=R&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=S&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=T&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=U&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=V&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=W&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=X&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=Y&Ind=28"))
+    }
+
+    private fun buildMens2016() {
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=C&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=D&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=E&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=F&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=G&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=H&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=I&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=J&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=K&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=L&Ind=14"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2016, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=LA&Ind=15"))
+    }
+
+    private fun buildWomens2015() {
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=M&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=N&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=O&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=P&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=Q&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=R&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=S&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=T&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=U&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=V&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=W&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=X&Ind=28"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=Y&Ind=29"))
+    }
+
+    private fun buildMens2015() {
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=C&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=D&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=E&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=F&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=G&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=H&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=I&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=J&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=K&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=L&Ind=14"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=LA&Ind=15"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2015, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=LB&Ind=16"))
+    }
+
+    private fun buildWomens2014() {
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=N&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=O&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=P&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=Q&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=R&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=S&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=T&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=U&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=V&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=W&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=X&Ind=27"))
+    }
+
+    private fun buildMens2014() {
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=B&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=C&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=D&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=E&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=F&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=G&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=H&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=I&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=J&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=K&Ind=14"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=L&Ind=15"))
+        mensLinks.add(UrlPage(source = Sources.DISNEY, marathonYear = 2014, url = "https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=LA&Ind=16"))
     }
 
     private fun createThreads(links: List<UrlPage>, gender: Gender){
