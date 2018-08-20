@@ -275,7 +275,6 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     }
 }
 
-//TODO: Debug
 @Component
 class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                           @Autowired private val pagedResultsRepository: PagedResultsRepository,
@@ -300,10 +299,10 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Marine Corps Scrape")
-            //threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2014, lastPageNum2014, 197))
-            //threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2015, lastPageNum2015, 232))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2014, lastPageNum2014, 197))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2015, lastPageNum2015, 232))
             threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2016, lastPageNum2016, 197))
-            //threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2017, lastPageNum2017, 201))
+            threads.add(marineCorpsScrape.scrape(runnerDataQueue, 2017, lastPageNum2017, 201))
 
             threads.toList()
         } catch (e : Exception){

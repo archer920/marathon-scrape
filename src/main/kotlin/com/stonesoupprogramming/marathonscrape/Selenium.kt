@@ -985,7 +985,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
     }
 }
 
-//Processing
+//Verifying Results
 @Component
 class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val pagedResultsRepository: PagedResultsRepository) {
