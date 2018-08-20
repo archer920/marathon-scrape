@@ -102,8 +102,7 @@ class Application(
         CompletableFuture.allOf(status, consumer)
         writeCompleted(*args)
 
-        println("Press any key to quit")
-        readLine()
+        logger.info("Exiting...")
 
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
@@ -193,7 +192,7 @@ class Application(
     private fun writeFile(source : String, startYear : Int, endYear : Int){
         logger.info("Starting file export...")
         for(i in startYear..endYear){
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).distinctBy { runnerData: RunnerData -> runnerData.place }.writeToCsv("$source-$i.csv")
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
         }
         logger.info("Finished file export...")
     }

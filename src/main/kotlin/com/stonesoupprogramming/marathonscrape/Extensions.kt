@@ -3,6 +3,7 @@ package com.stonesoupprogramming.marathonscrape
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVPrinter
 import org.openqa.selenium.By
+import org.openqa.selenium.NoSuchElementException
 import org.openqa.selenium.StaleElementReferenceException
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -77,12 +78,25 @@ fun List<RunnerData>.saveToCSV(fileName: String) {
     printer.close()
 }
 
-fun RemoteWebDriver.countTableRows(tableBody: By, logger: Logger): Int {
+fun RemoteWebDriver.countTableRows(tableBody: By, logger: Logger, attemptNum : Int = 0, maxAttempts : Int = 60): Int {
     return try {
         findElement(tableBody).findElements(By.tagName("tr")).size
     } catch (e: Exception) {
-        logger.error("Failed to count table rows", e)
-        throw e
+        return when(e){
+            is NoSuchElementException -> {
+                if(attemptNum < maxAttempts){
+                    Thread.sleep(1000)
+                    countTableRows(tableBody, logger, attemptNum + 1, maxAttempts)
+                } else{
+                    logger.error("Giving up after reaching maximum attempts", e)
+                    throw e
+                }
+            }
+            else -> {
+                logger.error("Failed to count table rows", e)
+                throw e
+            }
+        }
     }
 }
 
@@ -133,6 +147,16 @@ fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQu
         logger.info("Successfully scraped: $this")
     } catch (e: Exception) {
         logger.error("Failed to mark complete: $this")
+    }
+}
+
+fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, queue : BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger: Logger){
+    try {
+        pagedResultsRepository.save(this)
+        queue.addResultsPage(resultsPage)
+        logger.info(("Successfully scraped: $this"))
+    } catch (e : Exception){
+        logger.error("Failed to mark complete: $this)")
     }
 }
 

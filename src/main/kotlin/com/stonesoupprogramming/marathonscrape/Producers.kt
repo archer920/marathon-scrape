@@ -158,12 +158,16 @@ class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
 @Component
 class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                          @Autowired private val urlPageRepository: UrlPageRepository,
+                         @Autowired private val pagedResultsRepository: PagedResultsRepository,
+                         @Autowired private val mtecResultScraper: MtecResultScraper,
                          @Autowired private val trackShackResults: TrackShackResults){
 
     private val logger = LoggerFactory.getLogger(LaMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
     private lateinit var completedPages : MutableList<UrlPage>
+    private var lastPageNum2014 = 0
+
     private val mensLinks = mutableListOf<UrlPage>()
     private val womensLinks = mutableListOf<UrlPage>()
 
@@ -179,6 +183,8 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
         mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 2, 16, 2015))
         womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 17, 31, 2015))
+
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.LA, 2014).maxBy { it.pageNum }?.pageNum ?: 0
     }
 
     private fun buildUrlPages(url : String, start : Int, end : Int, year: Int) : List<UrlPage>{
@@ -196,7 +202,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
             createThreads(mensLinks, "M")
             createThreads(womensLinks, "W")
 
-            threads.add(trackShackResults.scrape2014(runnerDataQueue))
+            threads.add(mtecResultScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2074/2014_LA_Marathon-ASICS_LA_Marathon", 2014, Sources.LA, lastPageNum2014, 43))
             threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
@@ -403,7 +409,7 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
 //            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
 //            womens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
 
-            threads.add(trackShackResults.scrape2014(runnerDataQueue))
+            //threads.add(trackShackResults.scrape2014(runnerDataQueue))
             threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
