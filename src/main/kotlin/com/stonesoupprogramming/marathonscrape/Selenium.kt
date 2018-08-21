@@ -464,7 +464,7 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
         val url = "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm"
         val driver = driverFactory.createDriver()
         var pageNum = 0
-        val nextButtonSelector = "input.submit_button:nth-child(2)"
+        val nextButtonSelector = "input[name=next]"
         val tbody = "td.tablegrid_list_item:nth-child(1) > table:nth-child(1) > tbody:nth-child(2)"
 
         try {
@@ -491,6 +491,7 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
                 }
 
                 PagedResults(source = Sources.BOSTON, marathonYear =  year, url = url, pageNum = pageNum)
+                        .markComplete(pagedResultsRepository, queue, resultsPage, logger)
                 pageNum++
                 jsDriver.clickElement(driver, nextButtonSelector)
             }
