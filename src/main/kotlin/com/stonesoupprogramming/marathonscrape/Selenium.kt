@@ -2,13 +2,9 @@ package com.stonesoupprogramming.marathonscrape
 
 import org.openqa.selenium.By
 import org.openqa.selenium.NoSuchElementException
-import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.support.ui.ExpectedConditions
-import org.openqa.selenium.support.ui.Select
-import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -19,8 +15,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
 
 const val UNAVAILABLE = "Unavailable"
-
-
 
 @Component
 class DriverFactory {
@@ -459,47 +453,47 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
 
 //TODO: FIXME
 @Component
-class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) {
+class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
+                           @Autowired private val pagedResultsRepository: PagedResultsRepository,
+                           @Autowired private val jsDriver: JsDriver) {
 
     private val logger = LoggerFactory.getLogger(BostonMarathonScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, startPage: Int, year: Int): CompletableFuture<String> {
+        val url = "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm"
         val driver = driverFactory.createDriver()
+        var pageNum = 0
+        val nextButtonSelector = "input[name=next]"
+        val tbody = "td.tablegrid_list_item:nth-child(1) > table:nth-child(1) > tbody:nth-child(2)"
 
         try {
             driver.get("http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
+
             driver.waitUntilClickable(By.cssSelector("select[name=RaceYearLowID"))
             driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearLowID]"), year.toString())
             driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearHighID]"), year.toString())
 
-            driver.scrollIntoView(By.className("submit_button"))
-            driver.findElementByCssSelector(".form_submit_pad > .submit_button").click()
+            jsDriver.clickElement(driver, "input.submit_button:nth-child(1)")
+            jsDriver.scrollToPage(driver, nextButtonSelector, startPage)
 
-            driver.waitUntilVisible(By.cssSelector("input[name=next]"))
+            while (jsDriver.elementIsPresent(driver, nextButtonSelector)) {
+                val resultsPage = mutableListOf<RunnerData>()
+                val tableRows = jsDriver.readTableRows(driver, tbody)
+                for (row in 0 until tableRows.size - 2 step 2){
+                    val age = tableRows[row][3].trim()
+                    val gender = tableRows[row][4].trim()
+                    val nationality = tableRows[row][7].trim()
+                    val place = tableRows[row + 1][1].split("/")[0].trim().toInt()
+                    val finishTime = tableRows[row + 1][5]
 
-            while (next25Present(driver)) {
-                driver.waitUntilVisible(By.className("tablegrid_list"), timeout = 60)
-
-                for (i in 0 until numRows(driver)) {
-                    val marathonYear = trHeaderCellValue(driver, i, 0).toInt()
-                    val age = trHeaderCellValue(driver, i, 3)
-                    val gender = trHeaderCellValue(driver, i, 4)
-                    val country = trHeaderCellValue(driver, i, 7)
-                    val finishTime = infoGridCellValue(driver, i, 4)
-                    val place = infoGridCellValue(driver, i, 0).split("/")[0].trim().toInt()
-
-                    val runnerData = RunnerData(marathonYear = marathonYear,
-                            place = place,
-                            source = Sources.BOSTON,
-                            age = age,
-                            gender = gender,
-                            nationality = country,
-                            finishTime = finishTime)
-                    queue.put(runnerData)
-                    logger.info("Produced: $runnerData")
+                    resultsPage.insertRunnerData(logger, age, finishTime, gender, year, nationality, place, Sources.BOSTON)
                 }
-                driver.findElementByCssSelector("input[name=next]").click()
+
+                PagedResults(source = Sources.BOSTON, marathonYear =  year, url = url, pageNum = pageNum)
+                        .markComplete(pagedResultsRepository, queue, resultsPage, logger)
+                pageNum++
+                jsDriver.clickElement(driver, nextButtonSelector)
             }
             return CompletableFuture.completedFuture("Success")
         } catch (e: Exception) {
@@ -507,30 +501,6 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) 
             return CompletableFuture.completedFuture("Error")
         } finally {
             driverFactory.destroy(driver)
-        }
-    }
-
-    private fun trHeaderCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        return driver.findElementsByClassName("tr_header")[row].findElements(By.tagName("td"))[cell].text
-    }
-
-    private fun infoGridCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        return driver.findElementsByCssSelector(".table_infogrid")[row]
-                .findElements(By.tagName("tr"))[1]
-                .findElements(By.tagName("td"))[cell].text
-    }
-
-    private fun numRows(driver: RemoteWebDriver): Int {
-        return driver.findElementsByClassName("tr_header").size
-    }
-
-    private fun next25Present(driver: RemoteWebDriver): Boolean {
-        return try {
-            driver.findElementByCssSelector("input[name=next]")
-            true
-        } catch (e: Exception) {
-            logger.trace("Element wasn't present", e)
-            false
         }
     }
 }

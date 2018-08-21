@@ -5,11 +5,11 @@
 
     <groupId>com.stonesoupprogramming</groupId>
     <artifactId>marathon-scrape</artifactId>
-    <version>3.0.4</version>
+    <version>4.0.0</version>
     <packaging>jar</packaging>
 
     <name>marathon-scrape</name>
-    <description>Srapes Marathon Statistics</description>
+    <description>Scrapes Marathon Statistics</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
