@@ -20,6 +20,7 @@ object Sources {
     const val HONOLULU = "Honolulu Marathon"
     const val OTTAWA = "Ottawa Marathon"
     const val BUDAPEST = "Budapest"
+    const val MELBOURNE = "Melbourne"
 }
 
 enum class Gender(val code : String){

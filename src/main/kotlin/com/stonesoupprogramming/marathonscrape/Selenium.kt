@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
 
 const val UNAVAILABLE = "Unavailable"
@@ -1333,6 +1334,77 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
         } catch (e: Exception) {
             logger.error("Failed to process row=$row", e)
             throw e
+        }
+    }
+}
+
+//Melbourne Finished
+@Component
+class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFactory,
+                                 @Autowired private val jsDriver: JsDriver,
+                                 @Autowired private val urlPageRepository: UrlPageRepository){
+
+    private val logger = LoggerFactory.getLogger(MultisportAustraliaScraper::class.java)
+
+    @Async
+    fun scrape(runnerDataQueue: LinkedBlockingQueue<RunnerData>, link: UrlPage, source : String, columnPositions: ColumnPositions): CompletableFuture<String> {
+        val driver = driverFactory.createDriver()
+
+        return try {
+            driver.get(link.url)
+
+            val resultsPage = mutableListOf<RunnerData>()
+            val tableSelector = if(link.marathonYear == 2017){
+                ".table > tbody:nth-child(2)"
+            } else {
+                ".ResultsTableBlk > tbody:nth-child(2)"
+            }
+
+            val tableText = jsDriver.readTableRows(driver, tableSelector)
+            val tableHtml = jsDriver.readTableRows(driver, tableSelector, rawHtml = true)
+            for(row in 0 until tableText.size){
+                try {
+                    val nationality = if(columnPositions.nationality == -1) {
+                        UNAVAILABLE
+                    } else {
+                        nationality(tableHtml[row][columnPositions.nationality])
+                    }
+                    val place = try {
+                        tableText[row][columnPositions.place].split("                        ")[0].toInt()
+                    } catch (e : Exception){
+                        Int.MAX_VALUE
+                    }
+                    resultsPage.add(createRunnerData(
+                            logger = logger,
+                            age = tableText[row][columnPositions.age].split("\n")[0].trim(),
+                            finishTime = tableText[row][columnPositions.finishTime],
+                            gender = tableText[row][columnPositions.gender][0].toString(),
+                            source = source,
+                            place = place,
+                            year = link.marathonYear,
+                            nationality = nationality))
+                } catch (e : IndexOutOfBoundsException){
+                    logger.error("Index out of bounds", e)
+                    throw e
+                }
+            }
+
+            link.markComplete(urlPageRepository, runnerDataQueue, resultsPage, logger)
+
+            successResult()
+        } catch (e : Exception){
+            logger.error("Failed to scrape ${link.url}", e)
+            failResult()
+        } finally {
+            driverFactory.destroy(driver)
+        }
+    }
+
+    private fun nationality(rawHtml : String) : String {
+        return try {
+            rawHtml.split(" ")[2].replace("alt=", "").replace("\"", "")
+        } catch (e : Exception){
+            return UNAVAILABLE
         }
     }
 }
