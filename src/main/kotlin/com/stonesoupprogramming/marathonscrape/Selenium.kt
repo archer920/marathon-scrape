@@ -2,13 +2,9 @@ package com.stonesoupprogramming.marathonscrape
 
 import org.openqa.selenium.By
 import org.openqa.selenium.NoSuchElementException
-import org.openqa.selenium.WebElement
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.support.ui.ExpectedConditions
-import org.openqa.selenium.support.ui.Select
-import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -19,8 +15,6 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
 
 const val UNAVAILABLE = "Unavailable"
-
-
 
 @Component
 class DriverFactory {
@@ -328,9 +322,10 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
     }
 }
 
-//Requires Verification
+//Processing
 @Component
-class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory) {
+class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
+                            @Autowired private val genderPagedResultsRepository: GenderPagedResultsRepository) {
 
     private val logger = LoggerFactory.getLogger(ViennaMarathonScraper::class.java)
 
@@ -341,18 +336,25 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
         }
 
         val driver = driverFactory.createDriver()
-        driver.get("https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result")
+        val url = "https://www.vienna-marathon.com/?surl=cd162e16e318d263fd56d6261673fe72#goto-result"
+        driver.get(url)
 
         return try {
+            val resultsPage = mutableListOf<RunnerData>()
+
             selectYear(driver, year)
             selectEvent(driver)
             val category = when (gender) {
                 Gender.MALE -> "#contentResultPage > div > div:nth-child(6) > div.panel-body > div > a:nth-child($categoryIndex)"
                 Gender.FEMALE -> "#contentResultPage > div > div:nth-child(5) > div.panel-body > div > a:nth-child($categoryIndex)"
+                Gender.UNASSIGNED -> throw IllegalArgumentException("Has to be ${Gender.MALE} or ${Gender.FEMALE}")
             }
             selectCategory(driver, year, gender, category)
             agreeToCookies(driver)
-            processTable(driver, year, gender, queue)
+            processTable(driver, year, gender, resultsPage)
+
+
+            GenderPagedResults(source = Sources.VIENNA, marathonYear = year, url = url, gender = gender).markComplete(genderPagedResultsRepository, queue, resultsPage, logger)
 
             successResult()
         } catch (e: Exception) {
@@ -367,42 +369,32 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
         try {
             driver.findElementByLinkText("I agree").click()
         } catch (e: Exception) {
-            logger.error("Unable to dismiss cookie message", e)
+            logger.error("Unable to dismiss cookie message", e) //This isn't essential
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, year: Int, gender: Gender, queue: BlockingQueue<RunnerData>) {
+    private fun processTable(driver: RemoteWebDriver, year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
         try {
             val rowCount = findRowCount(driver)
             for (row in 2 until rowCount step 2) {
-                processRow(driver, row, year, gender, queue)
+                processRow(driver, row, year, gender, resultsPage)
             }
         } catch (e: Exception) {
             logger.error("Failed to process table for year=$year, gender=$gender", e)
+            throw e
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, row: Int, year: Int, gender: Gender, queue: BlockingQueue<RunnerData>) {
+    private fun processRow(driver: RemoteWebDriver, row: Int, year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
         try {
             val place = findCellValue(driver, row, 0).toInt()
             val finishTime = findCellValue(driver, row, 10)
             val nationality = findCellValue(driver, row, 5)
             val age = (LocalDateTime.now().year - (1900 + findCellValue(driver, row, 4).toInt())).toString()
-
-            val runnerData = RunnerData(
-                    age = age,
-                    finishTime = finishTime,
-                    gender = gender.code,
-                    marathonYear = year,
-                    nationality = nationality,
-                    place = place,
-                    source = Sources.VIENNA
-            )
-
-            queue.put(runnerData)
-            logger.info("Produced: $runnerData")
+            resultsPage.insertRunnerData(logger, age, finishTime, gender.code, year, nationality, place, Sources.VIENNA)
         } catch (e: Exception) {
             logger.error("Failed to process row=$row, for year=$year, for gender=$gender", e)
+            throw e
         }
     }
 
@@ -434,6 +426,7 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
             Thread.sleep(1000)
         } catch (e: Exception) {
             logger.error("Failed to select category=$category, for year=$year, for gender=$gender", e)
+            throw e
         }
     }
 
@@ -443,6 +436,7 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
             driver.selectComboBoxOption(By.cssSelector("#resultSelectFormAction > div:nth-child(2) > div > select"), "Vienna City Marathon")
         } catch (e: Exception) {
             logger.error("Failed to select the marathon event", e)
+            throw e
         }
     }
 
@@ -452,53 +446,54 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory)
             driver.selectComboBoxOption(By.cssSelector("#resultSelectFormAction > div:nth-child(1) > div > select"), year.toString())
         } catch (e: Exception) {
             logger.error("Failed to select year = $year", e)
+            throw e
         }
     }
 }
 
 //TODO: FIXME
 @Component
-class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) {
+class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
+                           @Autowired private val pagedResultsRepository: PagedResultsRepository,
+                           @Autowired private val jsDriver: JsDriver) {
 
     private val logger = LoggerFactory.getLogger(BostonMarathonScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, startPage: Int, year: Int): CompletableFuture<String> {
+        val url = "http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm"
         val driver = driverFactory.createDriver()
+        var pageNum = 0
+        val nextButtonSelector = "input[name=next]"
+        val tbody = "td.tablegrid_list_item:nth-child(1) > table:nth-child(1) > tbody:nth-child(2)"
 
         try {
             driver.get("http://registration.baa.org/cfm_Archive/iframe_ArchiveSearch.cfm")
+
             driver.waitUntilClickable(By.cssSelector("select[name=RaceYearLowID"))
             driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearLowID]"), year.toString())
             driver.selectComboBoxOption(By.cssSelector("select[name=RaceYearHighID]"), year.toString())
 
-            driver.scrollIntoView(By.className("submit_button"))
-            driver.findElementByCssSelector(".form_submit_pad > .submit_button").click()
+            jsDriver.clickElement(driver, "input.submit_button:nth-child(1)")
+            jsDriver.scrollToPage(driver, nextButtonSelector, startPage)
 
-            driver.waitUntilVisible(By.cssSelector("input[name=next]"))
+            while (jsDriver.elementIsPresent(driver, nextButtonSelector)) {
+                val resultsPage = mutableListOf<RunnerData>()
+                val tableRows = jsDriver.readTableRows(driver, tbody)
+                for (row in 0 until tableRows.size - 2 step 2){
+                    val age = tableRows[row][3].trim()
+                    val gender = tableRows[row][4].trim()
+                    val nationality = tableRows[row][7].trim()
+                    val place = tableRows[row + 1][1].split("/")[0].trim().toInt()
+                    val finishTime = tableRows[row + 1][5]
 
-            while (next25Present(driver)) {
-                driver.waitUntilVisible(By.className("tablegrid_list"), timeout = 60)
-
-                for (i in 0 until numRows(driver)) {
-                    val marathonYear = trHeaderCellValue(driver, i, 0).toInt()
-                    val age = trHeaderCellValue(driver, i, 3)
-                    val gender = trHeaderCellValue(driver, i, 4)
-                    val country = trHeaderCellValue(driver, i, 7)
-                    val finishTime = infoGridCellValue(driver, i, 4)
-                    val place = infoGridCellValue(driver, i, 0).split("/")[0].trim().toInt()
-
-                    val runnerData = RunnerData(marathonYear = marathonYear,
-                            place = place,
-                            source = Sources.BOSTON,
-                            age = age,
-                            gender = gender,
-                            nationality = country,
-                            finishTime = finishTime)
-                    queue.put(runnerData)
-                    logger.info("Produced: $runnerData")
+                    resultsPage.insertRunnerData(logger, age, finishTime, gender, year, nationality, place, Sources.BOSTON)
                 }
-                driver.findElementByCssSelector("input[name=next]").click()
+
+                PagedResults(source = Sources.BOSTON, marathonYear =  year, url = url, pageNum = pageNum)
+                        .markComplete(pagedResultsRepository, queue, resultsPage, logger)
+                pageNum++
+                jsDriver.clickElement(driver, nextButtonSelector)
             }
             return CompletableFuture.completedFuture("Success")
         } catch (e: Exception) {
@@ -506,30 +501,6 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory) 
             return CompletableFuture.completedFuture("Error")
         } finally {
             driverFactory.destroy(driver)
-        }
-    }
-
-    private fun trHeaderCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        return driver.findElementsByClassName("tr_header")[row].findElements(By.tagName("td"))[cell].text
-    }
-
-    private fun infoGridCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        return driver.findElementsByCssSelector(".table_infogrid")[row]
-                .findElements(By.tagName("tr"))[1]
-                .findElements(By.tagName("td"))[cell].text
-    }
-
-    private fun numRows(driver: RemoteWebDriver): Int {
-        return driver.findElementsByClassName("tr_header").size
-    }
-
-    private fun next25Present(driver: RemoteWebDriver): Boolean {
-        return try {
-            driver.findElementByCssSelector("input[name=next]")
-            true
-        } catch (e: Exception) {
-            logger.trace("Element wasn't present", e)
-            false
         }
     }
 }
@@ -935,7 +906,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
     }
 }
 
-//Verifying Results
+//Completed
 @Component
 class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val pagedResultsRepository: PagedResultsRepository) {
@@ -1026,17 +997,6 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun advancePage(driver: RemoteWebDriver) {
-        try {
-            driver.waitUntilClickable(By.cssSelector("#xact_results_agegroup_results_next"))
-            driver.findElementByCssSelector("#xact_results_agegroup_results_next").click()
-            Thread.sleep(1000)
-        } catch (e: Exception) {
-            logger.error("Failed to advance page", e)
-            throw e
-        }
-    }
-
     fun processForm(driver: RemoteWebDriver, year: Int) {
         try {
             driver.get("http://www.marinemarathon.com/results/marathon")
@@ -1062,15 +1022,6 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
             Thread.sleep(10000)
         } catch (e: Exception) {
             logger.error("Failed on input form", e)
-            throw e
-        }
-    }
-
-    fun hasNextPage(driver: RemoteWebDriver): Boolean {
-        try {
-            return !driver.findElementByCssSelector("#xact_results_agegroup_results_next").getAttribute("class").contains("ui-state-disabled")
-        } catch (e: Exception) {
-            logger.error("Unable to determine if there is another page", e)
             throw e
         }
     }
@@ -1201,7 +1152,6 @@ class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
     }
 }
 
-//Ottawa: Requires Verification
 @Component
 class SportStatsScrape(@Autowired private val driverFactory: DriverFactory) {
 

@@ -9,18 +9,37 @@ import javax.annotation.PostConstruct
 
 @Component
 class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val pagedResultsRepository: PagedResultsRepository,
                      @Autowired private val bostonMarathonScrape: BostonMarathonScrape){
 
     private val logger = LoggerFactory.getLogger(BostonProducer::class.java)
-    val threads = mutableListOf<CompletableFuture<String>>()
+
+    private val threads = mutableListOf<CompletableFuture<String>>()
+    private var lastPageNum2014 : Int = 0
+    private var lastPageNum2015 : Int = 0
+    private var lastPageNum2016 : Int = 0
+    private var lastPageNum2017 : Int = 0
+    private var lastPageNum2018 : Int = 0
+
+    @PostConstruct
+    private fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2018).maxBy { it.pageNum }?.pageNum ?: 0
+    }
 
     fun process(): List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Boston Marathon")
 
-            listOf(2014, 2015, 2016, 2017, 2018).forEach {
-                threads.add(bostonMarathonScrape.scrape(runnerDataQueue, it))
-            }
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2014, 2014))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2015, 2015))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2016, 2016))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2017, 2017))
+            threads.add(bostonMarathonScrape.scrape(runnerDataQueue, lastPageNum2018, 2018))
+
             threads.toList()
         } catch (e : Exception){
             logger.error("Failed to start Boston", e)
@@ -311,24 +330,53 @@ class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
 
 @Component
 class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+                     @Autowired private val genderPagedResultsRepository: GenderPagedResultsRepository,
                      @Autowired private val viennaMarathonScraper: ViennaMarathonScraper) {
 
     private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
+    private lateinit var completedPages : List<GenderPagedResults>
+
+    @PostConstruct
+    fun init(){
+        completedPages = genderPagedResultsRepository.findBySource(Sources.VIENNA)
+    }
+
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Vienna Scrape")
-            for (i in 3..14){
-                for(year in 2014..2018){
-                    threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, Gender.MALE, i))
-                    threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, Gender.FEMALE, i))
-                }
-            }
+            buildThreads(2014, Gender.FEMALE, 4) //1000-1499
+            buildThreads(2014, Gender.MALE, 12) //5000-5499
+
+            buildThreads(2015, Gender.FEMALE, 4)
+            buildThreads(2015, Gender.MALE, 11) //4500-4999
+
+            buildThreads(2016, Gender.FEMALE, 4)
+            buildThreads(2016, Gender.MALE, 12)
+
+            buildThreads(2017, Gender.FEMALE, 4)
+            buildThreads(2017, Gender.MALE, 11)
+
+            buildThreads(2018, Gender.FEMALE, 4)
+            buildThreads(2018, Gender.MALE, 11)
+
             threads.toList()
         } catch (e : Exception){
             logger.error("Berlin Marathon failed", e)
             emptyList()
+        }
+    }
+
+    private fun buildThreads(year : Int, gender: Gender, maxCategory: Int){
+        for(i in 3..maxCategory){
+            if(completedPages.none { page -> page.pageNum == i &&
+                            page.marathonYear == year && page.gender == gender}){
+                threads.add(viennaMarathonScraper.scrape(runnerDataQueue, year, gender, i))
+            } else {
+                logger.info("Skipping completed: page=$i, year=$year, gender=$gender")
+            }
+
         }
     }
 }

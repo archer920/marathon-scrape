@@ -27,7 +27,18 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                 logger.printProgress("Los Angeles", Sources.LA, 82974)
                 logger.printProgress("Marine Corps", Sources.MARINES, 19688, 23183, 19768, 20042)
                 logger.printProgress("New York", Sources.NY_MARATHON_GUIDE, 199372)
-                logger.printProgress("Vienna", Sources.VIENNA, 30127)
+                logger.printProgress("Vienna", Sources.VIENNA,
+                        1160, //2014 - W
+                        5188, //2014 - M
+                        1122, //2015 - W
+                        4499, //2015 - M
+                        1325, //2016 - W
+                        5175, //2016 - M
+                        1375, //2017 - W
+                        4996, //2017 - M
+                        1177, //2018 - W
+                        4254) //2018 - M
+
                 logger.printProgress("San Francisco", Sources.SAN_FRANSCISO, 6624, 6071, 6335, 6586, 5276)
                 logger.printProgress("Medtronic", Sources.MEDTRONIC, 8853, 8546, 8561, 7490)
                 logger.printProgress("Disney", Sources.DISNEY, 97025, 19235)
