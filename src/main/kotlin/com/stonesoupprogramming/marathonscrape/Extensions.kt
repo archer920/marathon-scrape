@@ -174,8 +174,16 @@ fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
     Select(this.findElement(selector)).selectByVisibleText(value)
 }
 
-fun RemoteWebDriver.waitUntilClickable(selector: By, timeout: Long = 60) {
-    WebDriverWait(this, timeout).until(ExpectedConditions.elementToBeClickable(selector))
+fun RemoteWebDriver.waitUntilClickable(selector: By, timeout: Long = 60, attemptNum: Int = 0, giveUp: Int = 60) {
+    try {
+        WebDriverWait(this, timeout).until(ExpectedConditions.elementToBeClickable(selector))
+    } catch (e : Exception){
+        if(attemptNum < giveUp){
+            this.waitUntilClickable(selector, timeout, attemptNum + 1, giveUp)
+        } else {
+            throw e
+        }
+    }
 }
 
 fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 60) {

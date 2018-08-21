@@ -325,6 +325,7 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
 //Processing
 @Component
 class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
+                            @Autowired private val jsDriver: JsDriver,
                             @Autowired private val genderPagedResultsRepository: GenderPagedResultsRepository) {
 
     private val logger = LoggerFactory.getLogger(ViennaMarathonScraper::class.java)
@@ -353,7 +354,6 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
             agreeToCookies(driver)
             processTable(driver, year, gender, resultsPage)
 
-
             GenderPagedResults(source = Sources.VIENNA, marathonYear = year, url = url, gender = gender).markComplete(genderPagedResultsRepository, queue, resultsPage, logger)
 
             successResult()
@@ -375,9 +375,9 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
 
     private fun processTable(driver: RemoteWebDriver, year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
         try {
-            val rowCount = findRowCount(driver)
-            for (row in 2 until rowCount step 2) {
-                processRow(driver, row, year, gender, resultsPage)
+            val table = jsDriver.readTableRows(driver, ".resultList > tbody")
+            for (row in 2 until table.size step 2) {
+                processRow(driver, table[row], year, gender, resultsPage)
             }
         } catch (e: Exception) {
             logger.error("Failed to process table for year=$year, gender=$gender", e)
@@ -385,35 +385,15 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, row: Int, year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
+    private fun processRow(driver: RemoteWebDriver, row: List<String>, year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
         try {
-            val place = findCellValue(driver, row, 0).toInt()
-            val finishTime = findCellValue(driver, row, 10)
-            val nationality = findCellValue(driver, row, 5)
-            val age = (LocalDateTime.now().year - (1900 + findCellValue(driver, row, 4).toInt())).toString()
+            val place = row[0].toInt()
+            val finishTime = row[10]
+            val nationality = row[5]
+            val age = (LocalDateTime.now().year - (1900 + row[4].toInt())).toString()
             resultsPage.insertRunnerData(logger, age, finishTime, gender.code, year, nationality, place, Sources.VIENNA)
         } catch (e: Exception) {
             logger.error("Failed to process row=$row, for year=$year, for gender=$gender", e)
-            throw e
-        }
-    }
-
-    private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        try {
-            return driver.findElementsByCssSelector(".resultList > tbody > tr")[row]
-                    .findElements(By.tagName("td"))[cell].text
-        } catch (e: Exception) {
-            logger.error("Failed to get cell value for row=$row, cell=$cell", e)
-            throw e
-        }
-    }
-
-    private fun findRowCount(driver: RemoteWebDriver): Int {
-        try {
-            driver.waitUntilVisible(By.className("resultList"))
-            return driver.findElementsByCssSelector(".resultList > tbody > tr").size
-        } catch (e: Exception) {
-            logger.error("Unable to find row count", e)
             throw e
         }
     }
