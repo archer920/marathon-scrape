@@ -134,38 +134,37 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
 @Component
 class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                         @Autowired private val sportStatsScrape: SportStatsScrape) {
+                             @Autowired private val pagedResultsRepository: PagedResultsRepository,
+                             @Autowired private val sportStatsScrape: SportStatsScrape) {
 
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
+
+    private var lastPageNum2014: Int = 0
+    private var lastPageNum2015: Int = 0
+    private var lastPageNum2016: Int = 0
+    private var lastPageNum2017: Int = 0
+
+    @PostConstruct
+    fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.OTTAWA, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.OTTAWA, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.OTTAWA, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.OTTAWA, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+    }
 
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Ottawa Marathon Scrape")
 
-            val urls = mapOf(2014 to "https://www.sportstats.ca/display-results.xhtml?raceid=166",
-                    2015 to "https://www.sportstats.ca/display-results.xhtml?raceid=26006",
-                    2016 to "https://www.sportstats.ca/display-results.xhtml?raceid=29494",
-                    2017 to "https://www.sportstats.ca/display-results.xhtml?raceid=42854")
+            val columnPositions = ColumnPositions(ageGender = 5, place = 6, finishTime = 9)
+            val nationalColumnPositions = ColumnPositions(nationality = 5, ageGender = 6, place = 7, finishTime = 14)
 
-            val columnPositions = ColumnPositions(nationality = 5, ageGender = 6, place = 7, finishTime = 14)
+            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = Sources.OTTAWA, marathonYear = 2014, url = "https://www.sportstats.ca/display-results.xhtml?raceid=166"), lastPageNum2014, 140, columnPositions))
+//            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = Sources.OTTAWA, marathonYear = 2015, url = "https://www.sportstats.ca/display-results.xhtml?raceid=26006"), lastPageNum2015, 117, columnPositions))
+//            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = Sources.OTTAWA, marathonYear = 2016, url = "https://www.sportstats.ca/display-results.xhtml?raceid=29494"), lastPageNum2016, 110, columnPositions))
+//            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = Sources.OTTAWA, marathonYear = 2017, url = "https://www.sportstats.ca/display-results.xhtml?raceid=42854"), lastPageNum2017, 115, columnPositions))
 
-            urls.forEach { year, url ->
-                when(year){
-                    2014 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 140, ColumnPositions(ageGender = 5, place = 6, finishTime = 9)))
-                    }
-                    2015 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 117, ColumnPositions(ageGender = 5, place = 6, finishTime = 13)))
-                    }
-                    2016 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 110, columnPositions))
-                    }
-                    2017 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 115, columnPositions))
-                    }
-                }
-            }
             threads.toList()
         } catch (e : Exception){
             logger.error("Ottawa Marathon failed", e)
