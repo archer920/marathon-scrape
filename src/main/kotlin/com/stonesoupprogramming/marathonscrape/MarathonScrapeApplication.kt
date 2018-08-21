@@ -72,6 +72,7 @@ class Application(
         @Autowired private val disneyMarathonProducer: DisneyMarathonProducer,
         @Autowired private val ottawaMarathonProducer: OttawaMarathonProducer,
         @Autowired private val budapestProducer: BudapestProducer,
+        @Autowired private val melbourneProducer: MelbourneProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -89,6 +90,7 @@ class Application(
         const val NEW_YORK = "--new-york"
         const val LOS_ANGELES = "--los-angeles"
         const val DISNEY = "--disney"
+        const val MELBOURE = "--melbourne"
     }
     override fun run(vararg args: String) {
         val consumer = runnerDataConsumer.insertValues()
@@ -146,6 +148,9 @@ class Application(
         if(args.contains(Args.OTTAWA)){
             threads.addAll(ottawaMarathonProducer.process())
         }
+        if(args.contains(Args.MELBOURE)){
+            threads.addAll(melbourneProducer.process())
+        }
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
     }
@@ -186,6 +191,9 @@ class Application(
         }
         if(args.contains(Args.DISNEY)){
             writeFile(Sources.DISNEY, 2014, 2018)
+        }
+        if(args.contains(Args.MELBOURE)){
+            writeFile(Sources.MELBOURNE, 2014, 2017)
         }
     }
 
