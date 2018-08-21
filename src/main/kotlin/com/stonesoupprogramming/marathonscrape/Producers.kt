@@ -194,16 +194,124 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     fun init(){
         completedPages = urlPageRepository.findAll()
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 0, 14, 2017))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 15, 29, 2017))
+        buildMens2017()
+        buildWomens2017()
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 0, 14, 2016))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 15, 29, 2016))
+        buildMens2016()
+        buildWomens2016()
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 2, 16, 2015))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 17, 31, 2015))
+        buildMens2015()
+        buildWomens2015()
 
         lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.LA, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+    }
+
+    private fun buildWomens2015() {
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=O&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=R&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=S&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=SA&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=U&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=V&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=W&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=X&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=Y&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=Z&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZA&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZB&Ind=28"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZC&Ind=29"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZD&Ind=30"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZE&Ind=31"))
+    }
+
+    private fun buildMens2015() {
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=DA&Ind=3"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=E&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=F&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=G&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=H&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=I&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=J&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=K&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=L&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=M&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=MA&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=N&Ind=14"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=NA&Ind=15"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=NB&Ind=16"))
+    }
+
+    private fun buildWomens2016() {
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=OA&Ind=15"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=R&Ind=16"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=S&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=SA&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=U&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=V&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=W&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=X&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=Y&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=Z&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZA&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZB&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZC&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZD&Ind=28"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZE&Ind=29"))
+    }
+
+    private fun buildMens2016() {
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=0"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=DA&Ind=1"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=E&Ind=2"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=F&Ind=3"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=G&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=H&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=I&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=J&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=K&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=L&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=M&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=MA&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=N&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=NA&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=NB&Ind=14"))
+    }
+
+    private fun buildWomens2017() {
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=OA&Ind=15"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=R&Ind=16"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=S&Ind=17"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=SA&Ind=18"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=U&Ind=19"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=V&Ind=20"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=W&Ind=21"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=X&Ind=22"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=Y&Ind=23"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=Z&Ind=24"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZA&Ind=25"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZB&Ind=26"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZC&Ind=27"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZD&Ind=28"))
+        womensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZE&Ind=29"))
+    }
+
+    private fun buildMens2017() {
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=0"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=DA&Ind=1"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=E&Ind=2"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=F&Ind=3"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=G&Ind=4"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=H&Ind=5"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=I&Ind=6"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=J&Ind=7"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=K&Ind=8"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=L&Ind=9"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=M&Ind=10"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=MA&Ind=11"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=N&Ind=12"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=NA&Ind=13"))
+        mensLinks.add(UrlPage(source = Sources.LA, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=NB&Ind=14"))
     }
 
     private fun buildUrlPages(url : String, start : Int, end : Int, year: Int) : List<UrlPage>{

@@ -797,8 +797,10 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
     }
 }
 
+//LA Finished
 @Component
 class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
+                        @Autowired private val jsDriver: JsDriver,
                         @Autowired private val pagedResultsRepository: PagedResultsRepository){
 
     private val logger = LoggerFactory.getLogger(MtecResultScraper::class.java)
@@ -817,8 +819,7 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
                 if(pageNum > startPage){
                     val resultPage = mutableListOf<RunnerData>()
                     processTable(driver, resultPage, year, source)
-                    PagedResults(source = source, marathonYear = year, pageNum = pageNum).markComplete(pagedResultsRepository, queue, resultPage, logger)
-
+                    PagedResults(source = source, marathonYear = year, pageNum = pageNum, url = url).markComplete(pagedResultsRepository, queue, resultPage, logger)
                 }
                 if(pageNum == 1){
                     driver.click("#searchResults > div > a:nth-child(2)".toCss(), logger)
@@ -838,9 +839,9 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
 
     private fun processTable(driver: RemoteWebDriver, resultPage: MutableList<RunnerData>, year: Int, source: String) {
         try {
-            val numRows = driver.countTableRows("#searchResults > div > div > table > tbody".toCss(), logger)
-            for (row in 0 until numRows){
-                processRow(driver, row, resultPage, year, source)
+            val table = jsDriver.readTableRows(driver, "#searchResults > div > div > table > tbody")
+            for (row in 0 until table.size){
+                processRow(table[row], resultPage, year, source)
             }
         } catch (e : Exception){
             logger.error("Failed to process page", e)
@@ -848,13 +849,12 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, row: Int, resultPage: MutableList<RunnerData>, year: Int, source : String) {
+    private fun processRow(row: List<String>, resultPage: MutableList<RunnerData>, year: Int, source : String) {
         try {
-            val tbody = "#searchResults > div > div > table > tbody"
-            val gender = driver.findCellValue(tbody.toCss(), row, 2, logger)
-            val age = driver.findCellValue(tbody.toCss(), row, 3, logger)
-            val finishTime = driver.findCellValue(tbody.toCss(), row, 9, logger)
-            val place = driver.findCellValue(tbody.toCss(), row, 6, logger).substringBefore("/").trim().toInt()
+            val gender = row[2].trim()
+            val age = row[3].trim()
+            val finishTime = row[9].trim()
+            val place = row[6].substringBefore("/").trim().toInt()
 
             resultPage.insertRunnerData(logger, age, finishTime, gender, year, "USA", place, source)
         } catch (e : Exception){
@@ -864,9 +864,11 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
     }
 }
 
+//LA Finsihed
 @Component
 class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val urlPageRepository: UrlPageRepository,
+                        @Autowired private val jsDriver: JsDriver,
                         @Autowired private val stateCodes: List<String>) {
 
     private val logger = LoggerFactory.getLogger(TrackShackResults::class.java)
@@ -880,16 +882,16 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
             driver.waitUntilVisible(By.cssSelector("#f1 > p:nth-child(13) > table"))
 
             val resultsPage = mutableListOf<RunnerData>()
-            val rows = driver.countTableRows("#f1 > p:nth-child(13) > table > tbody".toCss(), logger)
+            val table = jsDriver.readTableRows(driver, "#f1 > p:nth-child(13) > table > tbody")
 
-            for (row in 2 until rows) {
-                val tbody = "#f1 > p:nth-child(13) > table > tbody"
+            for (row in 2 until table.size) {
+                val tableRow = table[row]
 
-                val place = driver.findCellValue(tbody.toCss(), row, columnPositions.place, logger).toInt()
-                val age = driver.findCellValue(tbody.toCss(), row, columnPositions.age, logger)
-                var nationality = driver.findCellValue(tbody.toCss(), row, columnPositions.nationality, logger).substringAfterLast(",").trim()
+                val place = tableRow[columnPositions.place].toInt()
+                val age =  tableRow[columnPositions.age]
+                var nationality = tableRow[columnPositions.nationality].substringAfterLast(",").trim()
                 nationality = stateCodes.toCountry(nationality)
-                val finishTime = driver.findCellValue(tbody.toCss(), row, columnPositions.finishTime, logger)
+                val finishTime = tableRow[columnPositions.finishTime]
 
                 resultsPage.insertRunnerData(logger, age, finishTime, gender, page.marathonYear, nationality, place, page.source)
             }
