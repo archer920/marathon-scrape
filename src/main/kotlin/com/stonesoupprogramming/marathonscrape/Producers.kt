@@ -181,8 +181,8 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
         mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 0, 14, 2016))
         womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 15, 29, 2016))
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 2, 16, 2015))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 17, 31, 2015))
+        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=", 2, 16, 2015))
+        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=", 17, 31, 2015))
 
         lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.LA, 2014).maxBy { it.pageNum }?.pageNum ?: 0
     }
