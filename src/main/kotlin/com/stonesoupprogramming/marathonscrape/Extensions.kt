@@ -65,6 +65,22 @@ fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age: String, finish
     logger.info("Produced: $runnerData")
 }
 
+fun createRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: String, company: String = "", halfwayTime: String = ""): RunnerData {
+    val runnerData = RunnerData(
+            source = source,
+            age = age,
+            gender = gender,
+            nationality = nationality,
+            finishTime = finishTime,
+            halfwayTime = halfwayTime,
+            company = company,
+            marathonYear = year,
+            place = place
+    )
+    logger.info("Produced: $runnerData")
+    return runnerData
+}
+
 fun List<RunnerData>.writeToCsv(fileName: String) {
     val printer = CSVPrinter(FileWriter(fileName), CSVFormat.DEFAULT.withHeader("Age",
             "Gender", "Nationality", "Finish Time", "Halfway Time", "Company, Team, or Sponsor", "Year"))

@@ -630,3 +630,59 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
         }
     }
 }
+
+@Component
+class MelbourneProducer(
+        @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+        @Autowired private val multisportAustraliaScraper: MultisportAustraliaScraper,
+        @Autowired private val urlPageRepository: UrlPageRepository){
+
+    private val logger = LoggerFactory.getLogger(MelbourneProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    private val links = mutableListOf<UrlPage>()
+    private lateinit var completedLinks : List<UrlPage>
+
+    @PostConstruct
+    fun init(){
+        completedLinks = urlPageRepository.findBySource(Sources.MELBOURNE)
+        generateLinks("https://www.multisportaustralia.com.au/home/results?c=1&r=1115&e=1&cul=en-US",
+                "https://www.multisportaustralia.com.au/home/results?c=1&r=1115&e=1&pg=", 2014, 2, 129)
+        generateLinks("https://www.multisportaustralia.com.au/home/results?c=1&r=1385&e=1&cul=en-US",
+                "https://www.multisportaustralia.com.au/home/results?c=1&r=1385&e=1&pg=", 2015, 2, 129)
+        generateLinks("https://www.multisportaustralia.com.au/home/results?c=1&r=1589&e=1&cul=en-US",
+                "https://www.multisportaustralia.com.au/home/results?c=1&r=1589&e=1&pg=", 2016, 2, 122)
+        generateLinks("https://www.multisportaustralia.com.au/m3/event?c=1&r=6228&e=1",
+                "https://www.multisportaustralia.com.au/m3/event?c=1&r=6228&e=1&pg=", 2017, 2, 122)
+    }
+
+    private fun generateLinks(firstPageUrl: String, url: String, year: Int, start: Int, end: Int) {
+        links.add(UrlPage(source = Sources.MELBOURNE, marathonYear = year, url = firstPageUrl))
+        for(i in start .. end){
+            links.add(UrlPage(source = Sources.MELBOURNE, marathonYear = year, url = url + i))
+        }
+    }
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Melbourne Scrape")
+
+            val columnPositions2014 = ColumnPositions(place = 0, finishTime = 3, age = 4, gender = 5)
+            val columnPositions = ColumnPositions(place = 0, finishTime = 3, nationality = 4, age = 5, gender = 6)
+
+            links.forEach { link ->
+                if(completedLinks.none { it.url == link.url }){
+                    when(link.marathonYear){
+                        2014 -> threads.add(multisportAustraliaScraper.scrape(runnerDataQueue, link, Sources.MELBOURNE, columnPositions2014))
+                        else -> threads.add(multisportAustraliaScraper.scrape(runnerDataQueue, link, Sources.MELBOURNE, columnPositions))
+                    }
+                }
+            }
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Melbourne failed", e)
+            emptyList()
+        }
+    }
+}
