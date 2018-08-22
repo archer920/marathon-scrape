@@ -53,6 +53,10 @@ class JsDriver {
         $('$selector').click();
     """.trimIndent()
 
+    private val readHtmlJs = """
+        return $('$selector').html()
+    """.trimIndent()
+
 
     fun readTableRows(driver : RemoteWebDriver, tbodySelector : String, trimResults : Boolean = true, rawHtml : Boolean = false) : List<List<String>> {
         val js = if(rawHtml){
@@ -73,6 +77,15 @@ class JsDriver {
             }
         } catch (e : Exception){
             logger.error("Failed to execute readTableJs", e)
+            throw e
+        }
+    }
+
+    fun readHtml(driver : RemoteWebDriver, elem : String) : String {
+        return try {
+            driver.executeScript(readHtmlJs.replace(selector, elem)) as String
+        } catch (e : Exception){
+            logger.error("Unable to return html", e)
             throw e
         }
     }

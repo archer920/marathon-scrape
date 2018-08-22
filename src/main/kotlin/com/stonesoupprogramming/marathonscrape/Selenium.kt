@@ -5,7 +5,6 @@ import org.openqa.selenium.NoSuchElementException
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
-import org.openqa.selenium.support.ui.ExpectedConditions
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -116,7 +115,7 @@ class MedtronicMarathonScraper(@Autowired private val driverFactory : DriverFact
                     year = year,
                     nationality = nationality,
                     place = place,
-                    source = Sources.MEDTRONIC)
+                    source = MarathonSources.TwinCities)
         } catch (e: Exception) {
             logger.error("Unable to process row = $row for year = $year", e)
         }
@@ -269,7 +268,7 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
                     gender = gender,
                     marathonYear = year,
                     place = place,
-                    source = Sources.BERLIN,
+                    source = MarathonSources.Berlin,
                     nationality = nation
             )
             queue.put(runnerData)
@@ -356,7 +355,7 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
             processTable(driver, year, gender, resultsPage)
 
 
-            GenderPagedResults(source = Sources.VIENNA, marathonYear = year, url = url, gender = gender).markComplete(genderPagedResultsRepository, queue, resultsPage, logger)
+            GenderPagedResults(source = MarathonSources.Vienna, marathonYear = year, url = url, gender = gender).markComplete(genderPagedResultsRepository, queue, resultsPage, logger)
 
             successResult()
         } catch (e: Exception) {
@@ -393,7 +392,7 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
             val finishTime = findCellValue(driver, row, 10)
             val nationality = findCellValue(driver, row, 5)
             val age = (LocalDateTime.now().year - (1900 + findCellValue(driver, row, 4).toInt())).toString()
-            resultsPage.insertRunnerData(logger, age, finishTime, gender.code, year, nationality, place, Sources.VIENNA)
+            resultsPage.insertRunnerData(logger, age, finishTime, gender.code, year, nationality, place, MarathonSources.Vienna)
         } catch (e: Exception) {
             logger.error("Failed to process row=$row, for year=$year, for gender=$gender", e)
             throw e
@@ -489,10 +488,10 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
                     val place = tableRows[row + 1][1].split("/")[0].trim().toInt()
                     val finishTime = tableRows[row + 1][5]
 
-                    resultsPage.insertRunnerData(logger, age, finishTime, gender, year, nationality, place, Sources.BOSTON)
+                    resultsPage.insertRunnerData(logger, age, finishTime, gender, year, nationality, place, MarathonSources.Boston)
                 }
 
-                PagedResults(source = Sources.BOSTON, marathonYear =  year, url = url, pageNum = pageNum)
+                PagedResults(source = MarathonSources.Boston, marathonYear =  year, url = url, pageNum = pageNum)
                         .markComplete(pagedResultsRepository, queue, resultsPage, logger)
                 pageNum++
                 jsDriver.clickElement(driver, nextButtonSelector)
@@ -599,7 +598,7 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
                             age = age,
                             halfwayTime = half,
                             finishTime = finish,
-                            source = Sources.CHICAGO,
+                            source = MarathonSources.Chicago,
                             marathonYear = year,
                             gender = gender)
                     queue.put(runnerData)
@@ -714,7 +713,7 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
     }
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String, source: String, columnPositions: ColumnPositions, rangeOption: String): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String, source: MarathonSources, columnPositions: ColumnPositions, rangeOption: String): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
@@ -736,7 +735,7 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, source: String, columnPositions: ColumnPositions) {
+    private fun processTable(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, source: MarathonSources, columnPositions: ColumnPositions) {
         try {
             driver.waitUntilVisible(By.className("BoxTitleOrange"))
 
@@ -808,7 +807,7 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
     private val logger = LoggerFactory.getLogger(MtecResultScraper::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url : String, year : Int, source : String, startPage: Int, endPage: Int) : CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, url : String, year : Int, source : MarathonSources, startPage: Int, endPage: Int) : CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
@@ -839,7 +838,7 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, resultPage: MutableList<RunnerData>, year: Int, source: String) {
+    private fun processTable(driver: RemoteWebDriver, resultPage: MutableList<RunnerData>, year: Int, source: MarathonSources) {
         try {
             val table = jsDriver.readTableRows(driver, "#searchResults > div > div > table > tbody")
             for (row in 0 until table.size){
@@ -851,7 +850,7 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processRow(row: List<String>, resultPage: MutableList<RunnerData>, year: Int, source : String) {
+    private fun processRow(row: List<String>, resultPage: MutableList<RunnerData>, year: Int, source : MarathonSources) {
         try {
             val gender = row[2].trim()
             val age = row[3].trim()
@@ -928,7 +927,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
             for(pageNum in 1 .. endPage){
                 if(pageNum > startPage){
                     processTable(driver, resultsPage, year)
-                    val numberedPage = PagedResults(null, Sources.MARINES, year, "http://www.marinemarathon.com/results/marathon", pageNum)
+                    val numberedPage = PagedResults(null, MarathonSources.Marines, year, "http://www.marinemarathon.com/results/marathon", pageNum)
 
                     try {
                         pagedResultsRepository.save(numberedPage)
@@ -992,8 +991,8 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
                     marathonYear = year,
                     nationality = "USA",
                     place = place,
-                    source = Sources.MARINES)
-            resultPage.insertRunnerData(logger, age, finishTime, gender, year, "USA", place, Sources.MARINES)
+                    source = MarathonSources.Marines)
+            resultPage.insertRunnerData(logger, age, finishTime, gender, year, "USA", place, MarathonSources.Marines)
             logger.info("Produced: $runnerData")
         } catch (e: Exception) {
             logger.error("Failed to scrape row $row", e)
@@ -1093,7 +1092,7 @@ class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
                     marathonYear = year,
                     nationality = nationality,
                     place = place,
-                    source = Sources.SAN_FRANSCISO
+                    source = MarathonSources.SanFranscisco
             )
             queue.put(runnerData)
             logger.info("Produced: $runnerData")
@@ -1169,11 +1168,13 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
 
         return try {
             driver.get(pagedResults.url)
+            Thread.sleep(5000)
+
             scrollToPage(driver, startPage)
 
             for (page in startPage until endPage) {
                 val table = jsDriver.readTableRows(driver, ".overview-result > tbody")
-                val pageResults = table.subList(0, table.size - 1).map { row ->
+                val results = table.subList(0, table.size - 1).map { row ->
                     try {
                         val nationality = if(columnPositions.nationality == -1){
                             UNAVAILABLE
@@ -1205,8 +1206,8 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                     }
 
                 }.toList()
-
-                jsDriver.clickElement(driver, "fa-angle-right")
+                pagedResults.markComplete(pagedResultsRepository, queue, results.toMutableList(), logger)
+                advancePage(driver)
             }
 
             successResult()
@@ -1222,14 +1223,23 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
         var pageNum = 0
         while(pageNum < startPage){
             advancePage(driver)
+            pageNum++
         }
     }
 
-    private fun advancePage(driver: RemoteWebDriver) {
+    private fun advancePage(driver: RemoteWebDriver, attempt : Int = 0, giveUp : Int = 10) {
         try {
-
-            driver.findElementByCssSelector(".pagination > li:nth-child(13)").findElement(By.tagName("a")).click()
-            Thread.sleep(5000)
+            val loaderHtml = jsDriver.readHtml(driver, "#ajaxStatusPanel")
+            if(loaderHtml.contains("<div id=\"ajaxStatusPanel_start\" style=\"display: none;\">")){
+                driver.findElementByCssSelector(".pagination > li:nth-child(13)").findElement(By.tagName("a")).click()
+            } else {
+                if(attempt < giveUp){
+                    Thread.sleep(1000)
+                    advancePage(driver, attempt + 1)
+                } else {
+                    throw RuntimeException("Can't advance to the next page due to preloader")
+                }
+            }
         } catch (e: Exception) {
             logger.error("Failed to advance to next page", e)
             throw e
@@ -1299,7 +1309,7 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
             val finishTime = driver.findCellValue(cssSelector.toCss(), row, columnPositions.finishTime, logger)
 
             resultsPage.insertRunnerData(logger,
-                    age, finishTime, gender, year, nationality, place, Sources.BUDAPEST)
+                    age, finishTime, gender, year, nationality, place, MarathonSources.Budapest)
 
         } catch (e: Exception) {
             logger.error("Failed to process row=$row", e)
@@ -1317,7 +1327,7 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
     private val logger = LoggerFactory.getLogger(MultisportAustraliaScraper::class.java)
 
     @Async
-    fun scrape(runnerDataQueue: LinkedBlockingQueue<RunnerData>, link: UrlPage, source : String, columnPositions: ColumnPositions): CompletableFuture<String> {
+    fun scrape(runnerDataQueue: LinkedBlockingQueue<RunnerData>, link: UrlPage, source : MarathonSources, columnPositions: ColumnPositions): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         return try {

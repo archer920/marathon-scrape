@@ -16,37 +16,36 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
     var shutdown = false
 
     @Async
-    fun reportStatus(): CompletableFuture<String> {
+    fun reportStatus(source: MarathonSources): CompletableFuture<String> {
         try {
             while (!shutdown){
-                logger.info("")
+                when(source){
+                    MarathonSources.Berlin -> logger.printProgress("Berlin", source, 146965)
+                    MarathonSources.Unassigned -> throw IllegalArgumentException("No results for Unassigned")
+                    MarathonSources.Vienna -> logger.printProgress("Vienna", source,
+                            1160, //2014 - W
+                            5188, //2014 - M
+                            1122, //2015 - W
+                            4499, //2015 - M
+                            1325, //2016 - W
+                            5175, //2016 - M
+                            1375, //2017 - W
+                            4996, //2017 - M
+                            1177, //2018 - W
+                            4254) //2018 - M
+                    MarathonSources.Boston -> logger.printProgress("Boston", source, 137483)
+                    MarathonSources.Chicago -> logger.printProgress("Chicago", source, 403878)
+                    MarathonSources.Nyc -> logger.printProgress("New York", source, 199372)
+                    MarathonSources.LosAngeles -> logger.printProgress("Los Angeles", source, 82974)
+                    MarathonSources.Marines -> logger.printProgress("Marine Corps", source, 19688, 23183, 19768, 20042)
+                    MarathonSources.TwinCities -> logger.printProgress("Medtronic", source, 8853, 8546, 8561, 7490)
+                    MarathonSources.Disney -> logger.printProgress("Disney", source, 97025, 19235)
+                    MarathonSources.Ottawa -> logger.printProgress("Ottawa", source, 5594, 4664, 4370, 4564)
+                    MarathonSources.Budapest -> logger.printProgress("Budapest", source, 4348, 5604, 4969, 5415)
+                    MarathonSources.SanFranscisco -> logger.printProgress("San Francisco", source, 6624, 6071, 6335, 6586, 5276)
+                    MarathonSources.Melbourne -> logger.printProgress("Melbourne", source, 6108, 6083, 6091)
+                }
 
-                logger.printProgress("Berlin", Sources.BERLIN, 146965)
-                logger.printProgress("Boston", Sources.BOSTON, 137483)
-                logger.printProgress("Chicago", Sources.CHICAGO, 403878)
-                logger.printProgress("Los Angeles", Sources.LA, 82974)
-                logger.printProgress("Marine Corps", Sources.MARINES, 19688, 23183, 19768, 20042)
-                logger.printProgress("New York", Sources.NY_MARATHON_GUIDE, 199372)
-                logger.printProgress("Vienna", Sources.VIENNA,
-                        1160, //2014 - W
-                        5188, //2014 - M
-                        1122, //2015 - W
-                        4499, //2015 - M
-                        1325, //2016 - W
-                        5175, //2016 - M
-                        1375, //2017 - W
-                        4996, //2017 - M
-                        1177, //2018 - W
-                        4254) //2018 - M
-
-                logger.printProgress("San Francisco", Sources.SAN_FRANSCISO, 6624, 6071, 6335, 6586, 5276)
-                logger.printProgress("Medtronic", Sources.MEDTRONIC, 8853, 8546, 8561, 7490)
-                logger.printProgress("Disney", Sources.DISNEY, 97025, 19235)
-                logger.printProgress("Ottawa", Sources.OTTAWA, 5594, 4664, 4370, 4564)
-                logger.printProgress("Budapest", Sources.BUDAPEST, 4348, 5604, 4969, 5415)
-                logger.printProgress("Melbourne", Sources.MELBOURNE, 6108, 6083, 6091)
-
-                logger.info("")
                 Thread.sleep(10000)
             }
             return successResult()
@@ -56,7 +55,9 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
         }
     }
 
-    private fun Logger.printProgress(name : String, source : String, vararg yearTotals : Int){
+    private fun Logger.printProgress(name : String, source : MarathonSources, vararg yearTotals : Int){
+        printBlankLines()
+
         val percentFormat = NumberFormat.getPercentInstance()
 
         val count = runnerDataRepository.countBySource(source)
@@ -64,5 +65,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
         val percent = count.toDouble() / total.toDouble()
 
         info("$name at ${percentFormat.format(percent)}: $count / $total")
+
+        printBlankLines()
     }
 }
