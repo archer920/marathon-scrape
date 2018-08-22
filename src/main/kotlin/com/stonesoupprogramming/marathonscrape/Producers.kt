@@ -23,11 +23,11 @@ class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueu
 
     @PostConstruct
     private fun init(){
-        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2015).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2016).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2017).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.BOSTON, 2018).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Boston, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Boston, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Boston, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Boston, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Boston, 2018).maxBy { it.pageNum }?.pageNum ?: 0
     }
 
     fun process(): List<CompletableFuture<String>> {
@@ -107,20 +107,20 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
                 when(year){
                     2014 -> {
                         val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach{ range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions, range))}
+                        rangeOptions.forEach{ range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, placeFirstPositions, range))}
 
                     }
                     2015 -> {
                         val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions, range))}
+                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, timeFirstPositions, range))}
                     }
                     2016 -> {
                         val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, timeFirstPositions, range))}
+                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, timeFirstPositions, range))}
                     }
                     2017 -> {
                         val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach { range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, Sources.NY_MARATHON_GUIDE, placeFirstPositions, range)) }
+                        rangeOptions.forEach { range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, placeFirstPositions, range)) }
                     }
                 }
             }
@@ -134,38 +134,37 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
 
 @Component
 class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                         @Autowired private val sportStatsScrape: SportStatsScrape) {
+                             @Autowired private val pagedResultsRepository: PagedResultsRepository,
+                             @Autowired private val sportStatsScrape: SportStatsScrape) {
 
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
+
+    private var lastPageNum2014: Int = 0
+    private var lastPageNum2015: Int = 0
+    private var lastPageNum2016: Int = 0
+    private var lastPageNum2017: Int = 0
+
+    @PostConstruct
+    fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+    }
 
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Ottawa Marathon Scrape")
 
-            val urls = mapOf(2014 to "https://www.sportstats.ca/display-results.xhtml?raceid=166",
-                    2015 to "https://www.sportstats.ca/display-results.xhtml?raceid=26006",
-                    2016 to "https://www.sportstats.ca/display-results.xhtml?raceid=29494",
-                    2017 to "https://www.sportstats.ca/display-results.xhtml?raceid=42854")
+            val columnPositions = ColumnPositions(ageGender = 5, place = 6, finishTime = 9)
+            val nationalColumnPositions = ColumnPositions(nationality = 5, ageGender = 6, place = 7, finishTime = 14)
 
-            val columnPositions = ColumnPositions(nationality = 5, ageGender = 6, place = 7, finishTime = 14)
+            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2014, url = "https://www.sportstats.ca/display-results.xhtml?raceid=166"), lastPageNum2014, 140, columnPositions))
+            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2015, url = "https://www.sportstats.ca/display-results.xhtml?raceid=26006"), lastPageNum2015, 117, columnPositions))
+            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2016, url = "https://www.sportstats.ca/display-results.xhtml?raceid=29494"), lastPageNum2016, 110, nationalColumnPositions))
+            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2017, url = "https://www.sportstats.ca/display-results.xhtml?raceid=42854"), lastPageNum2017, 115, nationalColumnPositions))
 
-            urls.forEach { year, url ->
-                when(year){
-                    2014 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 140, ColumnPositions(ageGender = 5, place = 6, finishTime = 9)))
-                    }
-                    2015 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 117, ColumnPositions(ageGender = 5, place = 6, finishTime = 13)))
-                    }
-                    2016 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 110, columnPositions))
-                    }
-                    2017 -> {
-                        threads.add(sportStatsScrape.scrape(runnerDataQueue, url, year, Sources.OTTAWA, 115, columnPositions))
-                    }
-                }
-            }
             threads.toList()
         } catch (e : Exception){
             logger.error("Ottawa Marathon failed", e)
@@ -194,24 +193,124 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     fun init(){
         completedPages = urlPageRepository.findAll()
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 0, 14, 2017))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=", 15, 29, 2017))
+        buildMens2017()
+        buildWomens2017()
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 0, 14, 2016))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=", 15, 29, 2016))
+        buildMens2016()
+        buildWomens2016()
 
-        mensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 2, 16, 2015))
-        womensLinks.addAll(buildUrlPages("https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2", 17, 31, 2015))
+        buildMens2015()
+        buildWomens2015()
 
-        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.LA, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.LosAngeles, 2014).maxBy { it.pageNum }?.pageNum ?: 0
     }
 
-    private fun buildUrlPages(url : String, start : Int, end : Int, year: Int) : List<UrlPage>{
-        val urlPages = mutableListOf<UrlPage>()
-        for(i in start .. end){
-            urlPages.add(UrlPage(source = Sources.LA, marathonYear = year, url = url + i))
-        }
-        return urlPages.toList()
+    private fun buildWomens2015() {
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=O&Ind=17"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=R&Ind=18"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=S&Ind=19"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=SA&Ind=20"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=U&Ind=21"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=V&Ind=22"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=W&Ind=23"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=X&Ind=24"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=Y&Ind=25"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=Z&Ind=26"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZA&Ind=27"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZB&Ind=28"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZC&Ind=29"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZD&Ind=30"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=ZE&Ind=31"))
+    }
+
+    private fun buildMens2015() {
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=D&Ind=2"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=DA&Ind=3"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=E&Ind=4"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=F&Ind=5"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=G&Ind=6"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=H&Ind=7"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=I&Ind=8"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=J&Ind=9"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=K&Ind=10"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=L&Ind=11"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=M&Ind=12"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=MA&Ind=13"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=N&Ind=14"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=NA&Ind=15"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2015, url = "https://www.trackshackresults.com/lamarathon/results/2015_Marathon/mar_results.php?Link=2&Type=2&Div=NB&Ind=16"))
+    }
+
+    private fun buildWomens2016() {
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=OA&Ind=15"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=R&Ind=16"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=S&Ind=17"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=SA&Ind=18"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=U&Ind=19"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=V&Ind=20"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=W&Ind=21"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=X&Ind=22"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=Y&Ind=23"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=Z&Ind=24"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZA&Ind=25"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZB&Ind=26"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZC&Ind=27"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZD&Ind=28"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=ZE&Ind=29"))
+    }
+
+    private fun buildMens2016() {
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=D&Ind=0"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=DA&Ind=1"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=E&Ind=2"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=F&Ind=3"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=G&Ind=4"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=H&Ind=5"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=I&Ind=6"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=J&Ind=7"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=K&Ind=8"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=L&Ind=9"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=M&Ind=10"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=MA&Ind=11"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=N&Ind=12"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=NA&Ind=13"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2016, url = "https://www.trackshackresults.com/lamarathon/results/2016/mar_results.php?Link=4&Type=2&Div=NB&Ind=14"))
+    }
+
+    private fun buildWomens2017() {
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=OA&Ind=15"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=R&Ind=16"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=S&Ind=17"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=SA&Ind=18"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=U&Ind=19"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=V&Ind=20"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=W&Ind=21"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=X&Ind=22"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=Y&Ind=23"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=Z&Ind=24"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZA&Ind=25"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZB&Ind=26"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZC&Ind=27"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZD&Ind=28"))
+        womensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=ZE&Ind=29"))
+    }
+
+    private fun buildMens2017() {
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=D&Ind=0"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=DA&Ind=1"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=E&Ind=2"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=F&Ind=3"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=G&Ind=4"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=H&Ind=5"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=I&Ind=6"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=J&Ind=7"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=K&Ind=8"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=L&Ind=9"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=M&Ind=10"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=MA&Ind=11"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=N&Ind=12"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=NA&Ind=13"))
+        mensLinks.add(UrlPage(source = MarathonSources.LosAngeles, marathonYear = 2017, url = "https://www.trackshackresults.com/lamarathon/results/2017/mar_results.php?Link=9&Type=2&Div=NB&Ind=14"))
     }
 
     fun process() : List<CompletableFuture<String>> {
@@ -221,7 +320,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
             createThreads(mensLinks, "M")
             createThreads(womensLinks, "W")
 
-            threads.add(mtecResultScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2074/2014_LA_Marathon-ASICS_LA_Marathon", 2014, Sources.LA, lastPageNum2014, 43))
+            threads.add(mtecResultScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2074/2014_LA_Marathon-ASICS_LA_Marathon", 2014, MarathonSources.LosAngeles, lastPageNum2014, 43))
             threads.toList()
         } catch (e : Exception){
             logger.error("Los Angelas Marathon Failed", e)
@@ -257,10 +356,10 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
 
     @PostConstruct
     fun init(){
-        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.MARINES, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.MARINES, 2015).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.MARINES, 2016).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(Sources.MARINES, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Marines, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Marines, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Marines, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Marines, 2017).maxBy { it.pageNum }?.pageNum ?: 0
     }
 
     fun process() : List<CompletableFuture<String>> {
@@ -340,7 +439,7 @@ class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
 
     @PostConstruct
     fun init(){
-        completedPages = genderPagedResultsRepository.findBySource(Sources.VIENNA)
+        completedPages = genderPagedResultsRepository.findBySource(MarathonSources.Vienna)
     }
 
     fun process() : List<CompletableFuture<String>> {
@@ -445,17 +544,17 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
 
             val columnInfo = ColumnPositions(nationality = 12, finishTime = 11, age = 3, place = 4, ageGender = -1)
 
-//            mens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "M", Sources.DISNEY, columnInfo)) }
-//            mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", Sources.DISNEY, columnInfo)) }
-//            mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", Sources.DISNEY, columnInfo)) }
-//            mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", Sources.DISNEY, columnInfo)) }
-//            mens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2018, "M", Sources.DISNEY, columnInfo)) }
+//            mens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "M", CitySources.DISNEY, columnInfo)) }
+//            mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", CitySources.DISNEY, columnInfo)) }
+//            mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", CitySources.DISNEY, columnInfo)) }
+//            mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", CitySources.DISNEY, columnInfo)) }
+//            mens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2018, "M", CitySources.DISNEY, columnInfo)) }
 //
-//            womens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "W", Sources.DISNEY, columnInfo)) }
-//            womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", Sources.DISNEY, columnInfo)) }
-//            womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", Sources.DISNEY, columnInfo)) }
-//            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
-//            womens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", Sources.DISNEY, columnInfo)) }
+//            womens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "W", CitySources.DISNEY, columnInfo)) }
+//            womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", CitySources.DISNEY, columnInfo)) }
+//            womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", CitySources.DISNEY, columnInfo)) }
+//            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", CitySources.DISNEY, columnInfo)) }
+//            womens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", CitySources.DISNEY, columnInfo)) }
 
             //threads.add(trackShackResults.scrape2014(runnerDataQueue))
             threads.toList()
@@ -479,7 +578,7 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
 
     @PostConstruct
     fun init(){
-        pages = urlPageRepository.findBySource(Sources.BUDAPEST)
+        pages = urlPageRepository.findBySource(MarathonSources.Budapest)
 
         generateLinks(2014, 4300)
         generateLinks(2015, 5600)
@@ -490,7 +589,7 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
     fun generateLinks(year : Int, max : Int){
         for(i in 0..max step 50){
             val url = "http://results.runinbudapest.com/?start=$i&race=marathon&lt=results&verseny=${year}_spar_e&rajtszam=&nev=&nem=&egyesulet=&varos=&orszag=&min_ido=&max_ido=&min_hely=&max_hely=&oldal=50"
-            links.add(UrlPage(source = Sources.BUDAPEST, marathonYear = year, url = url))
+            links.add(UrlPage(source = MarathonSources.Budapest, marathonYear = year, url = url))
         }
     }
 
@@ -518,6 +617,62 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
             threads.toList()
         } catch (e : Exception){
             logger.error("Budapest failed", e)
+            emptyList()
+        }
+    }
+}
+
+@Component
+class MelbourneProducer(
+        @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+        @Autowired private val multisportAustraliaScraper: MultisportAustraliaScraper,
+        @Autowired private val urlPageRepository: UrlPageRepository){
+
+    private val logger = LoggerFactory.getLogger(MelbourneProducer::class.java)
+    private val threads = mutableListOf<CompletableFuture<String>>()
+
+    private val links = mutableListOf<UrlPage>()
+    private lateinit var completedLinks : List<UrlPage>
+
+    @PostConstruct
+    fun init(){
+        completedLinks = urlPageRepository.findBySource(MarathonSources.Melbourne)
+        generateLinks("https://www.multisportaustralia.com.au/home/results?c=1&r=1115&e=1&cul=en-US",
+                "https://www.multisportaustralia.com.au/home/results?c=1&r=1115&e=1&pg=", 2014, 2, 129)
+        generateLinks("https://www.multisportaustralia.com.au/home/results?c=1&r=1385&e=1&cul=en-US",
+                "https://www.multisportaustralia.com.au/home/results?c=1&r=1385&e=1&pg=", 2015, 2, 129)
+        generateLinks("https://www.multisportaustralia.com.au/home/results?c=1&r=1589&e=1&cul=en-US",
+                "https://www.multisportaustralia.com.au/home/results?c=1&r=1589&e=1&pg=", 2016, 2, 122)
+        generateLinks("https://www.multisportaustralia.com.au/m3/event?c=1&r=6228&e=1",
+                "https://www.multisportaustralia.com.au/m3/event?c=1&r=6228&e=1&pg=", 2017, 2, 122)
+    }
+
+    private fun generateLinks(firstPageUrl: String, url: String, year: Int, start: Int, end: Int) {
+        links.add(UrlPage(source = MarathonSources.Melbourne, marathonYear = year, url = firstPageUrl))
+        for(i in start .. end){
+            links.add(UrlPage(source = MarathonSources.Melbourne, marathonYear = year, url = url + i))
+        }
+    }
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Melbourne Scrape")
+
+            val columnPositions2014 = ColumnPositions(place = 0, finishTime = 3, age = 4, gender = 5)
+            val columnPositions = ColumnPositions(place = 0, finishTime = 3, nationality = 4, age = 5, gender = 6)
+
+            links.forEach { link ->
+                if(completedLinks.none { it.url == link.url }){
+                    when(link.marathonYear){
+                        2014 -> threads.add(multisportAustraliaScraper.scrape(runnerDataQueue, link, MarathonSources.Melbourne, columnPositions2014))
+                        else -> threads.add(multisportAustraliaScraper.scrape(runnerDataQueue, link, MarathonSources.Melbourne, columnPositions))
+                    }
+                }
+            }
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Melbourne failed", e)
             emptyList()
         }
     }

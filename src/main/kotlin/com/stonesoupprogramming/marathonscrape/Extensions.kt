@@ -33,7 +33,7 @@ fun sleepRandom() {
 }
 
 @Deprecated("Each page of results should be processed atomically. Use List.insertRunnerData and then add the finished list to the Queue")
-fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: String, company: String = "", halfwayTime: String = "") {
+fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = "") {
     val runnerData = RunnerData(
             source = source,
             age = age,
@@ -49,7 +49,7 @@ fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age: String, fini
     logger.info("Produced: $runnerData")
 }
 
-fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: String, company: String = "", halfwayTime: String = "") {
+fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = "") {
     val runnerData = RunnerData(
             source = source,
             age = age,
@@ -63,6 +63,22 @@ fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age: String, finish
     )
     add(runnerData)
     logger.info("Produced: $runnerData")
+}
+
+fun createRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = ""): RunnerData {
+    val runnerData = RunnerData(
+            source = source,
+            age = age,
+            gender = gender,
+            nationality = nationality,
+            finishTime = finishTime,
+            halfwayTime = halfwayTime,
+            company = company,
+            marathonYear = year,
+            place = place
+    )
+    logger.info("Produced: $runnerData")
+    return runnerData
 }
 
 fun List<RunnerData>.writeToCsv(fileName: String) {
@@ -215,3 +231,27 @@ fun RemoteWebDriver.click(element: By, logger: Logger) {
     }
 }
 
+fun Array<out String>.toMarathonSources() : MarathonSources{
+    return when {
+        this.contains(Application.Args.BUDAPEST) -> MarathonSources.Budapest
+        this.contains(Application.Args.OTTAWA) -> MarathonSources.Ottawa
+        this.contains(Application.Args.SAN_FRANSCISCO) -> MarathonSources.SanFranscisco
+        this.contains(Application.Args.MEDTRONIC) -> MarathonSources.TwinCities
+        this.contains(Application.Args.MARINES) -> MarathonSources.Marines
+        this.contains(Application.Args.VIENNA) -> MarathonSources.Vienna
+        this.contains(Application.Args.BERLIN) -> MarathonSources.Berlin
+        this.contains(Application.Args.BOSTON) -> MarathonSources.Boston
+        this.contains(Application.Args.CHICAGO) -> MarathonSources.Chicago
+        this.contains(Application.Args.NEW_YORK) -> MarathonSources.Nyc
+        this.contains(Application.Args.LOS_ANGELES) -> MarathonSources.LosAngeles
+        this.contains(Application.Args.DISNEY) -> MarathonSources.Disney
+        this.contains(Application.Args.MELBOURE) -> MarathonSources.Melbourne
+        else -> throw IllegalArgumentException("Not a valid source")
+    }
+}
+
+fun Logger.printBlankLines(lines : Int = 5){
+    for(i in 0 until lines){
+        info("")
+    }
+}

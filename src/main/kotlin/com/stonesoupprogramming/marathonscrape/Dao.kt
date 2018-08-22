@@ -6,17 +6,17 @@ interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
     fun findByMarathonYearAndSourceOrderByAge(year : Int, source : String) : List<RunnerData>
 
-    fun countBySource(source : String) : Long
+    fun countBySource(source : MarathonSources) : Long
 }
 
 interface UrlPageRepository : JpaRepository<UrlPage, Long>{
-    fun findBySource(source : String) : List<UrlPage>
+    fun findBySource(source : MarathonSources) : List<UrlPage>
 }
 
 interface PagedResultsRepository : JpaRepository<PagedResults, Long>{
-    fun findBySourceAndMarathonYear(source : String, year : Int) : List<PagedResults>
+    fun findBySourceAndMarathonYear(source : MarathonSources, year : Int) : List<PagedResults>
 }
 
 interface GenderPagedResultsRepository : JpaRepository<GenderPagedResults, Long> {
-    fun findBySource(source : String) : List<GenderPagedResults>
+    fun findBySource(source : MarathonSources) : List<GenderPagedResults>
 }

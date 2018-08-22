@@ -72,6 +72,7 @@ class Application(
         @Autowired private val disneyMarathonProducer: DisneyMarathonProducer,
         @Autowired private val ottawaMarathonProducer: OttawaMarathonProducer,
         @Autowired private val budapestProducer: BudapestProducer,
+        @Autowired private val melbourneProducer: MelbourneProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -89,10 +90,12 @@ class Application(
         const val NEW_YORK = "--new-york"
         const val LOS_ANGELES = "--los-angeles"
         const val DISNEY = "--disney"
+        const val MELBOURE = "--melbourne"
     }
     override fun run(vararg args: String) {
         val consumer = runnerDataConsumer.insertValues()
-        val status = statusReporter.reportStatus()
+
+        val status = statusReporter.reportStatus(args.toMarathonSources())
 
         process(*args)
 
@@ -146,53 +149,59 @@ class Application(
         if(args.contains(Args.OTTAWA)){
             threads.addAll(ottawaMarathonProducer.process())
         }
+        if(args.contains(Args.MELBOURE)){
+            threads.addAll(melbourneProducer.process())
+        }
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
     }
 
     private fun writeCompleted(vararg args: String){
         if(args.contains(Args.BUDAPEST)){
-            writeFile(Sources.BUDAPEST, 2014, 2017)
+            writeFile(MarathonSources.Budapest, 2014, 2017)
         }
         if(args.contains(Args.OTTAWA)){
-            writeFile(Sources.OTTAWA, 2014, 2018)
+            writeFile(MarathonSources.Ottawa, 2014, 2018)
         }
         if(args.contains(Args.SAN_FRANSCISCO)){
-            writeFile(Sources.SAN_FRANSCISO, 2014, 2018)
+            writeFile(MarathonSources.SanFranscisco, 2014, 2018)
         }
         if(args.contains(Args.MEDTRONIC)){
-            writeFile(Sources.MEDTRONIC, 2014, 2017)
+            writeFile(MarathonSources.TwinCities, 2014, 2017)
         }
         if(args.contains(Args.MARINES)){
-            writeFile(Sources.MARINES, 2014, 2017)
+            writeFile(MarathonSources.Marines, 2014, 2017)
         }
         if(args.contains(Args.VIENNA)){
-            writeFile(Sources.VIENNA, 2014, 2018)
+            writeFile(MarathonSources.Vienna, 2014, 2018)
         }
         if(args.contains(Args.BERLIN)){
-            writeFile(Sources.BERLIN, 2014, 2018)
+            writeFile(MarathonSources.Berlin, 2014, 2018)
         }
         if(args.contains(Args.BOSTON)){
-            writeFile(Sources.BOSTON, 2014, 2018)
+            writeFile(MarathonSources.Boston, 2014, 2018)
         }
         if(args.contains(Args.CHICAGO)){
-            writeFile(Sources.CHICAGO, 2014, 2017)
+            writeFile(MarathonSources.Chicago, 2014, 2017)
         }
         if(args.contains(Args.NEW_YORK)){
-            writeFile(Sources.NY_MARATHON_GUIDE, 2014, 2017)
+            writeFile(MarathonSources.Nyc, 2014, 2017)
         }
         if(args.contains(Args.LOS_ANGELES)){
-            writeFile(Sources.LA, 2014, 2017)
+            writeFile(MarathonSources.LosAngeles, 2014, 2017)
         }
         if(args.contains(Args.DISNEY)){
-            writeFile(Sources.DISNEY, 2014, 2018)
+            writeFile(MarathonSources.Disney, 2014, 2018)
+        }
+        if(args.contains(Args.MELBOURE)){
+            writeFile(MarathonSources.Melbourne, 2014, 2017)
         }
     }
 
-    private fun writeFile(source : String, startYear : Int, endYear : Int){
+    private fun writeFile(source : MarathonSources, startYear : Int, endYear : Int){
         logger.info("Starting file export...")
         for(i in startYear..endYear){
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source.cityName).writeToCsv("$source-$i.csv")
         }
         logger.info("Finished file export...")
     }

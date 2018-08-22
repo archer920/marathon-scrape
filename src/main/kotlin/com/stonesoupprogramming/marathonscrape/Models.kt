@@ -6,20 +6,21 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
-object Sources {
-    const val BERLIN="Berlin Marathon"
-    const val VIENNA = "Vienna City Marathon"
-    const val BOSTON = "Boston Marathon"
-    const val CHICAGO = "Chicago"
-    const val NY_MARATHON_GUIDE = "Ny Marathon Guide"
-    const val LA = "La Marathon"
-    const val MARINES = "Marine Corp"
-    const val SAN_FRANSCISO = "San Fransisco"
-    const val MEDTRONIC = "Medtronic Twin Cities Marathon"
-    const val DISNEY = "Disney World Marathon"
-    const val HONOLULU = "Honolulu Marathon"
-    const val OTTAWA = "Ottawa Marathon"
-    const val BUDAPEST = "Budapest"
+enum class MarathonSources(val cityName : String){
+    Unassigned("Unassigned"),
+    Berlin("Berlin"),
+    Vienna("Vienna"),
+    Boston("Boston"),
+    Chicago("Chicago"),
+    Nyc("New York City"),
+    LosAngeles("Los Angeles"),
+    Marines("Marines"),
+    TwinCities("Medtronic"),
+    Disney("Disney"),
+    Ottawa("Ottawa"),
+    Budapest("Budapest"),
+    SanFranscisco("San Franscisco"),
+    Melbourne("Melbourne")
 }
 
 enum class Gender(val code : String){
@@ -31,7 +32,7 @@ enum class Gender(val code : String){
 @Entity
 data class RunnerData(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-        @field: NotBlank @field: Column(nullable=false) var source : String = "",
+        @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
         @field: NotBlank @field: Column(nullable=false) var age : String = "",
         @field: NotBlank @field: Column(nullable=false) var gender : String = "",
         @field: NotBlank @field: Column(nullable=false) var nationality : String = "",
@@ -49,7 +50,7 @@ data class RunnerData(
 @Entity
 data class UrlPage(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-        @field: NotBlank var source : String = "",
+        @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
         @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
         @field: NotBlank var url : String = ""
 )
@@ -57,7 +58,7 @@ data class UrlPage(
 @Entity
 data class PagedResults(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-        @field: NotBlank var source : String = "",
+        @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
         @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
         @field: NotBlank var url : String = "",
         @field: Min(0) var pageNum: Int = 0)
@@ -65,7 +66,7 @@ data class PagedResults(
 @Entity
 data class GenderPagedResults(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
-        @field: NotBlank var source : String = "",
+        @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
         @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
         @field: NotBlank var url : String = "",
         @field: Min(0) var pageNum: Int = 0,

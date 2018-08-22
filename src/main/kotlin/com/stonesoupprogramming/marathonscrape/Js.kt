@@ -14,6 +14,8 @@ class JsDriver {
     private val logger = LoggerFactory.getLogger(JsDriver::class.java)
 
     private val selector = "{{selector}}"
+    private val arg = "{{args}}"
+
     private val jquery = BufferedReader(InputStreamReader(JsDriver::class.java.getResourceAsStream("/js/jquery-3.3.1.js"))).readText()
     private val readTableJs = """
                 let table = [];
@@ -29,6 +31,20 @@ class JsDriver {
                 return table
             """.trimIndent()
 
+    private val readTableJsHtml = """
+                let table = [];
+                let rows = $('$selector').children('tr')
+                rows.each((i, elem) => {
+	                let cells = ${'$'}(elem).find('td')
+                    let tableRow = [];
+                    cells.each((j, cell) => {
+  	                    tableRow.push(${'$'}(cell).html());
+                    });
+                    table.push(tableRow);
+                });
+                return table
+            """.trimIndent()
+
     private val presentJS = """
         return $('$selector').length !== 0;
     """.trimIndent()
@@ -37,13 +53,39 @@ class JsDriver {
         $('$selector').click();
     """.trimIndent()
 
-    fun readTableRows(driver : RemoteWebDriver, tbodySelector : String) : List<List<String>> {
+    private val readHtmlJs = """
+        return $('$selector').html()
+    """.trimIndent()
+
+
+    fun readTableRows(driver : RemoteWebDriver, tbodySelector : String, trimResults : Boolean = true, rawHtml : Boolean = false) : List<List<String>> {
+        val js = if(rawHtml){
+            readTableJsHtml.replace(selector, tbodySelector)
+        } else {
+            readTableJs.replace(selector, tbodySelector)
+        }
         return try {
             driver.executeScript(jquery)
             Thread.sleep(1000)
-            driver.executeScript(readTableJs.replace(selector, tbodySelector)) as List<List<String>>
+            val results = driver.executeScript(js) as List<List<String>>
+            if(trimResults) {
+                return results.map { row ->
+                    row.map { cell -> cell.trim() }
+                }.toList()
+            } else {
+                results
+            }
         } catch (e : Exception){
             logger.error("Failed to execute readTableJs", e)
+            throw e
+        }
+    }
+
+    fun readHtml(driver : RemoteWebDriver, elem : String) : String {
+        return try {
+            driver.executeScript(readHtmlJs.replace(selector, elem)) as String
+        } catch (e : Exception){
+            logger.error("Unable to return html", e)
             throw e
         }
     }
