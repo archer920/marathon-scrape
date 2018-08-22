@@ -1173,13 +1173,18 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                         } else {
                             UNAVAILABLE
                         }
+                        val place = try {
+                            row[columnPositions.place].toInt()
+                        } catch (e : NumberFormatException){
+                            Int.MAX_VALUE
+                        }
                         createRunnerData(logger,
                                 age,
                                 row[columnPositions.finishTime],
                                 gender,
                                 pagedResults.marathonYear,
                                 nationality,
-                                row[columnPositions.place].toInt(),
+                                place,
                                 pagedResults.source)
                     } catch (e : Exception){
                         logger.error("Index out of Bounds")
@@ -1206,17 +1211,18 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
         while(pageNum < startPage){
             advancePage(driver)
             pageNum++
+            sleepRandom()
         }
     }
 
-    private fun advancePage(driver: RemoteWebDriver, attempt : Int = 0, giveUp : Int = 10) {
+    private fun advancePage(driver: RemoteWebDriver, attempt : Int = 0, giveUp : Int = 60) {
         try {
             val loaderHtml = jsDriver.readHtml(driver, "#ajaxStatusPanel")
             if(loaderHtml.contains("<div id=\"ajaxStatusPanel_start\" style=\"display: none;\">")){
                 driver.findElementByCssSelector(".pagination > li:nth-child(13)").findElement(By.tagName("a")).click()
             } else {
                 if(attempt < giveUp){
-                    Thread.sleep(1000)
+                    Thread.sleep(5000)
                     advancePage(driver, attempt + 1)
                 } else {
                     throw RuntimeException("Can't advance to the next page due to preloader")

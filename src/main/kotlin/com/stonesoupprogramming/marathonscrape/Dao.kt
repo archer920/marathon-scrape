@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 
 interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
-    fun findByMarathonYearAndSourceOrderByAge(year : Int, source : String) : List<RunnerData>
+    fun findByMarathonYearAndSourceOrderByAge(year : Int, source : MarathonSources) : List<RunnerData>
 
     fun countBySource(source : MarathonSources) : Long
 }

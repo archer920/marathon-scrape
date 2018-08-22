@@ -201,7 +201,7 @@ class Application(
     private fun writeFile(source : MarathonSources, startYear : Int, endYear : Int){
         logger.info("Starting file export...")
         for(i in startYear..endYear){
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source.cityName).writeToCsv("$source-$i.csv")
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
         }
         logger.info("Finished file export...")
     }
