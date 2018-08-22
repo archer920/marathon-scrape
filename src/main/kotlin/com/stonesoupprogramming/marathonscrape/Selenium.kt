@@ -1200,13 +1200,14 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                                 nationality,
                                 row[columnPositions.place].toInt(),
                                 pagedResults.source)
-                    } catch (e : IndexOutOfBoundsException){
+                    } catch (e : Exception){
                         logger.error("Index out of Bounds")
                         throw e
                     }
 
                 }.toList()
-                pagedResults.markComplete(pagedResultsRepository, queue, results.toMutableList(), logger)
+                PagedResults(source=pagedResults.source, marathonYear = pagedResults.marathonYear, url = pagedResults.url, pageNum = page)
+                        .markComplete(pagedResultsRepository, queue, results.toMutableList(), logger)
                 advancePage(driver)
             }
 
