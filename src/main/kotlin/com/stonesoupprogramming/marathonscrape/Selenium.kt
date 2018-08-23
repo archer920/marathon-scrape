@@ -1398,8 +1398,10 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
             driver.get(url)
             sleepRandom(2, 5)
 
+            var lastPage : List<RunnerData>? = null
             for(page in startPage .. endPage){
                 sleepRandom(2, 5)
+
 
                 if(page >= startPage){
                     val pageData = jsDriver.readPage(driver)
@@ -1417,8 +1419,15 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
                                 it["place"]!!.toInt(),
                                 marathonSources) }.toList()
 
+                    lastPage?.let { lp ->
+                        if(lp.any { it.place == resultsPage[49].place }){
+                            throw IllegalStateException("pageData is the same as last page. $pageData")
+                        }
+                    }
+
                     PagedResults(source = marathonSources, marathonYear = year, url = url, pageNum = page)
                             .markComplete(pagedResultsRepository, queue, resultsPage.toMutableList(), logger)
+                    lastPage = resultsPage
                 }
                 if(page == 0){
                     jsDriver.clickElement(driver, "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)")
