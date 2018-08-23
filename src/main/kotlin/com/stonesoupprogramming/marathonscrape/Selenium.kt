@@ -7,6 +7,7 @@ import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -16,6 +17,12 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
 
 const val UNAVAILABLE = "Unavailable"
+
+interface PagedResultsScraper {
+
+    @Async
+    fun scrape(queue: BlockingQueue<RunnerData>, url : String, year : Int,  marathonSources: MarathonSources, startPage: Int, endPage: Int) : CompletableFuture<String>
+}
 
 @Component
 class DriverFactory {
@@ -1373,6 +1380,55 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
             rawHtml.split(" ")[2].replace("alt=", "").replace("\"", "")
         } catch (e : Exception){
             return UNAVAILABLE
+        }
+    }
+}
+
+@Component
+class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactory,
+                              @Autowired private val jsDriver: AthJsDriver,
+                              @Autowired private val pagedResultsRepository: PagedResultsRepository) : PagedResultsScraper {
+
+    private val logger = LoggerFactory.getLogger(AthLinksMarathonScraper::class.java)
+
+    override fun scrape(queue: BlockingQueue<RunnerData>, url: String, year : Int, marathonSources: MarathonSources, startPage: Int, endPage: Int): CompletableFuture<String> {
+        val driver = driverFactory.createDriver()
+
+        return try {
+            driver.get(url)
+            sleepRandom(2, 5)
+
+            for(page in startPage .. endPage){
+                sleepRandom(2, 5)
+
+                if(page >= startPage){
+                    val pageData = jsDriver.readPage(driver)
+                    val resultsPage = pageData.map { it ->
+                        createRunnerData(logger,
+                                it["age"]!!,
+                                it["finishTime"]!!,
+                                it["gender"]!!,
+                                year,
+                                it["nationality"]!!,
+                                it["place"]!!.toInt(),
+                                marathonSources) }.toList()
+
+                    PagedResults(source = marathonSources, marathonYear = year, url = url, pageNum = page).markComplete(pagedResultsRepository, queue, resultsPage.toMutableList(), logger)
+                }
+                if(page == 0){
+                    jsDriver.clickElement(driver, "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)")
+                } else {
+                    jsDriver.clickElement(driver,"#pager > div:nth-child(1) > div:nth-child(7) > button:nth-child(1)" )
+                }
+                logger.info("Advancing to page ${page + 1}")
+            }
+
+            successResult()
+        } catch (e : Exception) {
+            logger.error("Failed to scrape $marathonSources, for year=$year, url=$url")
+            failResult()
+        } finally {
+            driverFactory.destroy(driver)
         }
     }
 }

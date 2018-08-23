@@ -24,8 +24,8 @@ fun failResult(): CompletableFuture<String> {
     return CompletableFuture.completedFuture("Error")
 }
 
-fun sleepRandom() {
-    val amount = 1000 * ThreadLocalRandom.current().nextInt(5, 60)
+fun sleepRandom(min : Int = 5, max : Int = 60) {
+    val amount = 1000 * ThreadLocalRandom.current().nextInt(min, max)
     try {
         Thread.sleep(amount.toLong())
     } catch (e: Exception) {
@@ -246,6 +246,7 @@ fun Array<out String>.toMarathonSources() : MarathonSources{
         this.contains(Application.Args.LOS_ANGELES) -> MarathonSources.LosAngeles
         this.contains(Application.Args.DISNEY) -> MarathonSources.Disney
         this.contains(Application.Args.MELBOURE) -> MarathonSources.Melbourne
+        this.contains(Application.Args.Taipei) -> MarathonSources.Taipei
         else -> throw IllegalArgumentException("Not a valid source")
     }
 }
