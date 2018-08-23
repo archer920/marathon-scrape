@@ -1153,9 +1153,10 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
 
             scrollToPage(driver, startPage)
 
-            for (page in startPage until endPage) {
+            for (page in startPage .. endPage) {
                 val table = jsDriver.readTableRows(driver, ".overview-result > tbody")
-                val results = table.subList(0, table.size - 1).map { row ->
+                val results = mutableListOf<RunnerData>()
+                for(row in table.subList(0, table.size - 1)){
                     try {
                         val nationality = if(columnPositions.nationality == -1){
                             UNAVAILABLE
@@ -1178,20 +1179,18 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                         } catch (e : NumberFormatException){
                             Int.MAX_VALUE
                         }
-                        createRunnerData(logger,
+                        results.add(createRunnerData(logger,
                                 age,
                                 row[columnPositions.finishTime],
                                 gender,
                                 pagedResults.marathonYear,
                                 nationality,
                                 place,
-                                pagedResults.source)
+                                pagedResults.source))
                     } catch (e : Exception){
-                        logger.error("Index out of Bounds")
-                        throw e
+                        logger.error("Invalid row $row", e)
                     }
-
-                }.toList()
+                }
                 PagedResults(source=pagedResults.source, marathonYear = pagedResults.marathonYear, url = pagedResults.url, pageNum = page)
                         .markComplete(pagedResultsRepository, queue, results.toMutableList(), logger)
                 advancePage(driver)
