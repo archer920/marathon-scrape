@@ -1387,6 +1387,7 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
 @Component
 class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactory,
                               @Autowired private val jsDriver: AthJsDriver,
+                              @Autowired private val stateCodes: List<String>,
                               @Autowired private val pagedResultsRepository: PagedResultsRepository) : PagedResultsScraper {
 
     private val logger = LoggerFactory.getLogger(AthLinksMarathonScraper::class.java)
@@ -1408,12 +1409,16 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
                     }
 
                     val resultsPage = pageData.map { it ->
+                        var nationality = it["nationality"]!!
+                        if(nationality.contains(",")){
+                            nationality = stateCodes.toCountry(nationality.split(",")[1].trim())
+                        }
                         createRunnerData(logger,
                                 it["age"]!!,
                                 it["finishTime"]!!,
                                 it["gender"]!!,
                                 year,
-                                it["nationality"]!!,
+                                nationality,
                                 it["place"]!!.toInt(),
                                 marathonSources) }.toList()
 

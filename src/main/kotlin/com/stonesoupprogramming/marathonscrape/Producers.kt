@@ -904,3 +904,54 @@ class TaipeiProducer(
         }
     }
 }
+
+@Component
+class YuenglingProducer(
+        @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+        @Autowired private val athLinksMarathonScraper: AthLinksMarathonScraper,
+        @Autowired private val pagedResultsRepository: PagedResultsRepository){
+
+    private val logger = LoggerFactory.getLogger(TaipeiProducer::class.java)
+
+    private val threads = mutableListOf<CompletableFuture<String>>()
+    private var lastPageNum2014 : Int = 0
+    private var lastPageNum2015 : Int = 0
+    private var lastPageNum2016 : Int = 0
+    private var lastPageNum2017 : Int = 0
+
+    @PostConstruct
+    private fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Yuengling, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2014 > 0){
+            lastPageNum2014++
+        }
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Yuengling, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2015 > 0){
+            lastPageNum2015++
+        }
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Yuengling, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2016 > 0){
+            lastPageNum2016++
+        }
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Yuengling, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2017 > 0){
+            lastPageNum2017++
+        }
+    }
+
+    fun process(): List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting Taipei Marathon")
+
+            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/334125/Course/414365/Results", 2014, MarathonSources.Yuengling, lastPageNum2014, 56))
+            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/429684/Course/644989/Results", 2015, MarathonSources.Yuengling, lastPageNum2015, 44))
+            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/488730/Course/726687/Results", 2016, MarathonSources.Yuengling, lastPageNum2016, 37))
+            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/615660/Course/940547/Results", 2017, MarathonSources.Yuengling, lastPageNum2017, 28))
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Failed to start Taipei", e)
+            emptyList()
+        }
+    }
+}
