@@ -317,8 +317,8 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
         return try {
             logger.info("Starting Los Angeles Scrape")
 
-            createThreads(mensLinks, "M")
-            createThreads(womensLinks, "W")
+            createThreads(mensLinks, Gender.MALE)
+            createThreads(womensLinks, Gender.FEMALE)
 
             threads.add(mtecResultScraper.scrape(runnerDataQueue, "https://www.mtecresults.com/race/show/2074/2014_LA_Marathon-ASICS_LA_Marathon", 2014, MarathonSources.LosAngeles, lastPageNum2014, 43))
             threads.toList()
@@ -328,7 +328,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
         }
     }
 
-    private fun createThreads(links: MutableList<UrlPage>, gender: String) {
+    private fun createThreads(links: MutableList<UrlPage>, gender: Gender) {
         val columnInfo = ColumnPositions(place = 4, age = 3, finishTime = 15, nationality = 16, ageGender = -1)
 
         links.forEach{ page ->
@@ -506,55 +506,231 @@ class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQu
 
 @Component
 class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                         @Autowired private val trackShackResults: TrackShackResults){
+                             @Autowired private val urlPageRepository: UrlPageRepository,
+                             @Autowired private val trackShackResults: TrackShackResults){
 
     private val logger = LoggerFactory.getLogger(DisneyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
+    private lateinit var completedPages : List<UrlPage>
+    private val mensLinks = mutableListOf<UrlPage>()
+    private val womensLinks = mutableListOf<UrlPage>()
+
+    private fun MutableList<UrlPage>.buildLinksForYear(year : Int, urls : List<String>){
+        urls.forEach { url -> add(UrlPage(source = MarathonSources.Disney, marathonYear = year, url = url))}
+    }
+
+    @PostConstruct
+    fun init(){
+        completedPages = urlPageRepository.findBySource(MarathonSources.Disney)
+
+        buildMens2014()
+        buildWomens2014()
+
+        buildMens2015()
+        buildWomens2015()
+
+        buildMens2016()
+        buildWomens2016()
+
+        buildMens2017()
+        buildWomens2017()
+
+        buildMens2018()
+        buildWomens2018()
+    }
+
+    private fun buildWomens2015() {
+        womensLinks.buildLinksForYear(2015, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=M&Ind=17",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=N&Ind=18",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=O&Ind=19",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=P&Ind=20",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=Q&Ind=21",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=R&Ind=22",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=S&Ind=23",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=T&Ind=24",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=U&Ind=25",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=V&Ind=26",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=W&Ind=27",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=X&Ind=28",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=Y&Ind=29"
+        ))
+    }
+
+    private fun buildMens2015() {
+        mensLinks.buildLinksForYear(2015, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=4",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=C&Ind=5",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=D&Ind=6",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=E&Ind=7",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=F&Ind=8",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=G&Ind=9",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=H&Ind=10",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=I&Ind=11",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=J&Ind=12",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=K&Ind=13",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=L&Ind=14",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=LA&Ind=15",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=LB&Ind=16"
+        ))
+    }
+
+    private fun buildWomens2018() {
+        womensLinks.buildLinksForYear(2018, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=N&Ind=17",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=O&Ind=18",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=P&Ind=19",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=Q&Ind=20",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=R&Ind=21",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=S&Ind=22",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=T&Ind=23",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=U&Ind=24",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=V&Ind=25",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=W&Ind=26",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=X&Ind=27",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=Y&Ind=28"
+        ))
+    }
+
+    private fun buildMens2018() {
+        mensLinks.buildLinksForYear(2018, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=4",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=C&Ind=5",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=D&Ind=6",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=E&Ind=7",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=F&Ind=8",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=G&Ind=9",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=H&Ind=10",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=I&Ind=11",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=J&Ind=12",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=K&Ind=13",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=L&Ind=14",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=LA&Ind=15",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=LB&Ind=16"
+        ))
+    }
+
+    private fun buildWomens2017() {
+        womensLinks.buildLinksForYear(2017, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=M&Ind=18",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=N&Ind=19",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=O&Ind=20",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=P&Ind=21",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=Q&Ind=22",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=R&Ind=23",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=S&Ind=24",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=T&Ind=25",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=U&Ind=26",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=V&Ind=27",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=W&Ind=28",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=X&Ind=29",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=Y&Ind=30"
+        ))
+    }
+
+    private fun buildMens2017() {
+        mensLinks.buildLinksForYear(2017, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=4",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=B&Ind=5",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=C&Ind=6",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=D&Ind=7",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=E&Ind=8",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=F&Ind=9",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=G&Ind=10",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=H&Ind=11",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=I&Ind=12",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=J&Ind=13",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=K&Ind=14",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=L&Ind=15",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=LA&Ind=16",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=LB&Ind=17"
+        ))
+    }
+
+    private fun buildWomens2016() {
+        womensLinks.buildLinksForYear(2016, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=M&Ind=16",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=N&Ind=17",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=O&Ind=18",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=P&Ind=19",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=Q&Ind=20",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=R&Ind=21",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=S&Ind=22",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=T&Ind=23",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=U&Ind=24",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=V&Ind=25",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=W&Ind=26",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=X&Ind=27",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=Y&Ind=28"
+        ))
+    }
+
+    private fun buildMens2016() {
+        mensLinks.buildLinksForYear(2016, listOf(
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=4",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=C&Ind=5",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=D&Ind=6",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=E&Ind=7",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=F&Ind=8",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=G&Ind=9",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=H&Ind=10",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=I&Ind=11",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=J&Ind=12",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=K&Ind=13",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=L&Ind=14",
+                "https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=LA&Ind=15"
+        ))
+    }
+
+    private fun buildWomens2014() {
+        womensLinks.buildLinksForYear(2014, listOf(
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=N&Ind=17",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=O&Ind=18",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=P&Ind=19",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=Q&Ind=20",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=R&Ind=21",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=S&Ind=22",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=T&Ind=23",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=U&Ind=24",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=V&Ind=25",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=W&Ind=26",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=X&Ind=27"
+        ))
+    }
+
+    private fun buildMens2014() {
+        mensLinks.buildLinksForYear(2014, listOf(
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=4",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=B&Ind=5",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=C&Ind=6",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=D&Ind=7",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=E&Ind=8",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=F&Ind=9",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=G&Ind=10",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=H&Ind=11",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=I&Ind=12",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=J&Ind=13",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=K&Ind=14",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=L&Ind=15",
+                "http://trackshack.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=LA&Ind=16"))
+    }
+
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Disney Scrape")
-            val mens2014 = mutableListOf<String>()
-            val mens2015 = mutableListOf<String>()
-            val mens2016 = mutableListOf<String>()
-            val mens2017 = mutableListOf<String>()
-            val mens2018 = mutableListOf<String>()
-
-            val womens2014 = mutableListOf<String>()
-            val womens2015 = mutableListOf<String>()
-            val womens2016 = mutableListOf<String>()
-            val womens2017 = mutableListOf<String>()
-            val womens2018 = mutableListOf<String>()
-
-            for(i in 4..16){
-                mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=A&Ind=$i")
-                mens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
-                mens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
-                mens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
-                mens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
-            }
-
-            for(i in 17..29){
-                womens2014.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw14/mar_results.php?Link=13&Type=2&Div=N&Ind=$i")
-                womens2015.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw15/mar_results.php?Link=27&Type=2&Div=B&Ind=$i")
-                womens2016.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw16/mar_results.php?Link=43&Type=2&Div=B&Ind=$i")
-                womens2017.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw17/mar_results.php?Link=62&Type=2&Div=A&Ind=$i")
-                womens2018.add("https://www.trackshackresults.com/disneysports/results/wdw/wdw18/mar_results.php?Link=81&Type=2&Div=B&Ind=$i")
-            }
 
             val columnInfo = ColumnPositions(nationality = 12, finishTime = 11, age = 3, place = 4, ageGender = -1)
-
-//            mens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "M", CitySources.DISNEY, columnInfo)) }
-//            mens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "M", CitySources.DISNEY, columnInfo)) }
-//            mens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "M", CitySources.DISNEY, columnInfo)) }
-//            mens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "M", CitySources.DISNEY, columnInfo)) }
-//            mens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2018, "M", CitySources.DISNEY, columnInfo)) }
-//
-//            womens2014.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2014, "W", CitySources.DISNEY, columnInfo)) }
-//            womens2015.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2015, "W", CitySources.DISNEY, columnInfo)) }
-//            womens2016.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2016, "W", CitySources.DISNEY, columnInfo)) }
-//            womens2017.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", CitySources.DISNEY, columnInfo)) }
-//            womens2018.forEach { threads.add(trackShackResults.scrape(runnerDataQueue, it, 2017, "W", CitySources.DISNEY, columnInfo)) }
+            womensLinks.forEach { link ->
+                if(completedPages.none { it.url == link.url }){
+                    threads.add(trackShackResults.scrape(runnerDataQueue, link, Gender.FEMALE, columnInfo))
+                }
+            }
+            mensLinks.forEach { link ->
+                if(completedPages.none { it.url == link.url }){
+                    threads.add(trackShackResults.scrape(runnerDataQueue, link, Gender.MALE, columnInfo))
+                }
+            }
 
             //threads.add(trackShackResults.scrape2014(runnerDataQueue))
             threads.toList()
