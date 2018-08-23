@@ -1403,6 +1403,10 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
 
                 if(page >= startPage){
                     val pageData = jsDriver.readPage(driver)
+                    if(pageData.isEmpty()){
+                        throw IllegalStateException("pageData is empty on year=$year, page = $page")
+                    }
+
                     val resultsPage = pageData.map { it ->
                         createRunnerData(logger,
                                 it["age"]!!,
@@ -1413,7 +1417,8 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
                                 it["place"]!!.toInt(),
                                 marathonSources) }.toList()
 
-                    PagedResults(source = marathonSources, marathonYear = year, url = url, pageNum = page).markComplete(pagedResultsRepository, queue, resultsPage.toMutableList(), logger)
+                    PagedResults(source = marathonSources, marathonYear = year, url = url, pageNum = page)
+                            .markComplete(pagedResultsRepository, queue, resultsPage.toMutableList(), logger)
                 }
                 if(page == 0){
                     jsDriver.clickElement(driver, "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)")
