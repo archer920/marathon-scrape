@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 import javax.annotation.PostConstruct
 
+//Complete
 @Component
 class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueue<RunnerData>,
                      @Autowired private val pagedResultsRepository: PagedResultsRepository,
@@ -48,6 +49,7 @@ class BostonProducer(@Autowired private val runnerDataQueue : LinkedBlockingQueu
     }
 }
 
+//Complete
 @Component
 class ChicagoProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                       @Autowired private val chicagoMarathonScrape: ChicagoMarathonScrape){
@@ -73,18 +75,27 @@ class ChicagoProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueu
     }
 }
 
+//Completed
 @Component
-class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
+class NyMarathonProducer(@Autowired private val urlPageRepository: UrlPageRepository,
                          @Autowired private val marathonGuideScraper: MarathonGuideScraper) {
 
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
+    private lateinit var completed : List<UrlPage>
+
+    @PostConstruct
+    fun init(){
+        completed = urlPageRepository.findBySource(MarathonSources.Nyc)
+    }
+
     fun process() : List<CompletableFuture<String>> {
         return try {
             logger.info("Starting New York Scrape")
 
-            val urls = mapOf(2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
+            val urls = mapOf(
+                    2014 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472141102",
                     2015 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472151101",
                     2016 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472161106",
                     2017 to "http://www.marathonguide.com/results/browse.cfm?MIDD=472171105")
@@ -103,24 +114,24 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
                     age = -1
             )
 
+            val range2014 = marathonGuideScraper.findRangeOptionsForUrl(urls[2014].orEmpty())
+            val range2015 = marathonGuideScraper.findRangeOptionsForUrl(urls[2015].orEmpty())
+            val range2016 = marathonGuideScraper.findRangeOptionsForUrl(urls[2016].orEmpty())
+            val range2017 = marathonGuideScraper.findRangeOptionsForUrl(urls[2017].orEmpty())
+
             urls.forEach { year, url ->
                 when(year){
                     2014 -> {
-                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach{ range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, placeFirstPositions, range))}
-
+                        range2014.get().buildThreadsForYear(2014, url, placeFirstPositions)
                     }
                     2015 -> {
-                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, timeFirstPositions, range))}
+                        range2015.get().buildThreadsForYear(2015, url, timeFirstPositions)
                     }
                     2016 -> {
-                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach { range ->  threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, timeFirstPositions, range))}
+                        range2016.get().buildThreadsForYear(2016, url, timeFirstPositions)
                     }
                     2017 -> {
-                        val rangeOptions = marathonGuideScraper.findRangeOptionsForUrl(url)
-                        rangeOptions.forEach { range -> threads.add(marathonGuideScraper.scrape(runnerDataQueue, year, url, MarathonSources.Nyc, placeFirstPositions, range)) }
+                        range2017.get().buildThreadsForYear(2017, url, placeFirstPositions)
                     }
                 }
             }
@@ -128,6 +139,16 @@ class NyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
         } catch (e : Exception){
             logger.error("New York Marathon failed", e)
             emptyList()
+        }
+    }
+
+    private fun List<String>.buildThreadsForYear(year : Int, url : String, columnPositions: ColumnPositions){
+        this.forEach { range ->
+            if(completed.none { it.marathonYear == year && it.url == range }){
+                threads.add(marathonGuideScraper.scrape(year, url, MarathonSources.Nyc, columnPositions, range))
+            } else {
+                logger.info("Skipping completed range=$range, year=$year")
+            }
         }
     }
 }
@@ -173,6 +194,7 @@ class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
     }
 }
 
+//Complete
 @Component
 class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                          @Autowired private val urlPageRepository: UrlPageRepository,
@@ -341,6 +363,7 @@ class LaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQ
     }
 }
 
+//Complete
 @Component
 class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                           @Autowired private val pagedResultsRepository: PagedResultsRepository,
@@ -378,6 +401,7 @@ class MarineCorpsProducer(@Autowired private val runnerDataQueue: LinkedBlocking
     }
 }
 
+//Complete
 @Component
 class SanFranciscoProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                           @Autowired private val sanFranciscoScrape: SanFranciscoScrape) {
@@ -427,6 +451,7 @@ class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
     }
 }
 
+//Complete
 @Component
 class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                      @Autowired private val genderPagedResultsRepository: GenderPagedResultsRepository,
@@ -480,6 +505,7 @@ class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue
     }
 }
 
+//Complete
 @Component
 class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                      @Autowired private val medtronicMarathonScraper: MedtronicMarathonScraper) {
@@ -504,6 +530,7 @@ class MedtronicProducer(@Autowired private val runnerDataQueue: LinkedBlockingQu
     }
 }
 
+//Complete
 @Component
 class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                              @Autowired private val urlPageRepository: UrlPageRepository,
@@ -741,7 +768,7 @@ class DisneyMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
     }
 }
 
-//Verifying Results
+//Complete
 @Component
 class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                        @Autowired private val urlPageRepository: UrlPageRepository,
@@ -798,6 +825,7 @@ class BudapestProducer(@Autowired private val runnerDataQueue: LinkedBlockingQue
     }
 }
 
+//Complete
 @Component
 class MelbourneProducer(
         @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
@@ -856,7 +884,6 @@ class MelbourneProducer(
 
 @Component
 class TaipeiProducer(
-        @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
         @Autowired private val athLinksMarathonScraper: AthLinksMarathonScraper,
         @Autowired private val pagedResultsRepository: PagedResultsRepository){
 
@@ -871,31 +898,19 @@ class TaipeiProducer(
     @PostConstruct
     private fun init(){
         lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2014 > 0){
-            lastPageNum2014++
-        }
         lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2015).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2015 > 0){
-            lastPageNum2015++
-        }
         lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2016).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2016 > 0){
-            lastPageNum2016++
-        }
         lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2017).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2017 > 0){
-            lastPageNum2017++
-        }
     }
 
     fun process(): List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Taipei Marathon")
 
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 2014, MarathonSources.Taipei, lastPageNum2014, 107))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 2015, MarathonSources.Taipei, lastPageNum2015, 94))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 2016, MarathonSources.Taipei, lastPageNum2016, 112))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 2017, MarathonSources.Taipei, lastPageNum2017, 120))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 2014, MarathonSources.Taipei, lastPageNum2014))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 2015, MarathonSources.Taipei, lastPageNum2015))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 2016, MarathonSources.Taipei, lastPageNum2016))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 2017, MarathonSources.Taipei, lastPageNum2017))
 
             threads.toList()
         } catch (e : Exception){

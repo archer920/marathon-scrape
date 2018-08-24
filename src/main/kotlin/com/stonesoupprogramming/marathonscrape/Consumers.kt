@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture
 import javax.annotation.PreDestroy
 import javax.validation.ConstraintViolationException
 
+@Deprecated("All scraping classes should insert their own data")
 @Component
 class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<RunnerData>,
                          @Autowired private val repository: RunnerDataRepository) {
@@ -24,12 +25,12 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
     fun insertValues(): CompletableFuture<String> {
         try {
             do {
-                insertRecord()
+                insertRecord(true)
             } while(!signalShutdown)
 
             //Received shutdown signal so run until empty
             while(runnerDataQueue.isNotEmpty()){
-                insertRecord()
+                insertRecord(true)
             }
         } catch (e : Exception){
             when (e){
@@ -40,12 +41,13 @@ class RunnerDataConsumer(@Autowired private val runnerDataQueue: BlockingQueue<R
         return successResult()
     }
 
-    fun insertRecord(){
+    fun insertRecord(logInsert : Boolean = false){
         val record = runnerDataQueue.take()
-
+        if(logInsert){
+            logger.info("Inserting: $record")
+        }
         try {
             repository.save(record)
-            logger.info("Inserted: $record")
         } catch (e: Exception) {
             when (e) {
                 is ConstraintViolationException -> saveValidationFailure(record)

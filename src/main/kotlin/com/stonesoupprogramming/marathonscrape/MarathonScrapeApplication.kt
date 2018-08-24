@@ -97,7 +97,7 @@ class Application(
         const val Yuengling = "--yuengling"
     }
     override fun run(vararg args: String) {
-        val consumer = runnerDataConsumer.insertValues()
+        runnerDataConsumer.insertValues()
 
         val status = statusReporter.reportStatus(args.toMarathonSources())
 
@@ -106,7 +106,7 @@ class Application(
         this.runnerDataConsumer.signalShutdown = true
         this.statusReporter.shutdown = true
 
-        CompletableFuture.allOf(status, consumer)
+        CompletableFuture.allOf(status).join()
         writeCompleted(*args)
 
         logger.info("Exiting...")
@@ -164,6 +164,7 @@ class Application(
         }
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
+        logger.info("Finished Web Scraping")
     }
 
     private fun writeCompleted(vararg args: String){
