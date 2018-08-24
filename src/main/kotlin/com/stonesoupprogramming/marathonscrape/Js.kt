@@ -15,12 +15,14 @@ interface JsDriver {
     fun clickElement(driver: RemoteWebDriver, cssSelector: String)
     fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long = 1000, secondClickButtonSelector : String = "" )
     fun injectJq(driver: RemoteWebDriver)
+    fun readText(driver: RemoteWebDriver, elem: String) : String
 }
 
 //NOTE: Do not inject a remote driver into this class because they are not thread safe
 @Primary
 @Component
 class JsDriverImpl : JsDriver {
+
 
 
     private val logger = LoggerFactory.getLogger(JsDriverImpl::class.java)
@@ -68,6 +70,10 @@ class JsDriverImpl : JsDriver {
         return $('$selector').html()
     """.trimIndent()
 
+    private val readTextJs = """
+        return $('$selector').text()
+    """.trimIndent()
+
     override fun injectJq(driver: RemoteWebDriver) {
         driver.executeScript(jquery)
     }
@@ -100,6 +106,15 @@ class JsDriverImpl : JsDriver {
             driver.executeScript(readHtmlJs.replace(selector, elem)) as String
         } catch (e: Exception) {
             logger.error("Unable to return html", e)
+            throw e
+        }
+    }
+
+    override fun readText(driver: RemoteWebDriver, elem: String): String {
+        return try {
+            driver.executeScript(readTextJs.replace(selector, elem)) as String
+        } catch (e: Exception) {
+            logger.error("Unable to return text", e)
             throw e
         }
     }

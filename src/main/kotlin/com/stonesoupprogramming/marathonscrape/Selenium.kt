@@ -1124,24 +1124,27 @@ class SanFranciscoScrape(@Autowired private val driverFactory: DriverFactory) {
 @Component
 class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                        @Autowired private val jsDriver: JsDriver,
+                       @Autowired private val runnerDataRepository: RunnerDataRepository,
                        @Autowired private val pagedResultsRepository: PagedResultsRepository) {
 
     private val logger = LoggerFactory.getLogger(SportStatsScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, pagedResults: PagedResults, startPage: Int, endPage: Int, columnPositions: ColumnPositions): CompletableFuture<String> {
+    fun scrape(startPage: Int, endPage: Int, columnPositions: ColumnPositions, source: MarathonSources, marathonYear: Int, url: String): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         return try {
-            driver.get(pagedResults.url)
+            driver.get(url)
             Thread.sleep(5000)
 
             scrollToPage(driver, startPage)
 
             for (page in startPage .. endPage) {
+                resync(driver, page, endPage, readUiPageNum(driver))
+
                 val table = jsDriver.readTableRows(driver, ".overview-result > tbody")
                 val results = mutableListOf<RunnerData>()
-                for(row in table.subList(0, table.size - 1)){
+                processRow@for(row in table.subList(0, table.size - 1)){
                     try {
                         val nationality = if (columnPositions.nationality == -1) {
                             UNAVAILABLE
@@ -1160,30 +1163,38 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                             UNAVAILABLE
                         }
                         val place = try {
-                            row[columnPositions.place].toInt()
+                            when(row[columnPositions.place]){
+                                "DQ" -> continue@processRow //Skip this record
+                                "" -> continue@processRow //Skip this record because there is no finish time
+                                "DNS" -> continue@processRow //Skip this record
+                                "DNF" -> Int.MAX_VALUE
+                                else -> row[columnPositions.place].toInt()
+                            }
                         } catch (e: NumberFormatException) {
                             Int.MAX_VALUE
                         }
+                        val finishTime = if(row[columnPositions.finishTime].isNotBlank()) { row[columnPositions.finishTime] } else { "DNF" }
+
                         results.add(createRunnerData(logger,
                                 age,
-                                row[columnPositions.finishTime],
+                                finishTime,
                                 gender,
-                                pagedResults.marathonYear,
+                                marathonYear,
                                 nationality,
                                 place,
-                                pagedResults.source))
+                                source))
                     } catch (e: Exception) {
                         logger.error("Invalid row $row", e)
                     }
                 }
-                PagedResults(source = pagedResults.source, marathonYear = pagedResults.marathonYear, url = pagedResults.url, pageNum = page)
-                        .markComplete(pagedResultsRepository, queue, results.toMutableList(), logger)
-                advancePage(driver)
+
+                PagedResults(source = source, marathonYear = marathonYear, url = url, pageNum = page)
+                        .markComplete(pagedResultsRepository, runnerDataRepository, results, logger)
             }
 
             successResult()
         } catch (e: Exception) {
-            logger.error("Failed to scrape $pagedResults", e)
+            logger.error("Failed to scrape year=$marathonYear, url=$url", e)
             failResult()
         } finally {
             driverFactory.destroy(driver)
@@ -1191,30 +1202,91 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
     }
 
     private fun scrollToPage(driver: RemoteWebDriver, startPage: Int) {
-        var pageNum = 0
+        var pageNum = 1
         while (pageNum < startPage) {
-            advancePage(driver)
+            resync(driver, pageNum, startPage, readUiPageNum(driver))
             pageNum++
-            sleepRandom()
         }
     }
 
-    private fun advancePage(driver: RemoteWebDriver, attempt: Int = 0, giveUp: Int = 60) {
+
+    private fun movePage(driver: RemoteWebDriver, attempt: Int = 0, giveUp: Int = 60, forward: Boolean = true) {
         try {
+            val selector = if(forward) { ".pagination > li:nth-child(13) > a" } else { ".pagination > li:nth-child(2) > a" }
             val loaderHtml = jsDriver.readHtml(driver, "#ajaxStatusPanel")
             if (loaderHtml.contains("<div id=\"ajaxStatusPanel_start\" style=\"display: none;\">")) {
-                driver.findElementByCssSelector(".pagination > li:nth-child(13)").findElement(By.tagName("a")).click()
+                jsDriver.clickElement(driver, selector)
+                //driver.findElementByCssSelector(selector).findElement(By.tagName("a")).click()
             } else {
                 if (attempt < giveUp) {
                     Thread.sleep(5000)
-                    advancePage(driver, attempt + 1)
+                    movePage(driver, attempt + 1, forward = forward)
                 } else {
-                    throw RuntimeException("Can't advance to the next page due to preloader")
+                    throw RuntimeException("Can't move to the next page due to preloader")
                 }
             }
         } catch (e: Exception) {
-            logger.error("Failed to advance to next page", e)
+            logger.error("Failed to move to next page", e)
             throw e
+        }
+    }
+
+    private fun readUiPageNum(driver: RemoteWebDriver) : Int {
+        return try {
+            jsDriver.readText(driver, ".pagination-wrapper > p:nth-child(2)")
+                    .split("/")[0].replace("Page ", "").trim().toInt()
+        } catch (e : Exception){
+            logger.error("Failed to read page number", e)
+            return -1
+        }
+    }
+
+    private fun resync(driver: RemoteWebDriver, page: Int, endPage: Int, jsPage: Int, attempt : Int = 0, giveUp: Int = 60) {
+        logger.info("page = $page, endPage=$endPage, ui page = $jsPage")
+
+        if(attempt >= giveUp){
+            return
+        }
+
+        if(page == endPage && page == jsPage){
+            return
+        }
+
+        if(jsPage < 0){
+            if(attempt < giveUp){
+                Thread.sleep(1000)
+                try {
+                    resync(driver, page, endPage, readUiPageNum(driver), attempt + 1)
+                } catch (e : Exception){
+                    Thread.sleep(5000)
+                    resync(driver, page, endPage, readUiPageNum(driver), attempt + 1)
+                }
+            }
+        }
+
+        when {
+            page == jsPage -> return
+            page < jsPage -> {
+                try {
+                    movePage(driver, forward = false)
+                    Thread.sleep(1000)
+                    resync(driver, page, endPage, readUiPageNum(driver))
+                } catch (e : Exception){
+                    Thread.sleep(5000)
+                    resync(driver, page, endPage, readUiPageNum(driver), attempt + 1)
+                }
+
+            }
+            page > jsPage -> {
+                try {
+                    movePage(driver)
+                    Thread.sleep(1000)
+                    resync(driver, page, endPage, readUiPageNum(driver))
+                } catch (e : Exception){
+                    Thread.sleep(5000)
+                    resync(driver, page, endPage, readUiPageNum(driver))
+                }
+            }
         }
     }
 }

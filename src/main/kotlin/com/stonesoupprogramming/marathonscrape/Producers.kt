@@ -154,24 +154,23 @@ class NyMarathonProducer(@Autowired private val urlPageRepository: UrlPageReposi
 }
 
 @Component
-class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                             @Autowired private val pagedResultsRepository: PagedResultsRepository,
+class OttawaMarathonProducer(@Autowired private val pagedResultsRepository: PagedResultsRepository,
                              @Autowired private val sportStatsScrape: SportStatsScrape) {
 
     private val logger = LoggerFactory.getLogger(NyMarathonProducer::class.java)
     private val threads = mutableListOf<CompletableFuture<String>>()
 
-    private var lastPageNum2014: Int = 0
-    private var lastPageNum2015: Int = 0
-    private var lastPageNum2016: Int = 0
-    private var lastPageNum2017: Int = 0
+    private var lastPageNum2014: Int = 1
+    private var lastPageNum2015: Int = 1
+    private var lastPageNum2016: Int = 1
+    private var lastPageNum2017: Int = 1
 
     @PostConstruct
     fun init(){
-        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2015).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2016).maxBy { it.pageNum }?.pageNum ?: 0
-        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2014).maxBy { it.pageNum }?.pageNum ?: 1
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2015).maxBy { it.pageNum }?.pageNum ?: 1
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2016).maxBy { it.pageNum }?.pageNum ?: 1
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Ottawa, 2017).maxBy { it.pageNum }?.pageNum ?: 1
     }
 
     fun process() : List<CompletableFuture<String>> {
@@ -181,10 +180,10 @@ class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlock
             val columnPositions = ColumnPositions(ageGender = 5, place = 6, finishTime = 9)
             val nationalColumnPositions = ColumnPositions(nationality = 5, ageGender = 6, place = 7, finishTime = 14)
 
-            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2014, url = "https://www.sportstats.ca/display-results.xhtml?raceid=166"), lastPageNum2014, 140, columnPositions))
-            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2015, url = "https://www.sportstats.ca/display-results.xhtml?raceid=26006"), lastPageNum2015, 117, columnPositions))
-            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2016, url = "https://www.sportstats.ca/display-results.xhtml?raceid=29494"), lastPageNum2016, 110, nationalColumnPositions))
-            threads.add(sportStatsScrape.scrape(runnerDataQueue, PagedResults(source = MarathonSources.Ottawa, marathonYear = 2017, url = "https://www.sportstats.ca/display-results.xhtml?raceid=42854"), lastPageNum2017, 115, nationalColumnPositions))
+            threads.add(sportStatsScrape.scrape(source = MarathonSources.Ottawa, marathonYear = 2014, url = "https://www.sportstats.ca/display-results.xhtml?raceid=166", startPage = lastPageNum2014 + 1, endPage = 140, columnPositions = columnPositions))
+            threads.add(sportStatsScrape.scrape(source = MarathonSources.Ottawa, marathonYear = 2015, url = "https://www.sportstats.ca/display-results.xhtml?raceid=26006", startPage = lastPageNum2015 + 1, endPage = 117, columnPositions = columnPositions))
+            threads.add(sportStatsScrape.scrape(source = MarathonSources.Ottawa, marathonYear = 2016, url = "https://www.sportstats.ca/display-results.xhtml?raceid=29494", startPage = lastPageNum2016 + 1, endPage = 110, columnPositions = nationalColumnPositions))
+            threads.add(sportStatsScrape.scrape(source = MarathonSources.Ottawa, marathonYear = 2017, url = "https://www.sportstats.ca/display-results.xhtml?raceid=42854", startPage = lastPageNum2017 + 1, endPage = 115, columnPositions = nationalColumnPositions))
 
             threads.toList()
         } catch (e : Exception){
@@ -920,6 +919,7 @@ class TaipeiProducer(
     }
 }
 
+//Completed
 @Component
 class YuenglingProducer(
         @Autowired private val athLinksMarathonScraper: AthLinksMarathonScraper,

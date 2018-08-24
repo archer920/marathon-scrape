@@ -40,7 +40,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                     MarathonSources.Marines -> logger.printProgress("Marine Corps", source, 19688, 23183, 19768, 20042)
                     MarathonSources.TwinCities -> logger.printProgress("Medtronic", source, 8853, 8546, 8561, 7490)
                     MarathonSources.Disney -> logger.printProgress("Disney", source, 97025, 19235)
-                    MarathonSources.Ottawa -> logger.printProgress("Ottawa", source, 5594, 4664, 4370, 4564)
+                    MarathonSources.Ottawa -> logger.printProgress("Ottawa", source, 19142)
                     MarathonSources.Budapest -> logger.printProgress("Budapest", source, 4348, 5604, 4969, 5415)
                     MarathonSources.SanFranscisco -> logger.printProgress("San Francisco", source, 6624, 6071, 6335, 6586, 5276)
                     MarathonSources.Melbourne -> logger.printProgress("Melbourne", source, 6108, 6083, 6091)
