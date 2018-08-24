@@ -7,7 +7,6 @@ import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -18,19 +17,13 @@ import java.util.concurrent.Semaphore
 
 const val UNAVAILABLE = "Unavailable"
 
-interface PagedResultsScraper {
-
-    @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url : String, year : Int,  marathonSources: MarathonSources, startPage: Int, endPage: Int) : CompletableFuture<String>
-}
-
 @Component
 class DriverFactory {
 
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
     private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors() - 2)
 
-    fun createDriver() : RemoteWebDriver {
+    fun createDriver(): RemoteWebDriver {
         return try {
             logger.info("Waiting on Permit")
             semaphore.acquire()
@@ -38,8 +31,8 @@ class DriverFactory {
 
             sleepRandom()
             ChromeDriver()
-        } catch (e : Exception){
-            when(e){
+        } catch (e: Exception) {
+            when (e) {
                 is InterruptedException -> {
                     logger.error("Timeout while waiting for driver", e)
                     throw e
@@ -49,13 +42,13 @@ class DriverFactory {
         }
     }
 
-    fun destroy(driver : RemoteWebDriver){
+    fun destroy(driver: RemoteWebDriver) {
         try {
             semaphore.release()
             logger.info("Permit has been released")
             driver.close()
             System.gc()
-        } catch (e : Exception){
+        } catch (e: Exception) {
             logger.error("Failed to destroy driver", e)
         }
     }
@@ -63,7 +56,7 @@ class DriverFactory {
 
 //Complete
 @Component
-class MedtronicMarathonScraper(@Autowired private val driverFactory : DriverFactory,
+class MedtronicMarathonScraper(@Autowired private val driverFactory: DriverFactory,
                                @Autowired private val stateCodes: List<String>) {
 
     private val logger = LoggerFactory.getLogger(MedtronicMarathonScraper::class.java)
@@ -393,7 +386,7 @@ class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processRow(tableRow : List<String> , year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
+    private fun processRow(tableRow: List<String>, year: Int, gender: Gender, resultsPage: MutableList<RunnerData>) {
         try {
             val place = tableRow[0].toInt()
             val finishTime = tableRow[10]
@@ -469,7 +462,7 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
             while (jsDriver.elementIsPresent(driver, nextButtonSelector)) {
                 val resultsPage = mutableListOf<RunnerData>()
                 val tableRows = jsDriver.readTableRows(driver, tbody)
-                for (row in 0 until tableRows.size - 2 step 2){
+                for (row in 0 until tableRows.size - 2 step 2) {
                     val age = tableRows[row][3].trim()
                     val gender = tableRows[row][4].trim()
                     val nationality = tableRows[row][7].trim()
@@ -479,7 +472,7 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
                     resultsPage.insertRunnerData(logger, age, finishTime, gender, year, nationality, place, MarathonSources.Boston)
                 }
 
-                PagedResults(source = MarathonSources.Boston, marathonYear =  year, url = url, pageNum = pageNum)
+                PagedResults(source = MarathonSources.Boston, marathonYear = year, url = url, pageNum = pageNum)
                         .markComplete(pagedResultsRepository, queue, resultsPage, logger)
                 pageNum++
                 jsDriver.clickElement(driver, nextButtonSelector)
@@ -790,12 +783,12 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
 @Component
 class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val jsDriver: JsDriver,
-                        @Autowired private val pagedResultsRepository: PagedResultsRepository){
+                        @Autowired private val pagedResultsRepository: PagedResultsRepository) {
 
     private val logger = LoggerFactory.getLogger(MtecResultScraper::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, url : String, year : Int, source : MarathonSources, startPage: Int, endPage: Int) : CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, url: String, year: Int, source: MarathonSources, startPage: Int, endPage: Int): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
@@ -804,13 +797,13 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
             driver.click("#quickresults > div > a:nth-child(4)".toCss(), logger)
             driver.click("#searchResults > div > a:nth-child(5)".toCss(), logger)
 
-            for(pageNum in 1 .. endPage){
-                if(pageNum > startPage){
+            for (pageNum in 1..endPage) {
+                if (pageNum > startPage) {
                     val resultPage = mutableListOf<RunnerData>()
                     processTable(driver, resultPage, year, source)
                     PagedResults(source = source, marathonYear = year, pageNum = pageNum, url = url).markComplete(pagedResultsRepository, queue, resultPage, logger)
                 }
-                if(pageNum == 1){
+                if (pageNum == 1) {
                     driver.click("#searchResults > div > a:nth-child(2)".toCss(), logger)
                 } else {
                     driver.click("#searchResults > div:nth-child(1) > a:nth-child(3)".toCss(), logger)
@@ -818,7 +811,7 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
             }
 
             return successResult()
-        } catch (e : Exception){
+        } catch (e: Exception) {
             logger.error("Failed to process year=$year, url=$url", e)
             return failResult()
         } finally {
@@ -829,16 +822,16 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
     private fun processTable(driver: RemoteWebDriver, resultPage: MutableList<RunnerData>, year: Int, source: MarathonSources) {
         try {
             val table = jsDriver.readTableRows(driver, "#searchResults > div > div > table > tbody")
-            for (row in 0 until table.size){
+            for (row in 0 until table.size) {
                 processRow(table[row], resultPage, year, source)
             }
-        } catch (e : Exception){
+        } catch (e: Exception) {
             logger.error("Failed to process page", e)
             throw e
         }
     }
 
-    private fun processRow(row: List<String>, resultPage: MutableList<RunnerData>, year: Int, source : MarathonSources) {
+    private fun processRow(row: List<String>, resultPage: MutableList<RunnerData>, year: Int, source: MarathonSources) {
         try {
             val gender = row[2].trim()
             val age = row[3].trim()
@@ -846,7 +839,7 @@ class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
             val place = row[6].substringBefore("/").trim().toInt()
 
             resultPage.insertRunnerData(logger, age, finishTime, gender, year, "USA", place, source)
-        } catch (e : Exception){
+        } catch (e: Exception) {
             logger.error("Failed to process row=$row", e)
             throw e
         }
@@ -863,7 +856,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
     private val logger = LoggerFactory.getLogger(TrackShackResults::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, page: UrlPage, gender : Gender, columnPositions: ColumnPositions): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, page: UrlPage, gender: Gender, columnPositions: ColumnPositions): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
@@ -877,7 +870,7 @@ class TrackShackResults(@Autowired private val driverFactory: DriverFactory,
                 val tableRow = table[row]
 
                 val place = tableRow[columnPositions.place].toInt()
-                val age =  tableRow[columnPositions.age]
+                val age = tableRow[columnPositions.age]
                 var nationality = tableRow[columnPositions.nationality].substringAfterLast(",").trim()
                 nationality = stateCodes.toCountry(nationality)
                 val finishTime = tableRow[columnPositions.finishTime]
@@ -905,15 +898,15 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
     private val logger = LoggerFactory.getLogger(MarineCorpsScrape::class.java)
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, startPage : Int, endPage : Int): CompletableFuture<String> {
+    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, startPage: Int, endPage: Int): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
         val resultsPage = mutableListOf<RunnerData>()
 
         try {
             processForm(driver, year)
 
-            for(pageNum in 1 .. endPage){
-                if(pageNum > startPage){
+            for (pageNum in 1..endPage) {
+                if (pageNum > startPage) {
                     processTable(driver, resultsPage, year)
                     val numberedPage = PagedResults(null, MarathonSources.Marines, year, "http://www.marinemarathon.com/results/marathon", pageNum)
 
@@ -921,7 +914,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
                         pagedResultsRepository.save(numberedPage)
                         queue.addResultsPage(resultsPage)
                         logger.info("Successfully scraped: $numberedPage")
-                    } catch (e : Exception){
+                    } catch (e: Exception) {
                         logger.error("Failed to record page: $numberedPage", e)
                     }
                 }
@@ -937,7 +930,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, resultPage : MutableList<RunnerData>, year: Int, attempt : Int = 0, maxAttempts : Int = 60) {
+    private fun processTable(driver: RemoteWebDriver, resultPage: MutableList<RunnerData>, year: Int, attempt: Int = 0, maxAttempts: Int = 60) {
         try {
             val tempResultsPage = mutableListOf<RunnerData>()
             val numRows = driver.countTableRows("#xact_results_agegroup_results > tbody".toCss(), logger)
@@ -946,10 +939,10 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
             }
             resultPage.addAll(tempResultsPage)
         } catch (e: Exception) {
-            when(e){
+            when (e) {
                 is IndexOutOfBoundsException -> {
                     Thread.sleep(1000)
-                    if(attempt < maxAttempts){
+                    if (attempt < maxAttempts) {
                         processTable(driver, resultPage, year, attempt + 1)
                     } else {
                         logger.error("Unable to process on page", e)
@@ -964,7 +957,7 @@ class MarineCorpsScrape(@Autowired private val driverFactory: DriverFactory,
         }
     }
 
-    private fun processRow(driver: RemoteWebDriver, row: Int, resultPage : MutableList<RunnerData>, year: Int) {
+    private fun processRow(driver: RemoteWebDriver, row: Int, resultPage: MutableList<RunnerData>, year: Int) {
         try {
             val tbody = "#xact_results_agegroup_results > tbody"
             val ageGender = driver.findCellValue(tbody.toCss(), row, 4, logger)//findCellValue(driver, row, 4)
@@ -1164,7 +1157,7 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                 val table = jsDriver.readTableRows(driver, ".overview-result > tbody")
                 val results = table.subList(0, table.size - 1).map { row ->
                     try {
-                        val nationality = if(columnPositions.nationality == -1){
+                        val nationality = if (columnPositions.nationality == -1) {
                             UNAVAILABLE
                         } else {
                             row[columnPositions.nationality]
@@ -1182,7 +1175,7 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                         }
                         val place = try {
                             row[columnPositions.place].toInt()
-                        } catch (e : NumberFormatException){
+                        } catch (e: NumberFormatException) {
                             Int.MAX_VALUE
                         }
                         createRunnerData(logger,
@@ -1193,13 +1186,13 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                                 nationality,
                                 place,
                                 pagedResults.source)
-                    } catch (e : Exception){
+                    } catch (e: Exception) {
                         logger.error("Index out of Bounds")
                         throw e
                     }
 
                 }.toList()
-                PagedResults(source=pagedResults.source, marathonYear = pagedResults.marathonYear, url = pagedResults.url, pageNum = page)
+                PagedResults(source = pagedResults.source, marathonYear = pagedResults.marathonYear, url = pagedResults.url, pageNum = page)
                         .markComplete(pagedResultsRepository, queue, results.toMutableList(), logger)
                 advancePage(driver)
             }
@@ -1215,20 +1208,20 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
 
     private fun scrollToPage(driver: RemoteWebDriver, startPage: Int) {
         var pageNum = 0
-        while(pageNum < startPage){
+        while (pageNum < startPage) {
             advancePage(driver)
             pageNum++
             sleepRandom()
         }
     }
 
-    private fun advancePage(driver: RemoteWebDriver, attempt : Int = 0, giveUp : Int = 60) {
+    private fun advancePage(driver: RemoteWebDriver, attempt: Int = 0, giveUp: Int = 60) {
         try {
             val loaderHtml = jsDriver.readHtml(driver, "#ajaxStatusPanel")
-            if(loaderHtml.contains("<div id=\"ajaxStatusPanel_start\" style=\"display: none;\">")){
+            if (loaderHtml.contains("<div id=\"ajaxStatusPanel_start\" style=\"display: none;\">")) {
                 driver.findElementByCssSelector(".pagination > li:nth-child(13)").findElement(By.tagName("a")).click()
             } else {
-                if(attempt < giveUp){
+                if (attempt < giveUp) {
                     Thread.sleep(5000)
                     advancePage(driver, attempt + 1)
                 } else {
@@ -1266,7 +1259,7 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
                 urlPageRepository.save(urlPage)
                 addResultsToQueue(queue, resultsPage)
                 logger.info("Successfully scraped: $urlPage")
-            } catch (e : Exception){
+            } catch (e: Exception) {
                 logger.error("Failed to record page: $urlPage", e)
             }
 
@@ -1280,11 +1273,11 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
     }
 
     @Synchronized
-    private fun addResultsToQueue(queue: BlockingQueue<RunnerData>, resultsPage : MutableList<RunnerData>){
+    private fun addResultsToQueue(queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>) {
         queue.addAll(resultsPage)
     }
 
-    private fun processRow(driver: RemoteWebDriver, resultsPage : MutableList<RunnerData>, row: Int, year: Int, columnPositions: ColumnPositions) {
+    private fun processRow(driver: RemoteWebDriver, resultsPage: MutableList<RunnerData>, row: Int, year: Int, columnPositions: ColumnPositions) {
         try {
             val cssSelector = "body > table:nth-child(7) > tbody:nth-child(1)"
             val place = try {
@@ -1317,19 +1310,19 @@ class BudapestScrape(@Autowired private val driverFactory: DriverFactory,
 @Component
 class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFactory,
                                  @Autowired private val jsDriver: JsDriver,
-                                 @Autowired private val urlPageRepository: UrlPageRepository){
+                                 @Autowired private val urlPageRepository: UrlPageRepository) {
 
     private val logger = LoggerFactory.getLogger(MultisportAustraliaScraper::class.java)
 
     @Async
-    fun scrape(runnerDataQueue: LinkedBlockingQueue<RunnerData>, link: UrlPage, source : MarathonSources, columnPositions: ColumnPositions): CompletableFuture<String> {
+    fun scrape(runnerDataQueue: LinkedBlockingQueue<RunnerData>, link: UrlPage, source: MarathonSources, columnPositions: ColumnPositions): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         return try {
             driver.get(link.url)
 
             val resultsPage = mutableListOf<RunnerData>()
-            val tableSelector = if(link.marathonYear == 2017){
+            val tableSelector = if (link.marathonYear == 2017) {
                 ".table > tbody:nth-child(2)"
             } else {
                 ".ResultsTableBlk > tbody:nth-child(2)"
@@ -1337,16 +1330,16 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
 
             val tableText = jsDriver.readTableRows(driver, tableSelector)
             val tableHtml = jsDriver.readTableRows(driver, tableSelector, rawHtml = true)
-            for(row in 0 until tableText.size){
+            for (row in 0 until tableText.size) {
                 try {
-                    val nationality = if(columnPositions.nationality == -1) {
+                    val nationality = if (columnPositions.nationality == -1) {
                         UNAVAILABLE
                     } else {
                         nationality(tableHtml[row][columnPositions.nationality])
                     }
                     val place = try {
                         tableText[row][columnPositions.place].split("                        ")[0].toInt()
-                    } catch (e : Exception){
+                    } catch (e: Exception) {
                         Int.MAX_VALUE
                     }
                     resultsPage.add(createRunnerData(
@@ -1358,7 +1351,7 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
                             place = place,
                             year = link.marathonYear,
                             nationality = nationality))
-                } catch (e : IndexOutOfBoundsException){
+                } catch (e: IndexOutOfBoundsException) {
                     logger.error("Index out of bounds", e)
                     throw e
                 }
@@ -1367,7 +1360,7 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
             link.markComplete(urlPageRepository, runnerDataQueue, resultsPage, logger)
 
             successResult()
-        } catch (e : Exception){
+        } catch (e: Exception) {
             logger.error("Failed to scrape ${link.url}", e)
             failResult()
         } finally {
@@ -1375,10 +1368,10 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
         }
     }
 
-    private fun nationality(rawHtml : String) : String {
+    private fun nationality(rawHtml: String): String {
         return try {
             rawHtml.split(" ")[2].replace("alt=", "").replace("\"", "")
-        } catch (e : Exception){
+        } catch (e: Exception) {
             return UNAVAILABLE
         }
     }
@@ -1387,62 +1380,102 @@ class MultisportAustraliaScraper(@Autowired private val driverFactory: DriverFac
 @Component
 class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactory,
                               @Autowired private val jsDriver: AthJsDriver,
-                              @Autowired private val pagedResultsRepository: PagedResultsRepository) : PagedResultsScraper {
+                              @Autowired private val runnerDataRepository: RunnerDataRepository,
+                              @Autowired private val pagedResultsRepository: PagedResultsRepository) {
 
     private val logger = LoggerFactory.getLogger(AthLinksMarathonScraper::class.java)
+    private val backwardsSelector = "#pager > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)"
+    private val firstNextSelector = "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)"
+    private val secondNextSelector = "#pager > div:nth-child(1) > div:nth-child(7) > button:nth-child(1)"
 
-    override fun scrape(queue: BlockingQueue<RunnerData>, url: String, year : Int, marathonSources: MarathonSources, startPage: Int, endPage: Int): CompletableFuture<String> {
+    @Async
+    fun scrape(url: String, year: Int, marathonSources: MarathonSources, startPage: Int): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         return try {
             driver.get(url)
             sleepRandom(2, 5)
 
-            var lastPage : List<RunnerData>? = null
-            for(page in startPage .. endPage){
-                sleepRandom(2, 5)
-
-
-                if(page >= startPage){
-                    val pageData = jsDriver.readPage(driver)
-                    if(pageData.isEmpty()){
-                        throw IllegalStateException("pageData is empty on year=$year, page = $page")
-                    }
-
-                    val resultsPage = pageData.map { it ->
-                        createRunnerData(logger,
-                                it["age"]!!,
-                                it["finishTime"]!!,
-                                it["gender"]!!,
-                                year,
-                                it["nationality"]!!,
-                                it["place"]!!.toInt(),
-                                marathonSources) }.toList()
-
-                    lastPage?.let { lp ->
-                        if(lp.any { it.place == resultsPage[49].place }){
-                            throw IllegalStateException("pageData is the same as last page. $pageData")
-                        }
-                    }
-
-                    PagedResults(source = marathonSources, marathonYear = year, url = url, pageNum = page)
-                            .markComplete(pagedResultsRepository, queue, resultsPage.toMutableList(), logger)
-                    lastPage = resultsPage
-                }
-                if(page == 0){
-                    jsDriver.clickElement(driver, "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)")
-                } else {
-                    jsDriver.clickElement(driver,"#pager > div:nth-child(1) > div:nth-child(7) > button:nth-child(1)" )
-                }
-                logger.info("Advancing to page ${page + 1}")
+            var selector: String
+            var page = 1
+            while(page < startPage){
+                page = advance(driver, page)
             }
 
+            do {
+                selector = if(page == 1) { firstNextSelector } else { secondNextSelector }
+
+                scrapePage(driver, url, year, page, marathonSources)
+
+                page = advance(driver, page)
+            } while(jsDriver.elementIsPresent(driver, selector))
+
+            scrapePage(driver, url, year, page, marathonSources)
+
             successResult()
-        } catch (e : Exception) {
-            logger.error("Failed to scrape $marathonSources, for year=$year, url=$url")
+        } catch (e: Exception) {
+            logger.error("Failed to scrape $marathonSources, for year=$year, url=$url", e)
             failResult()
         } finally {
             driverFactory.destroy(driver)
+        }
+    }
+
+    private fun scrapePage(driver: RemoteWebDriver, url : String, year: Int, page: Int, marathonSources: MarathonSources) {
+        val pageData = jsDriver.readPage(driver)
+        if (pageData.isEmpty()) {
+            throw IllegalStateException("pageData is empty on year=$year, page = $page")
+        }
+
+        val resultsPage = pageData.map { it ->
+            createRunnerData(logger,
+                    it["age"]!!,
+                    it["finishTime"]!!,
+                    it["gender"]!!,
+                    year,
+                    it["nationality"]!!,
+                    it["place"]!!.toInt(),
+                    marathonSources)
+        }.toList()
+
+        PagedResults(source = marathonSources, marathonYear = year, url = url, pageNum = page)
+                .markComplete(pagedResultsRepository, runnerDataRepository, resultsPage, logger)
+    }
+
+    private fun advance(driver: RemoteWebDriver, page: Int) : Int {
+        val selector = if(page == 1) { firstNextSelector } else { secondNextSelector }
+        jsDriver.clickElement(driver, selector)
+        resync(driver, page + 1, jsDriver.findCurrentPage(driver))
+        return page + 1
+    }
+
+    private fun resync(driver: RemoteWebDriver, page: Int, jsPage: Int, attempt : Int = 0, giveUp: Int = 60) {
+        logger.info("page = $page, ui page = $jsPage")
+        if(jsPage < 0){
+            if(attempt < giveUp){
+                Thread.sleep(5000)
+                resync(driver, page, jsDriver.findCurrentPage(driver), attempt + 1)
+            } else {
+                val selector = if(page == 1) { firstNextSelector } else { secondNextSelector }
+                if(!jsDriver.elementIsPresent(driver, selector)){
+                    return
+                }
+            }
+        }
+
+        when {
+            page == jsPage -> return
+            page < jsPage -> {
+                jsDriver.clickElement(driver, backwardsSelector)
+                Thread.sleep(5000)
+                resync(driver, page, jsDriver.findCurrentPage(driver))
+            }
+            page > jsPage -> {
+                val selector = if(page == 1) { firstNextSelector } else { secondNextSelector }
+                jsDriver.clickElement(driver, selector)
+                Thread.sleep(5000)
+                resync(driver, page, jsDriver.findCurrentPage(driver))
+            }
         }
     }
 }

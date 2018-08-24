@@ -13,7 +13,7 @@ interface JsDriver {
     fun readHtml(driver: RemoteWebDriver, elem: String): String
     fun elementIsPresent(driver: RemoteWebDriver, cssSelector: String): Boolean
     fun clickElement(driver: RemoteWebDriver, cssSelector: String)
-    fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long = 1000)
+    fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long = 1000, secondClickButtonSelector : String = "" )
     fun injectJq(driver: RemoteWebDriver)
 }
 
@@ -125,11 +125,16 @@ class JsDriverImpl : JsDriver {
         }
     }
 
-    override fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long) {
+    override fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long, secondClickButtonSelector : String) {
         try {
             var currentPage = 0
             while (currentPage < pageNum) {
-                clickElement(driver, clickButtonSelector)
+                val selector = if(currentPage > 0 && secondClickButtonSelector.isNotBlank()) {
+                    secondClickButtonSelector
+                } else {
+                    clickButtonSelector
+                }
+                clickElement(driver, selector)
                 currentPage++
                 Thread.sleep(sleepAmount)
             }
@@ -167,12 +172,42 @@ class AthJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
         return results
     """.trimIndent()
 
+    private val currentPageJs = """
+        let buttons = []
+        ${'$'}('#pager').find('button').each((i, elem) => {
+	        let style = ${'$'}(elem).attr('style')
+            let txt = ${'$'}(elem).text()
+
+            buttons.push([style, txt])
+        })
+        return buttons
+    """.trimIndent()
+
     fun readPage(driver: RemoteWebDriver) : List<Map<String, String>> {
         return try {
             injectJq(driver)
             driver.executeScript(extractInformationJs) as List<Map<String, String>>
         } catch (e : Exception){
             logger.error("Failed to extract page information", e)
+            throw e
+        }
+    }
+
+    fun findCurrentPage(driver: RemoteWebDriver) : Int {
+        return try {
+            injectJq(driver)
+            val buttons = driver.executeScript(currentPageJs) as List<List<String>>
+            var index = -1
+            for(b in buttons){
+                val parts = b[0].split(";")
+                val result = parts.any { it == " color: rgb(255, 255, 255)" }
+                if(result){
+                    index = b[1].toInt()
+                }
+            }
+            index
+        } catch (e : Exception){
+            logger.error("Can't determine the current page")
             throw e
         }
     }

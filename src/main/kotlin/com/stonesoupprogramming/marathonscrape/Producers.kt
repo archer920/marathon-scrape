@@ -856,7 +856,6 @@ class MelbourneProducer(
 
 @Component
 class TaipeiProducer(
-        @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
         @Autowired private val athLinksMarathonScraper: AthLinksMarathonScraper,
         @Autowired private val pagedResultsRepository: PagedResultsRepository){
 
@@ -871,31 +870,19 @@ class TaipeiProducer(
     @PostConstruct
     private fun init(){
         lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2014 > 0){
-            lastPageNum2014++
-        }
         lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2015).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2015 > 0){
-            lastPageNum2015++
-        }
         lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2016).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2016 > 0){
-            lastPageNum2016++
-        }
         lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(MarathonSources.Taipei, 2017).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2017 > 0){
-            lastPageNum2017++
-        }
     }
 
     fun process(): List<CompletableFuture<String>> {
         return try {
             logger.info("Starting Taipei Marathon")
 
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 2014, MarathonSources.Taipei, lastPageNum2014, 107))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 2015, MarathonSources.Taipei, lastPageNum2015, 94))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 2016, MarathonSources.Taipei, lastPageNum2016, 112))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 2017, MarathonSources.Taipei, lastPageNum2017, 120))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 2014, MarathonSources.Taipei, lastPageNum2014))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 2015, MarathonSources.Taipei, lastPageNum2015))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 2016, MarathonSources.Taipei, lastPageNum2016))
+            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 2017, MarathonSources.Taipei, lastPageNum2017))
 
             threads.toList()
         } catch (e : Exception){

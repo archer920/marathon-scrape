@@ -62,11 +62,19 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
         val percentFormat = NumberFormat.getPercentInstance()
 
         val count = runnerDataRepository.countBySource(source)
-        val total = yearTotals.sum()
+        val total = sum(*yearTotals)
         val percent = count.toDouble() / total.toDouble()
 
         info("$name at ${percentFormat.format(percent)}: $count / $total")
 
         printBlankLines()
+    }
+
+    private fun sum(vararg amounts : Int) : Int{
+        var total = 0
+        for(amount in amounts){
+            total += amount
+        }
+        return total
     }
 }
