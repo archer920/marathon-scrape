@@ -150,10 +150,10 @@ fun String.toCss(): By {
 }
 
 fun List<String>.toCountry(code: String): String {
-    return if (this.contains(code)) {
+    return if (this.contains(code.trim())) {
         "USA"
     } else {
-        code
+        code.trim()
     }
 }
 

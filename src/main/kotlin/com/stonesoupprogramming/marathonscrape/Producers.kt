@@ -922,7 +922,6 @@ class TaipeiProducer(
 
 @Component
 class YuenglingProducer(
-        @Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
         @Autowired private val athLinksMarathonScraper: AthLinksMarathonScraper,
         @Autowired private val pagedResultsRepository: PagedResultsRepository){
 
@@ -958,10 +957,10 @@ class YuenglingProducer(
         return try {
             logger.info("Starting Taipei Marathon")
 
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/334125/Course/414365/Results", 2014, MarathonSources.Yuengling, lastPageNum2014, 56))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/429684/Course/644989/Results", 2015, MarathonSources.Yuengling, lastPageNum2015, 44))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/488730/Course/726687/Results", 2016, MarathonSources.Yuengling, lastPageNum2016, 37))
-            threads.add(athLinksMarathonScraper.scrape(runnerDataQueue, "https://www.athlinks.com/event/3175/results/Event/615660/Course/940547/Results", 2017, MarathonSources.Yuengling, lastPageNum2017, 28))
+            threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/3175/results/Event/334125/Course/414365/Results", 2014, MarathonSources.Yuengling, lastPageNum2014))
+            threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/3175/results/Event/429684/Course/644989/Results", 2015, MarathonSources.Yuengling, lastPageNum2015))
+            threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/3175/results/Event/488730/Course/726687/Results", 2016, MarathonSources.Yuengling, lastPageNum2016))
+            threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/3175/results/Event/615660/Course/940547/Results", 2017, MarathonSources.Yuengling, lastPageNum2017))
 
             threads.toList()
         } catch (e : Exception){
