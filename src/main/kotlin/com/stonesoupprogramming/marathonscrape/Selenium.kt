@@ -323,7 +323,7 @@ class BerlinMarathonScraper(@Autowired private val driverFactory: DriverFactory)
     }
 }
 
-//Processing
+//Completed
 @Component
 class ViennaMarathonScraper(@Autowired private val driverFactory: DriverFactory,
                             @Autowired private val jsDriver: JsDriver,
@@ -487,7 +487,7 @@ class BostonMarathonScrape(@Autowired private val driverFactory: DriverFactory,
     }
 }
 
-//TODO: Fixme
+//Completed
 @Component
 class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory) {
 
@@ -673,18 +673,22 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
     }
 }
 
-//TODO: Fixme
+//NYC Finished
 @Component
-class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) {
+class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory,
+                           @Autowired private val jsDriver: JsDriver,
+                           @Autowired private val runnerDataRepository: RunnerDataRepository,
+                           @Autowired private val urlPageRepository: UrlPageRepository) {
 
     private val logger = LoggerFactory.getLogger(MarathonGuideScraper::class.java)
 
-    fun findRangeOptionsForUrl(url: String): List<String> {
+    @Async
+    fun findRangeOptionsForUrl(url: String): CompletableFuture<List<String>> {
         val driver = driverFactory.createDriver()
 
         return try {
             driver.get(url)
-            findRangeOptions(driver)
+            CompletableFuture.completedFuture(findRangeOptions(driver))
         } catch (e: Exception) {
             logger.error("Unable to get the range options on Marathon Guide", e)
             throw e
@@ -694,7 +698,7 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
     }
 
     @Async
-    fun scrape(queue: BlockingQueue<RunnerData>, year: Int, url: String, source: MarathonSources, columnPositions: ColumnPositions, rangeOption: String): CompletableFuture<String> {
+    fun scrape(year: Int, url: String, source: MarathonSources, columnPositions: ColumnPositions, rangeOption: String): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         try {
@@ -704,7 +708,7 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
             driver.selectComboBoxOption(By.cssSelector("select[name=RaceRange]"), rangeOption)
             driver.findElementByName("SubmitButton").click()
 
-            processTable(driver, queue, year, source, columnPositions)
+            processTable(driver, year, source, rangeOption,columnPositions)
 
             logger.info("Finished $url, $year, $rangeOption successfully")
             return successResult()
@@ -716,50 +720,30 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
         }
     }
 
-    private fun processTable(driver: RemoteWebDriver, queue: BlockingQueue<RunnerData>, year: Int, source: MarathonSources, columnPositions: ColumnPositions) {
+    private fun processTable(driver: RemoteWebDriver, year: Int, source: MarathonSources, rangeOption: String, columnPositions: ColumnPositions) {
         try {
             driver.waitUntilVisible(By.className("BoxTitleOrange"))
 
-            for (row in 2 until countRows(driver)) {
-                val ageGender = findCellValue(driver, row, columnPositions.ageGender)
-                val gender = ageGender.substringAfter("(")[0].toString()
-                val age = ageGender.substringAfter("(").substring(1, 3)
-                val place = findCellValue(driver, row, columnPositions.place).toInt()
-                val finishTime = findCellValue(driver, row, columnPositions.finishTime)
-                val nationality = findCellValue(driver, row, columnPositions.nationality)
+            var table = jsDriver.readTableRows(driver, "table.BoxTitleOrange > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1)")
+            table = table.subList(2, table.size)
+            val pageResults = table.map { row ->
+                try {
+                    val ageGender = row[columnPositions.ageGender]
+                    val gender = ageGender.substringAfter("(")[0].toString()
+                    val age = ageGender.substringAfter("(").substring(1, 3)
+                    val place = row[columnPositions.place].toInt()
+                    val finishTime = row[columnPositions.finishTime]
+                    val nationality = row[columnPositions.nationality]
 
-                queue.insertRunnerData(
-                        logger = logger,
-                        age = age,
-                        finishTime = finishTime,
-                        gender = gender,
-                        year = year,
-                        nationality = nationality,
-                        place = place,
-                        source = source
-                )
-            }
+                    createRunnerData(logger, age, finishTime, gender, year, nationality, place, source)
+                } catch (e : Exception){
+                    logger.error("Failed to process row=$row", e)
+                    throw e
+                }
+            }.toList()
+            UrlPage(source = source, marathonYear = year, url = rangeOption).markComplete(urlPageRepository, runnerDataRepository, pageResults.toMutableList(), logger)
         } catch (e: Exception) {
             logger.error("Failed to process table for $year", e)
-        }
-    }
-
-    private fun countRows(driver: RemoteWebDriver): Int {
-        try {
-            return driver.findElementsByCssSelector("body > table:nth-child(119) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr").size
-        } catch (e: Exception) {
-            logger.error("Unable to determine the number of rows", e)
-            throw e
-        }
-    }
-
-    private fun findCellValue(driver: RemoteWebDriver, row: Int, cell: Int): String {
-        try {
-            return driver.findElementsByCssSelector("body > table:nth-child(119) > tbody > tr:nth-child(1) > td:nth-child(2) > table:nth-child(4) > tbody > tr:nth-child(2) > td > table > tbody > tr > td > table > tbody > tr > td > table > tbody > tr")[row]
-                    .findElements(By.tagName("td"))[cell].text
-        } catch (e: Exception) {
-            logger.error("Unable to get cell value at $row, $cell", e)
-            throw e
         }
     }
 
@@ -780,6 +764,7 @@ class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory) 
 }
 
 //LA Finished
+//Disney Finished
 @Component
 class MtecResultScraper(@Autowired private val driverFactory: DriverFactory,
                         @Autowired private val jsDriver: JsDriver,

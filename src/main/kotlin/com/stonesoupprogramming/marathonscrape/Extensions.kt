@@ -157,6 +157,7 @@ fun List<String>.toCountry(code: String): String {
     }
 }
 
+@Deprecated("Use the new function that inserts the runner data")
 fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger: Logger) {
     try {
         urlPageRepository.save(this)
@@ -164,6 +165,32 @@ fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQu
         logger.info("Successfully scraped: $this")
     } catch (e: Exception) {
         logger.error("Failed to mark complete: $this")
+    }
+}
+
+fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, logger: Logger){
+    try {
+        val runnerDataViolations = mutableListOf<RunnerData>()
+        for(rd in resultsPage){
+            try {
+                runnerDataRepository.save(rd)
+            } catch (e : ConstraintViolationException){
+                runnerDataViolations.add(rd)
+            }
+        }
+        if(runnerDataViolations.isNotEmpty()){
+            logger.info("Saving violations for review")
+            runnerDataViolations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
+        }
+        urlPageRepository.save(this)
+        logger.info("Successfully scraped: $this")
+    } catch (e : Exception){
+        when(e) {
+            is ConstraintViolationException -> {
+
+            }
+        }
+        logger.error("Failed to mark complete: $this)")
     }
 }
 
