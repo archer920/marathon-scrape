@@ -73,6 +73,8 @@ class Application(
         @Autowired private val ottawaMarathonProducer: OttawaMarathonProducer,
         @Autowired private val budapestProducer: BudapestProducer,
         @Autowired private val melbourneProducer: MelbourneProducer,
+        @Autowired private val taipeiProducer: TaipeiProducer,
+        @Autowired private val yuenglingProducer: YuenglingProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -91,9 +93,11 @@ class Application(
         const val LOS_ANGELES = "--los-angeles"
         const val DISNEY = "--disney"
         const val MELBOURE = "--melbourne"
+        const val Taipei = "--taipei"
+        const val Yuengling = "--yuengling"
     }
     override fun run(vararg args: String) {
-        val consumer = runnerDataConsumer.insertValues()
+        runnerDataConsumer.insertValues()
 
         val status = statusReporter.reportStatus(args.toMarathonSources())
 
@@ -102,7 +106,7 @@ class Application(
         this.runnerDataConsumer.signalShutdown = true
         this.statusReporter.shutdown = true
 
-        CompletableFuture.allOf(status, consumer)
+        CompletableFuture.allOf(status).join()
         writeCompleted(*args)
 
         logger.info("Exiting...")
@@ -152,8 +156,15 @@ class Application(
         if(args.contains(Args.MELBOURE)){
             threads.addAll(melbourneProducer.process())
         }
+        if(args.contains(Args.Taipei)){
+            threads.addAll(taipeiProducer.process())
+        }
+        if(args.contains(Args.Yuengling)){
+            threads.addAll(yuenglingProducer.process())
+        }
 
         CompletableFuture.allOf(*threads.toTypedArray()).join()
+        logger.info("Finished Web Scraping")
     }
 
     private fun writeCompleted(vararg args: String){
@@ -195,6 +206,12 @@ class Application(
         }
         if(args.contains(Args.MELBOURE)){
             writeFile(MarathonSources.Melbourne, 2014, 2017)
+        }
+        if(args.contains(Args.Taipei)){
+            writeFile(MarathonSources.Taipei, 2014, 2018)
+        }
+        if(args.contains(Args.Yuengling)){
+            writeFile(MarathonSources.Yuengling, 2014, 2018)
         }
     }
 

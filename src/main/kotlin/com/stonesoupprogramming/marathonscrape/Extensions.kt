@@ -15,6 +15,7 @@ import java.io.FileWriter
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ThreadLocalRandom
+import javax.validation.ConstraintViolationException
 
 fun successResult(): CompletableFuture<String> {
     return CompletableFuture.completedFuture("Success")
@@ -24,8 +25,8 @@ fun failResult(): CompletableFuture<String> {
     return CompletableFuture.completedFuture("Error")
 }
 
-fun sleepRandom() {
-    val amount = 1000 * ThreadLocalRandom.current().nextInt(5, 60)
+fun sleepRandom(min : Int = 5, max : Int = 60) {
+    val amount = 1000 * ThreadLocalRandom.current().nextInt(min, max)
     try {
         Thread.sleep(amount.toLong())
     } catch (e: Exception) {
@@ -149,13 +150,14 @@ fun String.toCss(): By {
 }
 
 fun List<String>.toCountry(code: String): String {
-    return if (this.contains(code)) {
+    return if (this.contains(code.trim())) {
         "USA"
     } else {
-        code
+        code.trim()
     }
 }
 
+@Deprecated("Use the new function that inserts the runner data")
 fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger: Logger) {
     try {
         urlPageRepository.save(this)
@@ -166,12 +168,65 @@ fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQu
     }
 }
 
+fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, logger: Logger){
+    try {
+        val runnerDataViolations = mutableListOf<RunnerData>()
+        for(rd in resultsPage){
+            try {
+                runnerDataRepository.save(rd)
+            } catch (e : ConstraintViolationException){
+                runnerDataViolations.add(rd)
+            }
+        }
+        if(runnerDataViolations.isNotEmpty()){
+            logger.info("Saving violations for review")
+            runnerDataViolations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
+        }
+        urlPageRepository.save(this)
+        logger.info("Successfully scraped: $this")
+    } catch (e : Exception){
+        when(e) {
+            is ConstraintViolationException -> {
+
+            }
+        }
+        logger.error("Failed to mark complete: $this)")
+    }
+}
+
+@Deprecated("Use the markComplete with the runner data repository instead")
 fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, queue : BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger: Logger){
     try {
         pagedResultsRepository.save(this)
         queue.addResultsPage(resultsPage)
         logger.info(("Successfully scraped: $this"))
     } catch (e : Exception){
+        logger.error("Failed to mark complete: $this)")
+    }
+}
+
+fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, logger: Logger){
+    try {
+        val runnerDataViolations = mutableListOf<RunnerData>()
+        for(rd in resultsPage){
+            try {
+                runnerDataRepository.save(rd)
+            } catch (e : ConstraintViolationException){
+                runnerDataViolations.add(rd)
+            }
+        }
+        if(runnerDataViolations.isNotEmpty()){
+            logger.info("Saving violations for review")
+            runnerDataViolations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
+        }
+        pagedResultsRepository.save(this)
+        logger.info("Successfully scraped: $this")
+    } catch (e : Exception){
+        when(e) {
+            is ConstraintViolationException -> {
+
+            }
+        }
         logger.error("Failed to mark complete: $this)")
     }
 }
@@ -202,8 +257,17 @@ fun RemoteWebDriver.waitUntilClickable(selector: By, timeout: Long = 60, attempt
     }
 }
 
-fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 60) {
-    WebDriverWait(this, timeout).until(ExpectedConditions.visibilityOfElementLocated(selector))
+fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 10, attemptNum: Int = 0, giveUp: Int = 60) {
+    try {
+        WebDriverWait(this, timeout).until(ExpectedConditions.visibilityOfElementLocated(selector))
+    } catch (e : Exception){
+        if(attemptNum < giveUp){
+            Thread.sleep(1000)
+            waitUntilVisible(selector, attemptNum = attemptNum + 1)
+        } else {
+            throw e
+        }
+    }
 }
 
 fun RemoteWebDriver.scrollIntoView(selector: By) {
@@ -246,11 +310,13 @@ fun Array<out String>.toMarathonSources() : MarathonSources{
         this.contains(Application.Args.LOS_ANGELES) -> MarathonSources.LosAngeles
         this.contains(Application.Args.DISNEY) -> MarathonSources.Disney
         this.contains(Application.Args.MELBOURE) -> MarathonSources.Melbourne
+        this.contains(Application.Args.Taipei) -> MarathonSources.Taipei
+        this.contains(Application.Args.Yuengling) -> MarathonSources.Yuengling
         else -> throw IllegalArgumentException("Not a valid source")
     }
 }
 
-fun Logger.printBlankLines(lines : Int = 5){
+fun Logger.printBlankLines(lines : Int = 2){
     for(i in 0 until lines){
         info("")
     }
