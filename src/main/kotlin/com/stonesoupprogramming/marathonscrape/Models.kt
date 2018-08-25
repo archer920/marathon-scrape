@@ -22,7 +22,8 @@ enum class MarathonSources(val cityName : String){
     SanFranscisco("San Franscisco"),
     Melbourne("Melbourne"),
     Taipei("Taipei"),
-    Yuengling("Yuengling")
+    Yuengling("Yuengling"),
+    Honolulu("Honolulu")
 }
 
 enum class Gender(val code : String){
@@ -78,7 +79,17 @@ data class GenderPagedResults(
 data class ColumnPositions(
         val nationality : Int = -1,
         val finishTime : Int = -1,
+        val halfwayTime: Int = -1,
         val place : Int = -1,
         val age : Int = -1,
         val ageGender : Int = -1,
         val gender : Int = -1)
+
+data class UrlScrapeInfo(
+        val url : String,
+        val source: MarathonSources,
+        val marathonYear: Int,
+        val columnPositions: ColumnPositions,
+        val tbodySelector : String ? = null,
+        val rangeOptions : String? = null,
+        val gender: Gender? = null)

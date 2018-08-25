@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -153,6 +154,7 @@ class NyMarathonProducer(@Autowired private val urlPageRepository: UrlPageReposi
     }
 }
 
+//Complete
 @Component
 class OttawaMarathonProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
                              @Autowired private val pagedResultsRepository: PagedResultsRepository,
@@ -967,5 +969,81 @@ class YuenglingProducer(
             logger.error("Failed to start Taipei", e)
             emptyList()
         }
+    }
+}
+
+abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
+
+    protected val threads = mutableListOf<CompletableFuture<String>>()
+
+    fun process() : List<CompletableFuture<String>> {
+        return try {
+            logger.info("Starting $marathonSources")
+
+            buildThreads()
+
+            threads.toList()
+        } catch (e : Exception){
+            logger.error("Failed to start $marathonSources", e)
+            emptyList()
+        }
+    }
+
+    protected abstract fun buildThreads()
+}
+
+@Component
+class HonoluluProducer(@Autowired private val pacificSportScraper: PacificSportScraper,
+                       @Autowired private val marathonGuideScraper: MarathonGuideScraper,
+                       @Autowired private val urlPageRepository: UrlPageRepository):
+        BaseProducer(LoggerFactory.getLogger(HonoluluProducer::class.java), MarathonSources.Honolulu) {
+
+    private lateinit var completedPages : List<UrlPage>
+    private val scrapeInfoList = mutableListOf<UrlScrapeInfo>()
+
+    @PostConstruct
+    fun init(){
+        completedPages = urlPageRepository.findBySource(this.marathonSources)
+    }
+
+    override fun buildThreads() {
+//        scrapeInfoList.addAll(buildUrlScrapeInfoGrayPage("https://pseresults.com/events/647/results/794?c0=&c1=&c2=&name=&city=&bib=&sort%5B%5D=0&sort%5B%5D=2&sort%5B%5D=4&sort%5B%5D=5&page=&per_page=1000",
+//                1, 22, 2014, ColumnPositions(place = 0, finishTime = 2, nationality = 7, ageGender = 8, halfwayTime = 14)))
+
+//        scrapeInfoList.addAll(buildUrlScrapeInfoBluePage("http://live.pseresults.com/e/134#/results/A/",
+//                start = 1, end = 863, year = 2015, columnPositions = ColumnPositions(place = 1, finishTime = 5, ageGender = 7, halfwayTime = 11, nationality = 3)))
+
+        scrapeInfoList.addAll(buildUrlScrapeInfoGrayPage("https://www.pseresults.com/events/851/results/1163?c0=&name=&bib=&sort[]=1&sort[]=0&sort[]=7&sort[]=6&page=&per_page=1000",
+                1, 22, 2016, ColumnPositions(finishTime = 0, place = 1, ageGender = 4, nationality = 9, halfwayTime = 13)))
+
+//        val range2017 = marathonGuideScraper.findRangeOptionsForUrl("http://www.marathonguide.com/results/browse.cfm?MIDD=480171210")
+//        val scrape2017 = range2017.get().map { it ->
+//            val columnPositions = ColumnPositions(ageGender = 4, finishTime = 1, place = 2)
+//            UrlScrapeInfo(url = "http://www.marathonguide.com/results/browse.cfm?MIDD=480171210", source = marathonSources,
+//                    marathonYear =  2017, columnPositions = columnPositions, rangeOptions = it) }
+
+        scrapeInfoList
+                .filter { si -> completedPages.none { cp -> cp.url == si.url } }
+                .forEach { threads.add(pacificSportScraper.scrape(it)) }
+
+//        scrape2017
+//                .filter { s -> completedPages.none { cp -> cp.url == (s.url + ", " + s.rangeOptions) } }
+//                .forEach { threads.add(marathonGuideScraper.scrape(it)) }
+    }
+
+    private fun buildUrlScrapeInfoGrayPage(url : String, start: Int, end : Int, year : Int, columnPositions: ColumnPositions) : List<UrlScrapeInfo> {
+        val scrapeInfoList = mutableListOf<UrlScrapeInfo>()
+        for(i in start .. end){
+            scrapeInfoList.add(UrlScrapeInfo(url.replace("&page=", "&page=$i"), marathonSources, year, columnPositions, ".data_table > table:nth-child(4) > tbody:nth-child(2)"))
+        }
+        return scrapeInfoList.toList()
+    }
+
+    private fun buildUrlScrapeInfoBluePage(url : String, start: Int, end: Int, year: Int, columnPositions: ColumnPositions) : List<UrlScrapeInfo> {
+        val scrapeInfoList = mutableListOf<UrlScrapeInfo>()
+        for(i in start .. end){
+            scrapeInfoList.add(UrlScrapeInfo(url + i, marathonSources, year, columnPositions, ".result_table > tbody:nth-child(2)"))
+        }
+        return scrapeInfoList.toList()
     }
 }

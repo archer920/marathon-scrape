@@ -5,6 +5,7 @@ import org.openqa.selenium.NoSuchElementException
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
@@ -675,12 +676,49 @@ class ChicagoMarathonScrape(@Autowired private val driverFactory: DriverFactory)
 
 //NYC Finished
 @Component
-class MarathonGuideScraper(@Autowired private val driverFactory: DriverFactory,
-                           @Autowired private val jsDriver: JsDriver,
-                           @Autowired private val runnerDataRepository: RunnerDataRepository,
-                           @Autowired private val urlPageRepository: UrlPageRepository) {
+class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
+                           @Autowired jsDriver: JsDriver,
+                           @Autowired runnerDataRepository: RunnerDataRepository,
+                           @Autowired urlPageRepository: UrlPageRepository) : UrlPageScraper(LoggerFactory.getLogger(MarathonGuideScraper::class.java), runnerDataRepository, driverFactory, jsDriver, urlPageRepository) {
 
-    private val logger = LoggerFactory.getLogger(MarathonGuideScraper::class.java)
+    override fun webscrape(driver: RemoteWebDriver, urlScrapeInfo: UrlScrapeInfo) {
+        val rangeOption = urlScrapeInfo.rangeOptions ?: throw IllegalArgumentException("Range option is required")
+        val columnPositions = urlScrapeInfo.columnPositions
+        val pageResults = mutableListOf<RunnerData>()
+
+        driver.get(urlScrapeInfo.url)
+
+        driver.waitUntilClickable(By.name("RaceRange"))
+        driver.selectComboBoxOption(By.cssSelector("select[name=RaceRange]"), rangeOption)
+        driver.findElementByName("SubmitButton").click()
+
+        var table = jsDriver.readTableRows(driver, "table.BoxTitleOrange > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(1) > tbody:nth-child(1)")
+        table = table.subList(2, table.size)
+
+        for(row in table){
+            val place = row[columnPositions.place].toInt()
+            val finish = row[columnPositions.finishTime]
+            val ageGender = row[columnPositions.ageGender]
+            val age = try {
+                ageGender.substring(1)
+            } catch (e : Exception){
+                logger.error("Unable to get age", e)
+                UNAVAILABLE
+            }
+            val gender = try {
+                ageGender[0].toString()
+            } catch (e : Exception){
+                logger.error("Unable to get gender", e)
+                UNAVAILABLE
+            }
+
+            pageResults.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, UNAVAILABLE, place, urlScrapeInfo.source))
+        }
+
+        val url = urlScrapeInfo.url + ", " + rangeOption
+        UrlPage(source = urlScrapeInfo.source, marathonYear = urlScrapeInfo.marathonYear, url = url)
+                .markComplete(urlPageRepository, runnerDataRepository, pageResults, logger)
+    }
 
     @Async
     fun findRangeOptionsForUrl(url: String): CompletableFuture<List<String>> {
@@ -1468,5 +1506,87 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
                 resync(driver, page, jsDriver.findCurrentPage(driver))
             }
         }
+    }
+}
+
+abstract class BaseScraper(protected val logger : Logger, protected val runnerDataRepository : RunnerDataRepository,
+                           protected val driverFactory: DriverFactory, protected val jsDriver: JsDriver)
+
+abstract class UrlPageScraper(logger: Logger, runnerDataRepository: RunnerDataRepository,
+                              driverFactory: DriverFactory, jsDriver: JsDriver,
+                              protected val urlPageRepository: UrlPageRepository) : BaseScraper(logger, runnerDataRepository, driverFactory, jsDriver) {
+
+    @Async
+    open fun scrape(urlScrapeInfo: UrlScrapeInfo) : CompletableFuture<String> {
+        val driver = driverFactory.createDriver()
+
+        return try {
+            webscrape(driver, urlScrapeInfo)
+
+            successResult()
+        } catch (e : Exception){
+            logger.error("Failed to scrape $urlScrapeInfo", e)
+            failResult()
+        } finally {
+            driverFactory.destroy(driver)
+        }
+    }
+
+    protected abstract fun webscrape(driver: RemoteWebDriver, urlScrapeInfo: UrlScrapeInfo)
+}
+
+@Component
+class PacificSportScraper(@Autowired runnerDataRepository: RunnerDataRepository,
+                          @Autowired driverFactory: DriverFactory,
+                          @Autowired jsDriver: JsDriver,
+                          @Autowired urlPageRepository: UrlPageRepository) : UrlPageScraper(LoggerFactory.getLogger(PacificSportScraper::class.java), runnerDataRepository, driverFactory, jsDriver, urlPageRepository) {
+
+    override fun webscrape(driver: RemoteWebDriver, urlScrapeInfo: UrlScrapeInfo) {
+        driver.get(urlScrapeInfo.url)
+
+        val elite = "Elite"
+        val selector = urlScrapeInfo.tbodySelector ?: throw IllegalArgumentException("Table selector is required")
+        val table = jsDriver.readTableRows(driver, selector)
+        val resultPage = mutableListOf<RunnerData>()
+
+        processRows@for(row in table){
+            val positions = urlScrapeInfo.columnPositions
+            val ageGender = row[positions.ageGender]
+
+            if(ageGender.contains(elite)){
+                logger.info("Skipping Elite Row per Requirements")
+                continue@processRows
+            }
+
+            val place = try {
+                row[positions.place].toInt()
+            } catch (e : Exception){
+                logger.error("Place isn't available", e)
+                Int.MAX_VALUE
+            }
+            var nationality = row[positions.nationality]
+            if(nationality.contains(",")){
+                nationality = nationality.split(",").last().trim()
+            }
+
+            val gender = try {
+                ageGender[0].toString()
+            } catch (e : Exception){
+                logger.error("Gender is not available")
+                UNAVAILABLE
+            }
+            val age = try {
+                ageGender.replace("M", "").replace("F", "").replace("W", "")
+            } catch (e : Exception){
+                logger.error("Age isn't available", e)
+                UNAVAILABLE
+            }
+            val finish = row[positions.finishTime]
+            val half = row[positions.halfwayTime]
+
+            resultPage.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, nationality, place, urlScrapeInfo.source, halfwayTime = half))
+        }
+
+        UrlPage(source = urlScrapeInfo.source, marathonYear = urlScrapeInfo.marathonYear, url = urlScrapeInfo.url).markComplete(urlPageRepository, runnerDataRepository, resultPage, logger)
     }
 }
