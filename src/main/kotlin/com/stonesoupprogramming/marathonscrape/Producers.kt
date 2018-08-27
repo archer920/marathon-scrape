@@ -429,30 +429,6 @@ class SanFranciscoProducer(@Autowired private val runnerDataQueue: LinkedBlockin
     }
 }
 
-@Component
-class BerlinProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
-                           @Autowired private val berlinMarathonScraper: BerlinMarathonScraper) {
-
-    private val logger = LoggerFactory.getLogger(BerlinProducer::class.java)
-    private val threads = mutableListOf<CompletableFuture<String>>()
-
-    fun process() : List<CompletableFuture<String>> {
-        return try {
-            logger.info("Starting Berlin Scrape")
-
-            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2017))
-            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2016))
-            threads.add(berlinMarathonScraper.scrape(runnerDataQueue,2015))
-            threads.add(berlinMarathonScraper.scrape(runnerDataQueue, 2014))
-
-            threads.toList()
-        } catch (e : Exception){
-            logger.error("Berlin Marathon failed", e)
-            emptyList()
-        }
-    }
-}
-
 //Complete
 @Component
 class ViennaProducer(@Autowired private val runnerDataQueue: LinkedBlockingQueue<RunnerData>,
@@ -972,6 +948,43 @@ class YuenglingProducer(
     }
 }
 
+@Component
+class BerlinProducer(@Autowired private val athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired private val pagedResultsRepository: PagedResultsRepository) : BaseProducer(LoggerFactory.getLogger(BerlinProducer::class.java), MarathonSources.Berlin) {
+
+    private var lastPageNum2014 : Int = 0
+    private var lastPageNum2015 : Int = 0
+    private var lastPageNum2016 : Int = 0
+    private var lastPageNum2017 : Int = 0
+
+    @PostConstruct
+    private fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2014 > 0){
+            lastPageNum2014++
+        }
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2015 > 0){
+            lastPageNum2015++
+        }
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2016 > 0){
+            lastPageNum2016++
+        }
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2017 > 0){
+            lastPageNum2017++
+        }
+    }
+
+    override fun buildThreads() {
+        threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34448/results/Event/358856/Course/523662/Results", 2014, marathonSources, lastPageNum2014))
+        threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34448/results/Event/406759/Course/609347/Results", 2015, marathonSources, lastPageNum2015))
+        threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34448/results/Event/488569/Course/726394/Results", 2016, marathonSources, lastPageNum2016))
+        threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34448/results/Event/602229/Course/911221/Results", 2017, marathonSources, lastPageNum2017))
+    }
+}
+
 abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
@@ -1007,28 +1020,28 @@ class HonoluluProducer(@Autowired private val pacificSportScraper: PacificSportS
     }
 
     override fun buildThreads() {
-//        scrapeInfoList.addAll(buildUrlScrapeInfoGrayPage("https://pseresults.com/events/647/results/794?c0=&c1=&c2=&name=&city=&bib=&sort%5B%5D=0&sort%5B%5D=2&sort%5B%5D=4&sort%5B%5D=5&page=&per_page=1000",
-//                1, 22, 2014, ColumnPositions(place = 0, finishTime = 2, nationality = 7, ageGender = 8, halfwayTime = 14)))
+        scrapeInfoList.addAll(buildUrlScrapeInfoGrayPage("https://pseresults.com/events/647/results/794?c0=&c1=&c2=&name=&city=&bib=&sort%5B%5D=0&sort%5B%5D=2&sort%5B%5D=4&sort%5B%5D=5&page=&per_page=1000",
+                1, 22, 2014, ColumnPositions(place = 0, finishTime = 2, nationality = 7, ageGender = 8, halfwayTime = 14)))
 
-//        scrapeInfoList.addAll(buildUrlScrapeInfoBluePage("http://live.pseresults.com/e/134#/results/A/",
-//                start = 1, end = 863, year = 2015, columnPositions = ColumnPositions(place = 1, finishTime = 5, ageGender = 7, halfwayTime = 11, nationality = 3)))
+        scrapeInfoList.addAll(buildUrlScrapeInfoBluePage("http://live.pseresults.com/e/134#/results/A/",
+                start = 1, end = 863, year = 2015, columnPositions = ColumnPositions(place = 1, finishTime = 5, ageGender = 7, halfwayTime = 11, nationality = 3)))
 
         scrapeInfoList.addAll(buildUrlScrapeInfoGrayPage("https://www.pseresults.com/events/851/results/1163?c0=&name=&bib=&sort[]=1&sort[]=0&sort[]=7&sort[]=6&page=&per_page=1000",
                 1, 22, 2016, ColumnPositions(finishTime = 0, place = 1, ageGender = 4, nationality = 9, halfwayTime = 13)))
 
-//        val range2017 = marathonGuideScraper.findRangeOptionsForUrl("http://www.marathonguide.com/results/browse.cfm?MIDD=480171210")
-//        val scrape2017 = range2017.get().map { it ->
-//            val columnPositions = ColumnPositions(ageGender = 4, finishTime = 1, place = 2)
-//            UrlScrapeInfo(url = "http://www.marathonguide.com/results/browse.cfm?MIDD=480171210", source = marathonSources,
-//                    marathonYear =  2017, columnPositions = columnPositions, rangeOptions = it) }
+        val range2017 = marathonGuideScraper.findRangeOptionsForUrl("http://www.marathonguide.com/results/browse.cfm?MIDD=480171210")
+        val scrape2017 = range2017.get().map { it ->
+            val columnPositions = ColumnPositions(ageGender = 4, finishTime = 1, place = 2)
+            UrlScrapeInfo(url = "http://www.marathonguide.com/results/browse.cfm?MIDD=480171210", source = marathonSources,
+                    marathonYear =  2017, columnPositions = columnPositions, rangeOptions = it) }
 
         scrapeInfoList
                 .filter { si -> completedPages.none { cp -> cp.url == si.url } }
                 .forEach { threads.add(pacificSportScraper.scrape(it)) }
 
-//        scrape2017
-//                .filter { s -> completedPages.none { cp -> cp.url == (s.url + ", " + s.rangeOptions) } }
-//                .forEach { threads.add(marathonGuideScraper.scrape(it)) }
+        scrape2017
+                .filter { s -> completedPages.none { cp -> cp.url == (s.url + ", " + s.rangeOptions) } }
+                .forEach { threads.add(marathonGuideScraper.scrape(it)) }
     }
 
     private fun buildUrlScrapeInfoGrayPage(url : String, start: Int, end : Int, year : Int, columnPositions: ColumnPositions) : List<UrlScrapeInfo> {

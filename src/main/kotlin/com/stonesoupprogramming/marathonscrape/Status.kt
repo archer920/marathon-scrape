@@ -20,7 +20,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
         try {
             while (!shutdown){
                 when(source){
-                    MarathonSources.Berlin -> logger.printProgress("Berlin", source, 146965)
+                    MarathonSources.Berlin -> logger.printProgress("Berlin", source, 28984, 36838, 36084, 39146)
                     MarathonSources.Unassigned -> throw IllegalArgumentException("No results for Unassigned")
                     MarathonSources.Vienna -> logger.printProgress("Vienna", source,
                             1160, //2014 - W
