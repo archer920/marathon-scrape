@@ -1102,6 +1102,15 @@ class BigSurProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
                 2015 to "https://www.athlinks.com/event/22927/results/Event/427480/Course/643129/Results",
                 2016 to "https://www.athlinks.com/event/22927/results/Event/453357/Course/702946/Results",
                 2017 to "https://www.athlinks.com/event/22927/results/Event/637407/Course/986635/Results"))
+                
+class TorontoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                         @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+        LoggerFactory.getLogger(TorontoProducer::class.java),
+        MarathonSources.Toronto,
+        mapOf(2014 to "https://www.athlinks.com/event/34661/results/Event/378314/Course/476785/Results",
+                2015 to "https://www.athlinks.com/event/34661/results/Event/442109/Course/662089/Results",
+                2016 to "https://www.athlinks.com/event/34661/results/Event/509578/Course/757626/Results",
+                2017 to "https://www.athlinks.com/event/34661/results/Event/621224/Course/951395/Results"))
 
 @Component
 class NewJerseyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,

@@ -83,6 +83,7 @@ class Application(
         @Autowired private val kentuckyDerbyProducer: KentuckyDerbyProducer,
         @Autowired private val queenstownProducer: QueenstownProducer,
         @Autowired private val bigSurProducer: BigSurProducer,
+        @Autowired private val torontoProducer: TorontoProducer,
         @Autowired private val newJerseyProducer: NewJerseyProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
@@ -112,6 +113,7 @@ class Application(
         const val KentuckyDerby = "--kentucky-derby"
         const val Queenstown = "--queenstown"
         const val BigSur = "--big-sur"
+        const val Toronto = "--toronto"
         const val NewJersey = "--new-jersey"
     }
     override fun run(vararg args: String) {
@@ -137,6 +139,9 @@ class Application(
 
         if(args.contains(Args.NewJersey)){
             threads.addAll(newJerseyProducer.process())
+        }
+        if(args.contains(Args.Toronto)){
+            threads.addAll(torontoProducer.process())
         }
         if(args.contains(Args.BigSur)){
             threads.addAll(bigSurProducer.process())
@@ -215,6 +220,9 @@ class Application(
     private fun writeCompleted(vararg args: String){
         if(args.contains(Args.NewJersey)){
             writeFile(MarathonSources.NewJersey, 2014, 2017)
+        }
+        if(args.contains(Args.Toronto)){
+            writeFile(MarathonSources.Toronto, 2014, 2017)
         }
         if(args.contains(Args.FlyingPig)){
             writeFile(MarathonSources.FlyingPig, 2014, 2017)
