@@ -27,7 +27,8 @@ enum class MarathonSources(val cityName : String){
     Jeruselm("Jeruselm"),
     Eversource("Eversource Hartford"),
     LittleRock("Little Rock"),
-    KentuckyDerby("Kentucky Derby")
+    KentuckyDerby("Kentucky Derby"),
+    Queenstown("Queenstown")
 }
 
 enum class Gender(val code : String){
