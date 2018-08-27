@@ -31,7 +31,7 @@ enum class MarathonSources(val cityName : String){
     KentuckyDerby("Kentucky Derby"),
     Queenstown("Queenstown"),
     BigSur("Big Sur"),
-    Toronto("Toronto")
+    Toronto("Toronto"),
     NewJersey("New Jersey")
 }
 
