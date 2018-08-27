@@ -313,6 +313,7 @@ fun Array<out String>.toMarathonSources() : MarathonSources{
         this.contains(Application.Args.Taipei) -> MarathonSources.Taipei
         this.contains(Application.Args.Yuengling) -> MarathonSources.Yuengling
         this.contains(Application.Args.Honolulu) -> MarathonSources.Honolulu
+        this.contains(Application.Args.Jeruselm) -> MarathonSources.Jeruselm
         else -> throw IllegalArgumentException("Not a valid source")
     }
 }

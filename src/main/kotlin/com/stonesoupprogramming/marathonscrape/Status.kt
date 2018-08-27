@@ -47,6 +47,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                     MarathonSources.Taipei -> logger.printProgress("Taipei", source, 5317, 4668, 5560, 5998)
                     MarathonSources.Yuengling -> logger.printProgress("Yuengling", source, 2792, 2185, 1841, 1370)
                     MarathonSources.Honolulu -> logger.printProgress("Honolulu", source, 21798, 21540, 20105, 20350)
+                    MarathonSources.Jeruselm -> logger.printProgress("Jeruslem", source, 1489, 1120, 1246, 1382)
                 }
 
                 Thread.sleep(10000)

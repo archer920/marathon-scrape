@@ -23,7 +23,8 @@ enum class MarathonSources(val cityName : String){
     Melbourne("Melbourne"),
     Taipei("Taipei"),
     Yuengling("Yuengling"),
-    Honolulu("Honolulu")
+    Honolulu("Honolulu"),
+    Jeruselm("Jeruselm")
 }
 
 enum class Gender(val code : String){
