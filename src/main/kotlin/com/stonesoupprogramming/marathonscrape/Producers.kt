@@ -887,7 +887,7 @@ class TaipeiProducer(
 
             //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 2014, MarathonSources.Taipei, lastPageNum2014))
             //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 2015, MarathonSources.Taipei, lastPageNum2015))
-            //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 2016, MarathonSources.Taipei, lastPageNum2016))
+            threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 2016, MarathonSources.Taipei, lastPageNum2016))
             //threads.add(athLinksMarathonScraper.scrape("https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 2017, MarathonSources.Taipei, lastPageNum2017))
 
             threads.toList()
