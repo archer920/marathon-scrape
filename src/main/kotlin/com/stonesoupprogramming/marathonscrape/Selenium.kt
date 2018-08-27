@@ -1457,13 +1457,19 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
                 val parts = nationality.split(",")
                 nationality = stateCodes.toCountry(parts.last().trim())
             }
+            val place = try {
+                it["place"]!!.toInt()
+            } catch (e : Exception){
+                logger.error("Failed to find place", e)
+                Int.MAX_VALUE
+            }
             createRunnerData(logger,
                     it["age"]!!,
                     it["finishTime"]!!,
                     it["gender"]!!,
                     year,
                     nationality,
-                    it["place"]!!.toInt(),
+                    place,
                     marathonSources)
         }.toList()
 

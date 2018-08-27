@@ -1038,10 +1038,20 @@ class JeruselmProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
                        @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
         LoggerFactory.getLogger(JeruselmProducer::class.java),
         MarathonSources.Jeruselm,
-        mapOf(2014 to "https://www.athlinks.com/event/34617/results/Event/374111/Course/480660/Results",
+        mapOf(//2014 to "https://www.athlinks.com/event/34617/results/Event/374111/Course/480660/Results",
                 2015 to "https://www.athlinks.com/event/34617/results/Event/428801/Course/644981/Results",
                 2016 to "https://www.athlinks.com/event/34617/results/Event/504502/Course/750003/Results",
                 2017 to "https://www.athlinks.com/event/34617/results/Event/622847/Course/954745/Results"))
+
+@Component
+class EversourceHartfordProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+        LoggerFactory.getLogger(EversourceHartfordProducer::class.java),
+        MarathonSources.Eversource,
+        mapOf(2014 to "https://www.athlinks.com/event/1581/results/Event/398994/Course/596968/Results",
+                2015 to "https://www.athlinks.com/event/1581/results/Event/409547/Course/638361/Results",
+                2016 to "https://www.athlinks.com/event/1581/results/Event/591319/Course/746308/Results",
+                2017 to "https://www.athlinks.com/event/1581/results/Event/595523/Course/898185/Results"))
 
 abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
 
