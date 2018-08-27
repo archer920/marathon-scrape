@@ -55,6 +55,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                     MarathonSources.Queenstown -> logger.printProgress("Queenstown", source, 1446, 1609, 1539, 1530)
                     MarathonSources.BigSur -> logger.printProgress("Big Sur", source, 3339, 3430, 3241, 3242)
                     MarathonSources.NewJersey -> logger.printProgress("New Jersey", source, 2128, 1919, 1989, 2107)
+                    MarathonSources.KaiserPermanete -> logger.printProgress("Kaiser", source, 1332, 1422, 1263, 1335)
                     else -> throw IllegalArgumentException("No status for this marathon: $source")
                 }
 

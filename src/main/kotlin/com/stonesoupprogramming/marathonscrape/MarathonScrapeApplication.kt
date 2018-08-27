@@ -84,6 +84,7 @@ class Application(
         @Autowired private val queenstownProducer: QueenstownProducer,
         @Autowired private val bigSurProducer: BigSurProducer,
         @Autowired private val newJerseyProducer: NewJerseyProducer,
+        @Autowired private val kaiserPermaneteProducer: KaiserPermaneteProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -113,6 +114,7 @@ class Application(
         const val Queenstown = "--queenstown"
         const val BigSur = "--big-sur"
         const val NewJersey = "--new-jersey"
+        const val Kaiser = "--kaiser-permanente"
     }
     override fun run(vararg args: String) {
         runnerDataConsumer.insertValues()
@@ -135,6 +137,9 @@ class Application(
     private fun process(vararg args : String){
         val threads = mutableListOf<CompletableFuture<String>>()
 
+        if(args.contains(Args.Kaiser)){
+            threads.addAll(kaiserPermaneteProducer.process())
+        }
         if(args.contains(Args.NewJersey)){
             threads.addAll(newJerseyProducer.process())
         }
@@ -213,6 +218,9 @@ class Application(
     }
 
     private fun writeCompleted(vararg args: String){
+        if(args.contains(Args.Kaiser)){
+            writeFile(MarathonSources.KaiserPermanete, 2014, 2017)
+        }
         if(args.contains(Args.NewJersey)){
             writeFile(MarathonSources.NewJersey, 2014, 2017)
         }
