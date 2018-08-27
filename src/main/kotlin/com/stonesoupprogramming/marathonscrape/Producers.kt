@@ -1053,6 +1053,16 @@ class EversourceHartfordProducer(@Autowired athLinksMarathonScraper: AthLinksMar
                 2016 to "https://www.athlinks.com/event/1581/results/Event/591319/Course/746308/Results",
                 2017 to "https://www.athlinks.com/event/1581/results/Event/595523/Course/898185/Results"))
 
+@Component
+class LittleRockProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                                 @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+        LoggerFactory.getLogger(LittleRockProducer::class.java),
+        MarathonSources.LittleRock,
+        mapOf(2014 to "https://www.athlinks.com/event/180410/results/Event/369404/Course/544917/Results",
+                2015 to "https://www.athlinks.com/event/180410/results/Event/424221/Course/638119/Results",
+                2016 to "https://www.athlinks.com/event/180410/results/Event/461673/Course/688288/Results",
+                2017 to "https://www.athlinks.com/event/180410/results/Event/622189/Course/788604/Results"))
+
 abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
