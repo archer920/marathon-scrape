@@ -30,7 +30,8 @@ enum class MarathonSources(val cityName : String){
     FlyingPig("Flying Pig"),
     KentuckyDerby("Kentucky Derby"),
     Queenstown("Queenstown"),
-    BigSur("Big Sur")
+    BigSur("Big Sur"),
+    NewJersey("New Jersey")
 }
 
 enum class Gender(val code : String){
