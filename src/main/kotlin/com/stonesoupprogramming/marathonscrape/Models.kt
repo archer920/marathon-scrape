@@ -32,7 +32,8 @@ enum class MarathonSources(val cityName : String){
     Queenstown("Queenstown"),
     BigSur("Big Sur"),
     Toronto("Toronto"),
-    NewJersey("New Jersey")
+    NewJersey("New Jersey"),
+    KaiserPermanete("Kaiser Permanete Colfax")
 }
 
 enum class Gender(val code : String){

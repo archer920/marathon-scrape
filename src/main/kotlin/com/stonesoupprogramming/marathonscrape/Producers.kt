@@ -1122,6 +1122,16 @@ class NewJerseyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScra
                 2016 to "https://www.athlinks.com/event/5179/results/Event/538341/Course/721942/Results",
                 2017 to "https://www.athlinks.com/event/5179/results/Event/601788/Course/910272/Results"))
 
+@Component
+class KaiserPermaneteProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                        @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+        LoggerFactory.getLogger(KaiserPermaneteProducer::class.java),
+        MarathonSources.KaiserPermanete,
+        mapOf(2014 to "https://www.athlinks.com/event/20168/results/Event/380936/Course/564144/Results",
+                2015 to "https://www.athlinks.com/event/20168/results/Event/410400/Course/627824/Results",
+                2016 to "https://www.athlinks.com/event/20168/results/Event/506617/Course/753272/Results",
+                2017 to "https://www.athlinks.com/event/20168/results/Event/642814/Course/1005209/Results"))
+
 abstract class BaseProducer(private val logger : Logger, protected val marathonSources: MarathonSources) {
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
