@@ -1062,6 +1062,16 @@ class LittleRockProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
                 2015 to "https://www.athlinks.com/event/180410/results/Event/424221/Course/638119/Results",
                 2016 to "https://www.athlinks.com/event/180410/results/Event/461673/Course/688288/Results",
                 2017 to "https://www.athlinks.com/event/180410/results/Event/622189/Course/788604/Results"))
+                
+@Component
+class FlyingPigProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                                 @Autowired pagedResultsRepository: PagedResultsRepository) :
+        BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository, LoggerFactory.getLogger(FlyingPigProducer::class.java), MarathonSources.FlyingPig,
+        mapOf(2014 to "https://www.athlinks.com/event/137505/results/Event/311572/Course/447239/Results",
+                2015 to "https://www.athlinks.com/event/137505/results/Event/437652/Course/661725/Results",
+                2016 to "https://www.athlinks.com/event/137505/results/Event/538639/Course/807455/Results",
+                2017 to "https://www.athlinks.com/event/137505/results/Event/638376/Course/989158/Results"))
+
 
 @Component
 class KentuckyDerbyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,

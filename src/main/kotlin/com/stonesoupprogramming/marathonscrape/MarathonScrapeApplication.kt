@@ -79,6 +79,7 @@ class Application(
         @Autowired private val jeruselmProducer: JeruselmProducer,
         @Autowired private val eversourceHartfordProducer: EversourceHartfordProducer,
         @Autowired private val littleRockProducer: LittleRockProducer,
+        @Autowired private val flyingPigProducer: FlyingPigProducer,
         @Autowired private val kentuckyDerbyProducer: KentuckyDerbyProducer,
         @Autowired private val queenstownProducer: QueenstownProducer,
         @Autowired private val chicagoProducer: ChicagoProducer) : CommandLineRunner {
@@ -105,6 +106,7 @@ class Application(
         const val Jeruselm = "--jeruselm"
         const val Eversource = "--eversource"
         const val LittleRock = "--little-rock"
+        const val FlyingPig = "--flying-pig"
         const val KentuckyDerby = "--kentucky-derby"
         const val Queenstown = "--queenstown"
     }
@@ -131,6 +133,9 @@ class Application(
 
         if(args.contains(Args.Queenstown)){
             threads.addAll(queenstownProducer.process())
+        }
+        if(args.contains(Args.FlyingPig)){
+            threads.addAll(flyingPigProducer.process())
         }
         if(args.contains(Args.KentuckyDerby)){
             threads.addAll(kentuckyDerbyProducer.process())
@@ -198,6 +203,9 @@ class Application(
     }
 
     private fun writeCompleted(vararg args: String){
+        if(args.contains(Args.FlyingPig)){
+            writeFile(MarathonSources.FlyingPig, 2014, 2017)
+        }
         if(args.contains(Args.Queenstown)){
             writeFile(MarathonSources.Queenstown, 2014, 2017)
         }
