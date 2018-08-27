@@ -27,9 +27,10 @@ enum class MarathonSources(val cityName : String){
     Jeruselm("Jeruselm"),
     Eversource("Eversource Hartford"),
     LittleRock("Little Rock"),
-    FlyingPig("Flying Pig")
+    FlyingPig("Flying Pig"),
     KentuckyDerby("Kentucky Derby"),
-    Queenstown("Queenstown")
+    Queenstown("Queenstown"),
+    Toronto("Toronto")
 }
 
 enum class Gender(val code : String){
