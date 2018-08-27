@@ -24,7 +24,8 @@ enum class MarathonSources(val cityName : String){
     Taipei("Taipei"),
     Yuengling("Yuengling"),
     Honolulu("Honolulu"),
-    Jeruselm("Jeruselm")
+    Jeruselm("Jeruselm"),
+    Eversource("Eversource Hartford")
 }
 
 enum class Gender(val code : String){
