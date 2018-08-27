@@ -79,6 +79,7 @@ class Application(
         @Autowired private val jeruselmProducer: JeruselmProducer,
         @Autowired private val eversourceHartfordProducer: EversourceHartfordProducer,
         @Autowired private val littleRockProducer: LittleRockProducer,
+        @Autowired private val moscowProducer: MoscowProducer,
         @Autowired private val flyingPigProducer: FlyingPigProducer,
         @Autowired private val kentuckyDerbyProducer: KentuckyDerbyProducer,
         @Autowired private val queenstownProducer: QueenstownProducer,
@@ -110,6 +111,7 @@ class Application(
         const val Jeruselm = "--jeruselm"
         const val Eversource = "--eversource"
         const val LittleRock = "--little-rock"
+        const val Moscow = "--moscow"
         const val FlyingPig = "--flying-pig"
         const val KentuckyDerby = "--kentucky-derby"
         const val Queenstown = "--queenstown"
@@ -141,6 +143,9 @@ class Application(
 
         if(args.contains(Args.Kaiser)){
             threads.addAll(kaiserPermaneteProducer.process())
+        }
+        if(args.contains(Args.Moscow)){
+            threads.addAll(moscowProducer.process())
         }
         if(args.contains(Args.NewJersey)){
             threads.addAll(newJerseyProducer.process())
@@ -225,6 +230,9 @@ class Application(
     private fun writeCompleted(vararg args: String){
         if(args.contains(Args.Kaiser)){
             writeFile(MarathonSources.KaiserPermanete, 2014, 2017)
+        }
+        if(args.contains(Args.Moscow)){
+            writeFile(MarathonSources.Moscow, 2014, 2017)
         }
         if(args.contains(Args.NewJersey)){
             writeFile(MarathonSources.NewJersey, 2014, 2017)

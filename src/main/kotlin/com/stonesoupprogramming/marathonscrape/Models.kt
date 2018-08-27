@@ -27,6 +27,7 @@ enum class MarathonSources(val cityName : String){
     Jeruselm("Jeruselm"),
     Eversource("Eversource Hartford"),
     LittleRock("Little Rock"),
+    Moscow("Moscow")
     FlyingPig("Flying Pig"),
     KentuckyDerby("Kentucky Derby"),
     Queenstown("Queenstown"),
