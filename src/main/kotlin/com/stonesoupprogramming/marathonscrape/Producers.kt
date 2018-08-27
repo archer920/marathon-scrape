@@ -1063,7 +1063,17 @@ class LittleRockProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
                 2016 to "https://www.athlinks.com/event/180410/results/Event/461673/Course/688288/Results",
                 2017 to "https://www.athlinks.com/event/180410/results/Event/622189/Course/788604/Results"))
 
-abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
+@Component
+class KentuckyDerbyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                         @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+        LoggerFactory.getLogger(KentuckyDerbyProducer::class.java),
+        MarathonSources.KentuckyDerby,
+        mapOf(2014 to "https://www.athlinks.com/event/3861/results/Event/368918/Course/557992/Results",
+                2015 to "https://www.athlinks.com/event/3861/results/Event/428957/Course/659576/Results",
+                2016 to "https://www.athlinks.com/event/3861/results/Event/489855/Course/728520/Results",
+                2017 to "https://www.athlinks.com/event/3861/results/Event/633424/Course/806228/Results"))
+
+abstract class BaseProducer(private val logger : Logger, protected val marathonSources: MarathonSources) {
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
 
