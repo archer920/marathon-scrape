@@ -22,7 +22,7 @@ const val UNAVAILABLE = "Unavailable"
 class DriverFactory {
 
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
-    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors() - 2)
+    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
 
     fun createDriver(): RemoteWebDriver {
         return try {

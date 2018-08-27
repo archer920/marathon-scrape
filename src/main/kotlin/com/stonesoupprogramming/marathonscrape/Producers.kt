@@ -1045,13 +1045,23 @@ class JeruselmProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
 
 @Component
 class EversourceHartfordProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                       @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+                                 @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
         LoggerFactory.getLogger(EversourceHartfordProducer::class.java),
         MarathonSources.Eversource,
         mapOf(2014 to "https://www.athlinks.com/event/1581/results/Event/398994/Course/596968/Results",
                 2015 to "https://www.athlinks.com/event/1581/results/Event/409547/Course/638361/Results",
                 2016 to "https://www.athlinks.com/event/1581/results/Event/591319/Course/746308/Results",
                 2017 to "https://www.athlinks.com/event/1581/results/Event/595523/Course/898185/Results"))
+
+@Component
+class MoscowProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                                 @Autowired pagedResultsRepository: PagedResultsRepository) : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository,
+        LoggerFactory.getLogger(MoscowProducer::class.java),
+        MarathonSources.Moscow,
+        mapOf(2014 to "https://www.athlinks.com/event/35934/results/Event/397074/Course/579585/Results",
+                2015 to "https://www.athlinks.com/event/35934/results/Event/487493/Course/724968/Results",
+                2016 to "https://www.athlinks.com/event/35934/results/Event/574078/Course/889065/Results",
+                2017 to "https://www.athlinks.com/event/35934/results/Event/673220/Course/1065766/Results"))
 
 abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
 
