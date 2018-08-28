@@ -1488,7 +1488,11 @@ class AthLinksMarathonScraper(@Autowired private val driverFactory: DriverFactor
         logger.info("page = $page, ui page = $jsPage")
         if(jsPage < 0){
             if(attempt < giveUp){
-                Thread.sleep(5000)
+                if(attempt % 5 == 0){
+                    driver.navigate().refresh()
+                } else {
+                    Thread.sleep(5000)
+                }
                 resync(driver, page, jsDriver.findCurrentPage(driver), attempt + 1)
             } else {
                 val selector = if(page == 1) { firstNextSelector } else { secondNextSelector }
