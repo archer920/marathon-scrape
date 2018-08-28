@@ -12,10 +12,13 @@ import org.openqa.selenium.support.ui.Select
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.slf4j.Logger
 import java.io.FileWriter
+import java.time.LocalDate
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ThreadLocalRandom
 import javax.validation.ConstraintViolationException
+
+const val UNAVAILABLE = "Unavailable"
 
 fun successResult(): CompletableFuture<String> {
     return CompletableFuture.completedFuture("Success")
@@ -33,23 +36,7 @@ fun sleepRandom(min : Int = 5, max : Int = 60) {
     }
 }
 
-@Deprecated("Each page of results should be processed atomically. Use List.insertRunnerData and then add the finished list to the Queue")
-fun BlockingQueue<RunnerData>.insertRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = "") {
-    val runnerData = RunnerData(
-            source = source,
-            age = age,
-            gender = gender,
-            nationality = nationality,
-            finishTime = finishTime,
-            halfwayTime = halfwayTime,
-            company = company,
-            marathonYear = year,
-            place = place
-    )
-    put(runnerData)
-    logger.info("Produced: $runnerData")
-}
-
+@Deprecated("Use createRunnerData")
 fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = "") {
     val runnerData = RunnerData(
             source = source,
@@ -95,50 +82,6 @@ fun List<RunnerData>.saveToCSV(fileName: String) {
     printer.close()
 }
 
-fun RemoteWebDriver.countTableRows(tableBody: By, logger: Logger, attemptNum : Int = 0, maxAttempts : Int = 60): Int {
-    return try {
-        findElement(tableBody).findElements(By.tagName("tr")).size
-    } catch (e: Exception) {
-        return when(e){
-            is NoSuchElementException -> {
-                if(attemptNum < maxAttempts){
-                    Thread.sleep(1000)
-                    countTableRows(tableBody, logger, attemptNum + 1, maxAttempts)
-                } else{
-                    logger.error("Giving up after reaching maximum attempts", e)
-                    throw e
-                }
-            }
-            else -> {
-                logger.error("Failed to count table rows", e)
-                throw e
-            }
-        }
-    }
-}
-
-fun RemoteWebDriver.findCellValue(tableBody: By, row: Int, cell: Int, logger: Logger, attemptNum: Int = 0, giveUp: Int = 100): String {
-    return try {
-        findElement(tableBody).findElements(By.tagName("tr"))[row].findElements(By.tagName("td"))[cell].text
-    } catch (e: Exception) {
-        when (e) {
-            is StaleElementReferenceException -> {
-                if (attemptNum < giveUp) {
-                    Thread.sleep(1000)
-                    return this.findCellValue(tableBody, row, cell, logger, attemptNum + 1)
-                } else {
-                    logger.error("Unable to find a non-stale reference", e)
-                    throw e
-                }
-            }
-            else -> {
-                logger.error("Failed to determine value for cell [$row][$cell]", e)
-                throw e
-            }
-        }
-    }
-}
-
 @Synchronized
 fun BlockingQueue<RunnerData>.addResultsPage(page: MutableList<RunnerData>) {
     addAll(page)
@@ -154,17 +97,6 @@ fun List<String>.toCountry(code: String): String {
         "USA"
     } else {
         code.trim()
-    }
-}
-
-@Deprecated("Use the new function that inserts the runner data")
-fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger: Logger) {
-    try {
-        urlPageRepository.save(this)
-        queue.addResultsPage(resultsPage)
-        logger.info("Successfully scraped: $this")
-    } catch (e: Exception) {
-        logger.error("Failed to mark complete: $this")
     }
 }
 
@@ -190,17 +122,6 @@ fun UrlPage.markComplete(urlPageRepository: UrlPageRepository, runnerDataReposit
 
             }
         }
-        logger.error("Failed to mark complete: $this)")
-    }
-}
-
-@Deprecated("Use the markComplete with the runner data repository instead")
-fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, queue : BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger: Logger){
-    try {
-        pagedResultsRepository.save(this)
-        queue.addResultsPage(resultsPage)
-        logger.info(("Successfully scraped: $this"))
-    } catch (e : Exception){
         logger.error("Failed to mark complete: $this)")
     }
 }
@@ -295,40 +216,77 @@ fun RemoteWebDriver.click(element: By, logger: Logger) {
     }
 }
 
-fun Array<out String>.toMarathonSources() : MarathonSources{
-    return when {
-        this.contains(Application.Args.BUDAPEST) -> MarathonSources.Budapest
-        this.contains(Application.Args.OTTAWA) -> MarathonSources.Ottawa
-        this.contains(Application.Args.SAN_FRANSCISCO) -> MarathonSources.SanFranscisco
-        this.contains(Application.Args.MEDTRONIC) -> MarathonSources.TwinCities
-        this.contains(Application.Args.MARINES) -> MarathonSources.Marines
-        this.contains(Application.Args.VIENNA) -> MarathonSources.Vienna
-        this.contains(Application.Args.BERLIN) -> MarathonSources.Berlin
-        this.contains(Application.Args.BOSTON) -> MarathonSources.Boston
-        this.contains(Application.Args.CHICAGO) -> MarathonSources.Chicago
-        this.contains(Application.Args.NEW_YORK) -> MarathonSources.Nyc
-        this.contains(Application.Args.LOS_ANGELES) -> MarathonSources.LosAngeles
-        this.contains(Application.Args.DISNEY) -> MarathonSources.Disney
-        this.contains(Application.Args.MELBOURE) -> MarathonSources.Melbourne
-        this.contains(Application.Args.Taipei) -> MarathonSources.Taipei
-        this.contains(Application.Args.Yuengling) -> MarathonSources.Yuengling
-        this.contains(Application.Args.Honolulu) -> MarathonSources.Honolulu
-        this.contains(Application.Args.Jeruselm) -> MarathonSources.Jeruselm
-        this.contains(Application.Args.Eversource) -> MarathonSources.Eversource
-        this.contains(Application.Args.LittleRock) -> MarathonSources.LittleRock
-        this.contains(Application.Args.FlyingPig) -> MarathonSources.FlyingPig
-        this.contains(Application.Args.KentuckyDerby) -> MarathonSources.KentuckyDerby
-        this.contains(Application.Args.Queenstown) -> MarathonSources.Queenstown
-        this.contains(Application.Args.BigSur) -> MarathonSources.BigSur
-        this.contains(Application.Args.Toronto) -> MarathonSources.Toronto
-        this.contains(Application.Args.NewJersey) -> MarathonSources.NewJersey
-        this.contains(Application.Args.Kaiser) -> MarathonSources.KaiserPermanete
-        else -> throw IllegalArgumentException("Not a valid source")
-    }
+fun Array<out String>.toMarathonSources() : List<MarathonSources?> {
+    return this.map { arg -> MarathonSources.values().find { arg == it.arg } }.toList()
 }
 
 fun Logger.printBlankLines(lines : Int = 2){
     for(i in 0 until lines){
         info("")
+    }
+}
+
+fun String.safeInt(logger: Logger) : Int {
+    return try {
+        this.toInt()
+    } catch (e : Exception){
+        logger.error("Unable to parse int from value $this", e)
+        Int.MAX_VALUE
+    }
+}
+
+fun String.calcAge(logger: Logger, twoDigit : Boolean = true) : String {
+    return try {
+        if(this.isBlank()){
+            return UNAVAILABLE
+        }
+        val yob = if(twoDigit){
+            LocalDate.now().year - (1900 + this.safeInt(logger))
+        } else {
+            LocalDate.now().year - this.safeInt(logger)
+        }
+        yob.toString()
+    } catch (e : Exception){
+        logger.error("Failed to calculate age for $this", e)
+        throw e
+    }
+}
+
+fun String.unavailableIfBlank() : String {
+    return if(this.isBlank()){
+        UNAVAILABLE
+    } else {
+        this
+    }
+}
+
+fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, categoryScrapeInfo: CategoryScrapeInfo, logger: Logger){
+    try {
+        val violations = mutableListOf<RunnerData>()
+        val fails = mutableListOf<RunnerData>()
+
+        for(r in resultsPage){
+            try {
+                runnerDataRepository.save(r)
+            } catch (e : Exception){
+                when(e) {
+                    is ConstraintViolationException -> violations.add(r)
+                    else -> {
+                        logger.error("Failed to save $r", e)
+                        fails.add(r)
+                    }
+                }
+            }
+        }
+        if(violations.isNotEmpty()){
+            violations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
+        }
+        if(fails.isNotEmpty()){
+            fails.saveToCSV("Fails-${System.currentTimeMillis()}.csv")
+        }
+        this.save(categoryScrapeInfo.toCategoryResults())
+    } catch (e : Exception){
+        logger.error("Failed to make complete $categoryScrapeInfo", e)
+        throw e
     }
 }

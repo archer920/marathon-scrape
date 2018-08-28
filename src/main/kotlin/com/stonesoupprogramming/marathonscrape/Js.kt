@@ -15,6 +15,8 @@ interface JsDriver {
     fun clickElement(driver: RemoteWebDriver, cssSelector: String)
     fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long = 1000, secondClickButtonSelector : String = "" )
     fun injectJq(driver: RemoteWebDriver)
+    fun clickLinkByText(driver: RemoteWebDriver, linkText : String)
+    fun readAttribute(driver: RemoteWebDriver, cssSelector: String, attribute: String, attemptNum : Int = 0, giveUp : Int = 10) : String
 }
 
 //NOTE: Do not inject a remote driver into this class because they are not thread safe
@@ -22,10 +24,10 @@ interface JsDriver {
 @Component
 class JsDriverImpl : JsDriver {
 
-
     private val logger = LoggerFactory.getLogger(JsDriverImpl::class.java)
 
     private val selector = "{{selector}}"
+    private val attr = "{{attr}}"
 
     private val jquery = BufferedReader(InputStreamReader(JsDriverImpl::class.java.getResourceAsStream("/js/jquery-3.3.1.js"))).readText()
     private val readTableJs = """
@@ -67,6 +69,39 @@ class JsDriverImpl : JsDriver {
     private val readHtmlJs = """
         return $('$selector').html()
     """.trimIndent()
+
+    private val clickLinkByTextJs = """
+        ${'$'}('a').filter(function(index) { return ${'$'}(this).text() === "$selector"; }).click();
+    """.trimIndent()
+
+    private val readAttributeJs = """
+        return ${'$'}('$selector').attr('$attr')
+    """.trimIndent()
+
+    override fun readAttribute(driver: RemoteWebDriver, cssSelector: String, attribute: String, attemptNum : Int, giveup : Int): String {
+        return try {
+            injectJq(driver)
+            driver.executeScript(readAttributeJs.replace(selector, cssSelector).replace(attr, attribute)) as String
+        } catch (e : Exception){
+            if(attemptNum < giveup){
+                sleepRandom(1, 5)
+                readAttribute(driver, cssSelector, attribute, attemptNum + 1)
+            } else {
+                logger.error("Failed to read attribute $attribute from element $cssSelector", e)
+                throw e
+            }
+        }
+    }
+
+    override fun clickLinkByText(driver: RemoteWebDriver, linkText: String) {
+        try {
+            injectJq(driver)
+            driver.executeScript(clickLinkByTextJs.replace(selector, linkText))
+        } catch (e : Exception){
+            logger.error("Failed to click $linkText", e)
+            throw e
+        }
+    }
 
     override fun injectJq(driver: RemoteWebDriver) {
         driver.executeScript(jquery)

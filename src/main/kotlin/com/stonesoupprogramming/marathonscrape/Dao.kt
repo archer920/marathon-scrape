@@ -2,6 +2,13 @@ package com.stonesoupprogramming.marathonscrape
 
 import org.springframework.data.jpa.repository.JpaRepository
 
+interface PagedRepository<T> {
+    fun findBySource(source : MarathonSources) : List<T>
+
+    fun findBySourceAndMarathonYear(source : MarathonSources, year : Int) : List<T>
+
+}
+
 interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
     fun findByMarathonYearAndSourceOrderByAge(year : Int, source : MarathonSources) : List<RunnerData>
@@ -9,16 +16,10 @@ interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
     fun countBySource(source : MarathonSources) : Long
 }
 
-interface UrlPageRepository : JpaRepository<UrlPage, Long>{
-    fun findBySource(source : MarathonSources) : List<UrlPage>
-}
+interface UrlPageRepository : JpaRepository<UrlPage, Long>, PagedRepository<UrlPage>
 
-interface PagedResultsRepository : JpaRepository<PagedResults, Long>{
-    fun findBySourceAndMarathonYear(source : MarathonSources, year : Int) : List<PagedResults>
+interface PagedResultsRepository : JpaRepository<PagedResults, Long>, PagedRepository<PagedResults>
 
-    fun findBySource(source : MarathonSources) : List<PagedResults>
-}
+interface GenderPagedResultsRepository : JpaRepository<GenderPagedResults, Long>, PagedRepository<GenderPagedResults>
 
-interface GenderPagedResultsRepository : JpaRepository<GenderPagedResults, Long> {
-    fun findBySource(source : MarathonSources) : List<GenderPagedResults>
-}
+interface CategoryResultsRepository : JpaRepository<CategoryResults, Long>, PagedRepository<CategoryResults>

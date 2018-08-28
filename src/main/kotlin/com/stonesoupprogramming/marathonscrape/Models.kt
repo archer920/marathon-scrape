@@ -6,34 +6,9 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 import javax.validation.constraints.NotNull
 
-enum class MarathonSources(val cityName : String){
+enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
     Unassigned("Unassigned"),
-    Berlin("Berlin"),
-    Vienna("Vienna"),
-    Boston("Boston"),
-    Chicago("Chicago"),
-    Nyc("New York City"),
-    LosAngeles("Los Angeles"),
-    Marines("Marines"),
-    TwinCities("Medtronic"),
-    Disney("Disney"),
-    Ottawa("Ottawa"),
-    Budapest("Budapest"),
-    SanFranscisco("San Franscisco"),
-    Melbourne("Melbourne"),
-    Taipei("Taipei"),
-    Yuengling("Yuengling"),
-    Honolulu("Honolulu"),
-    Jeruselm("Jeruselm"),
-    Eversource("Eversource Hartford"),
-    LittleRock("Little Rock"),
-    FlyingPig("Flying Pig"),
-    KentuckyDerby("Kentucky Derby"),
-    Queenstown("Queenstown"),
-    BigSur("Big Sur"),
-    Toronto("Toronto"),
-    NewJersey("New Jersey"),
-    KaiserPermanete("Kaiser Permanete Colfax")
+    Stockholm("--stockholm", 2018)
 }
 
 enum class Gender(val code : String){
@@ -77,6 +52,21 @@ data class PagedResults(
         @field: Min(0) var pageNum: Int = 0)
 
 @Entity
+data class CategoryResults(
+        @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
+        @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
+        @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
+        @field: NotBlank var url : String = "",
+        @field: NotBlank var category: String = "") {
+
+    fun matches(categoryScrapeInfo: CategoryScrapeInfo) =
+            this.url == categoryScrapeInfo.url &&
+                    this.marathonYear == categoryScrapeInfo.marathonYear &&
+                    this.source == categoryScrapeInfo.source &&
+                    this.category == categoryScrapeInfo.category
+}
+
+@Entity
 data class GenderPagedResults(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
         @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
@@ -103,3 +93,16 @@ data class UrlScrapeInfo(
         val tbodySelector : String ? = null,
         val rangeOptions : String? = null,
         val gender: Gender? = null)
+
+data class CategoryScrapeInfo(
+        val url : String,
+        val source: MarathonSources,
+        val marathonYear: Int,
+        val columnPositions: ColumnPositions,
+        val category: String,
+        val gender: Gender? = null,
+        val raceSelection : String? = null) {
+
+    fun toCategoryResults() =
+            CategoryResults(source = source, marathonYear = marathonYear, url = url, category = category)
+}
