@@ -44,8 +44,10 @@ class Configuration {
             "WV", "WI", "WY", "AS", "GU", "MH", "FM", "MP", "PW", "PR", "VI")
 
     @Bean
-    fun producers(@Autowired stockholmProducer: StockholmProducer) : Map<MarathonSources, BaseProducer> {
-        return mapOf(MarathonSources.Stockholm to stockholmProducer)
+    fun producers(@Autowired stockholmProducer: StockholmProducer,
+                  @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer) : Map<MarathonSources, BaseProducer> {
+        return mapOf(MarathonSources.Stockholm to stockholmProducer,
+                MarathonSources.Amsterdam to tcsAmsterdamProducer)
     }
 }
 

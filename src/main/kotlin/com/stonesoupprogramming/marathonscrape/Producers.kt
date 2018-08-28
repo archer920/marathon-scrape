@@ -42,6 +42,50 @@ abstract class BaseUrlPageProducer(logger: Logger, marathonSources: MarathonSour
             inputs.filter { it -> completePages.none { cp -> it.url == cp.url }}
 }
 
+abstract class BaseResultPageProducer(logger: Logger, marathonSources: MarathonSources, private val pagedResultsRepository: PagedResultsRepository)
+    : BaseProducer(logger, marathonSources) {
+
+    protected var lastPageNum2014 : Int = 0
+    protected var lastPageNum2015 : Int = 0
+    protected var lastPageNum2016 : Int = 0
+    protected var lastPageNum2017 : Int = 0
+    protected var lastPageNum2018 : Int = 0
+
+    @PostConstruct
+    private fun init(){
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2014 > 0){
+            lastPageNum2014++
+        }
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2015 > 0){
+            lastPageNum2015++
+        }
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2016 > 0){
+            lastPageNum2016++
+        }
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2017 > 0){
+            lastPageNum2017++
+        }
+        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2018).maxBy { it.pageNum }?.pageNum ?: 0
+        if(lastPageNum2018 > 0){
+            lastPageNum2018++
+        }
+    }
+
+    override fun buildThreads() {
+        buildYearlyThreads(2014, lastPageNum2014)
+        buildYearlyThreads(2015, lastPageNum2015)
+        buildYearlyThreads(2016, lastPageNum2016)
+        buildYearlyThreads(2017, lastPageNum2017)
+        buildYearlyThreads(2018, lastPageNum2018)
+    }
+
+    abstract fun buildYearlyThreads(year: Int, lastPage: Int)
+}
+
 abstract class BaseCategoryPageProducer(logger: Logger, marathonSources: MarathonSources, private val categoryResultsRepository: CategoryResultsRepository)
     : BaseProducer(logger, marathonSources) {
 
@@ -150,6 +194,29 @@ class StockholmProducer(@Autowired categoryResultsRepository: CategoryResultsRep
     override fun buildThreads() {
         filterCompleted(categoryScrapeInfoList).forEach { it ->
             threads.add(registrationMarathonScraper.scrape(it))
+        }
+    }
+}
+
+@Component
+class TcsAmsterdamProducer(@Autowired pagedResultsRepository: PagedResultsRepository,
+                           @Autowired private val tcsAmsterdamScraper: TcsAmsterdamScraper)
+    : BaseResultPageProducer(LoggerFactory.getLogger(TcsAmsterdamProducer::class.java), MarathonSources.Amsterdam, pagedResultsRepository){
+
+    override fun buildYearlyThreads(year: Int, lastPage: Int) {
+
+        when(year){
+            2014 -> {
+                val columnPositions = ColumnPositions(place = 0, nationality = 4, ageGender = 6, finishTime = 8)
+                val pagedResultsScrapeInfo = PagedResultsScrapeInfo("http://evenementen.uitslagen.nl/2014/amsterdammarathon/index-en.html",
+                        marathonSources, year, columnPositions, lastPage,
+                        "span.noprint:nth-child(2) > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(12) > a:nth-child(1)",
+                        "span.noprint:nth-child(2) > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > a:nth-child(1)",
+                        ".i > tbody:nth-child(1)",
+                        comboBoxSelector = "select[name=on]",
+                        comboBoxValue = "TCS Amsterdam Marathon")
+                threads.add(tcsAmsterdamScraper.scrape(pagedResultsScrapeInfo))
+            }
         }
     }
 }

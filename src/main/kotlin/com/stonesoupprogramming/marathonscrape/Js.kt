@@ -247,3 +247,27 @@ class AthJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
         }
     }
 }
+
+@Component
+class TcsAmsterdamJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
+
+    private val logger = LoggerFactory.getLogger(TcsAmsterdamJsDriver::class.java)
+
+    private val pageJs = """
+        return $(".s").text()
+    """.trimIndent()
+
+    fun findCurrentPage(driver : RemoteWebDriver, attemptNum: Int = 0, giveup: Int = 10) : Int {
+        return try {
+            driver.executeScript(pageJs) as Int
+        } catch (e : Exception){
+            if(attemptNum < giveup){
+                Thread.sleep(1000)
+                findCurrentPage(driver, attemptNum + 1)
+            } else {
+                logger.error("Unable to read page number", e)
+                throw e
+            }
+        }
+    }
+}

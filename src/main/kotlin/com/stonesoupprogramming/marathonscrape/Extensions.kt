@@ -290,3 +290,7 @@ fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataR
         throw e
     }
 }
+
+fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, pagedResultsScrapeInfo: PagedResultsScrapeInfo, logger: Logger){
+
+}

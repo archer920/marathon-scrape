@@ -1,7 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
 import org.openqa.selenium.By
-import org.openqa.selenium.NoSuchElementException
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -10,10 +9,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
 
 @Component
@@ -53,7 +50,7 @@ class DriverFactory {
     }
 }
 
-abstract class BaseScraper<T> (protected val logger : Logger, protected val runnerDataRepository : RunnerDataRepository,
+abstract class BaseScraper<T : PageInfo> (protected val logger : Logger, protected val runnerDataRepository : RunnerDataRepository,
                            protected val driverFactory: DriverFactory, protected val jsDriver: JsDriver){
 
     @Async
@@ -83,6 +80,124 @@ abstract class CategoryPageScraper(logger: Logger, runnerDataRepository: RunnerD
                                    driverFactory: DriverFactory, jsDriver: JsDriver,
                                    protected val categoryResultsRepository: CategoryResultsRepository) :
     BaseScraper<CategoryScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver)
+
+abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerDataRepository,
+                                 driverFactory: DriverFactory, jsDriver: JsDriver,
+                                 protected val resultsRepository: PagedResultsRepository)
+    : BaseScraper<PagedResultsScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver){
+
+    override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) {
+        driver.get(scrapeInfo.url)
+
+        scrapeInfo.comboBoxSelector?.let { cb ->
+            scrapeInfo.comboBoxValue?.let { value ->
+                Thread.sleep(1000)
+                driver.selectComboBoxOption(cb.toCss(), value)
+            }
+        }
+
+        var page = 1
+        while(page < scrapeInfo.startPage){
+            page = scrollPage(driver, page, scrapeInfo)
+        }
+
+        do {
+            processPage(driver, page, scrapeInfo)
+            page = scrollPage(driver, page, scrapeInfo)
+        } while(jsDriver.elementIsPresent(driver, scrapeInfo.nextPageSelector))
+
+        processPage(driver, page, scrapeInfo)
+    }
+
+    protected open fun processPage(driver: RemoteWebDriver, currentPage: Int, scrapeInfo: PagedResultsScrapeInfo){
+        val table = jsDriver.readTableRows(driver, scrapeInfo.tbodySelector)
+        val tableHtml = jsDriver.readTableRows(driver, scrapeInfo.tbodySelector, rawHtml = true)
+        if(table.isEmpty()){
+            throw IllegalStateException("Failed to gather table information")
+        }
+
+        val resultsPage = table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }
+        resultsRepository.markPageComplete(runnerDataRepository, resultsPage, scrapeInfo, logger)
+    }
+
+    abstract fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PagedResultsScrapeInfo, rowHtml: List<String>): RunnerData
+
+    protected abstract fun findCurrentPageNum(driver: RemoteWebDriver): Int
+
+    private fun scrollPage(driver: RemoteWebDriver, currentPage: Int, scrapeInfo: PagedResultsScrapeInfo): Int {
+        jsDriver.clickElement(driver, pickSelector(currentPage, scrapeInfo))
+        synchronizePages(driver, currentPage + 1, findCurrentPageNum(driver), scrapeInfo)
+        return currentPage + 1
+    }
+
+    private fun synchronizePages(driver: RemoteWebDriver, currentPage: Int, jsPage: Int, scrapeInfo: PagedResultsScrapeInfo, attempt: Int = 0, giveUp: Int = 0){
+        logger.info("page = $currentPage, ui [age = $jsPage")
+
+        if(jsPage < 0){
+            if(attempt < giveUp){
+                Thread.sleep(5000)
+                synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
+            } else {
+                if(!jsDriver.elementIsPresent(driver, pickSelector(currentPage, scrapeInfo))){
+                    return
+                }
+            }
+        }
+
+        when {
+            currentPage == jsPage -> return
+            currentPage < jsPage -> {
+                jsDriver.clickElement(driver, scrapeInfo.backwardsSelector)
+                Thread.sleep(5000)
+                synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
+            }
+            currentPage > jsPage -> {
+                jsDriver.clickElement(driver, pickSelector(currentPage, scrapeInfo))
+                Thread.sleep(5000)
+                synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
+            }
+        }
+    }
+
+    private fun pickSelector(currentPage: Int, scrapeInfo: PagedResultsScrapeInfo) : String {
+        return if(currentPage == 1){
+            scrapeInfo.nextPageSelector
+        } else {
+            scrapeInfo.secondNextPageSelector ?: scrapeInfo.nextPageSelector
+        }
+    }
+}
+
+@Component
+class TcsAmsterdamScraper(@Autowired runnerDataRepository: RunnerDataRepository,
+                          @Autowired driverFactory: DriverFactory,
+                          @Autowired private val tcsAmsterdamJsDriver: TcsAmsterdamJsDriver,
+                          @Autowired resultsRepository: PagedResultsRepository)
+    : PagedResultsScraper(LoggerFactory.getLogger(TcsAmsterdamScraper::class.java), runnerDataRepository, driverFactory, tcsAmsterdamJsDriver, resultsRepository) {
+
+    override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PagedResultsScrapeInfo, rowHtml: List<String>): RunnerData {
+
+        val place = row[columnPositions.place].safeInt(logger)
+        val nationality = row[columnPositions.nationality].unavailableIfBlank()
+        val ageGender = row[columnPositions.ageGender]
+        val age = if(ageGender.isNotBlank()){
+            ageGender.substring(1)
+        } else {
+            UNAVAILABLE
+        }
+        val gender = if(ageGender.isNotBlank()){
+            ageGender[0].toString()
+        } else {
+            UNAVAILABLE
+        }
+        val finish = row[columnPositions.finishTime].unavailableIfBlank()
+        return createRunnerData(logger, age, finish, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+    }
+
+    override fun findCurrentPageNum(driver: RemoteWebDriver): Int {
+        return tcsAmsterdamJsDriver.findCurrentPage(driver)
+    }
+}
 
 @Component
 class RegistrationMarathonScraper(@Autowired runnerDataRepository: RunnerDataRepository,
@@ -115,7 +230,7 @@ class RegistrationMarathonScraper(@Autowired runnerDataRepository: RunnerDataRep
             val age = row[columnPositions.age].calcAge(logger)
             val nationality = row[columnPositions.nationality].unavailableIfBlank()
             val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
-            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.source)
+            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
         }.toList()
 
         categoryResultsRepository.markPageComplete(runnerDataRepository, resultsPage, scrapeInfo, logger)
@@ -160,11 +275,11 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
                 UNAVAILABLE
             }
 
-            pageResults.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, UNAVAILABLE, place, urlScrapeInfo.source))
+            pageResults.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, UNAVAILABLE, place, urlScrapeInfo.marathonSources))
         }
 
         val url = urlScrapeInfo.url + ", " + rangeOption
-        UrlPage(source = urlScrapeInfo.source, marathonYear = urlScrapeInfo.marathonYear, url = url)
+        UrlPage(source = urlScrapeInfo.marathonSources, marathonYear = urlScrapeInfo.marathonYear, url = url)
                 .markComplete(urlPageRepository, runnerDataRepository, pageResults, logger)
     }
 
@@ -625,9 +740,9 @@ class PacificSportScraper(@Autowired runnerDataRepository: RunnerDataRepository,
             val finish = row[positions.finishTime]
             val half = row[positions.halfwayTime]
 
-            resultPage.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, nationality, place, urlScrapeInfo.source, halfwayTime = half))
+            resultPage.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, nationality, place, urlScrapeInfo.marathonSources, halfwayTime = half))
         }
 
-        UrlPage(source = urlScrapeInfo.source, marathonYear = urlScrapeInfo.marathonYear, url = urlScrapeInfo.url).markComplete(urlPageRepository, runnerDataRepository, resultPage, logger)
+        UrlPage(source = urlScrapeInfo.marathonSources, marathonYear = urlScrapeInfo.marathonYear, url = urlScrapeInfo.url).markComplete(urlPageRepository, runnerDataRepository, resultPage, logger)
     }
 }

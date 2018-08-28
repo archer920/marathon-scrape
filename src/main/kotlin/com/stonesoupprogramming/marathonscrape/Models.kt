@@ -8,7 +8,8 @@ import javax.validation.constraints.NotNull
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
     Unassigned("Unassigned"),
-    Stockholm("--stockholm", 2018)
+    Stockholm("--stockholm", 2018),
+    Amsterdam("--amsterdam", 2017)
 }
 
 enum class Gender(val code : String){
@@ -62,7 +63,7 @@ data class CategoryResults(
     fun matches(categoryScrapeInfo: CategoryScrapeInfo) =
             this.url == categoryScrapeInfo.url &&
                     this.marathonYear == categoryScrapeInfo.marathonYear &&
-                    this.source == categoryScrapeInfo.source &&
+                    this.source == categoryScrapeInfo.marathonSources &&
                     this.category == categoryScrapeInfo.category
 }
 
@@ -75,6 +76,13 @@ data class GenderPagedResults(
         @field: Min(0) var pageNum: Int = 0,
         @field: NotNull var gender : Gender = Gender.UNASSIGNED)
 
+interface PageInfo{
+    val url: String
+    val columnPositions : ColumnPositions
+    val marathonSources : MarathonSources
+    val marathonYear : Int
+}
+
 //-1 will trigger IndexOutBoundsException so these are ok defaults
 data class ColumnPositions(
         val nationality : Int = -1,
@@ -86,23 +94,38 @@ data class ColumnPositions(
         val gender : Int = -1)
 
 data class UrlScrapeInfo(
-        val url : String,
-        val source: MarathonSources,
-        val marathonYear: Int,
-        val columnPositions: ColumnPositions,
+        override val url : String,
+        override val marathonSources: MarathonSources,
+        override val marathonYear: Int,
+        override val columnPositions: ColumnPositions,
         val tbodySelector : String ? = null,
         val rangeOptions : String? = null,
-        val gender: Gender? = null)
+        val gender: Gender? = null) : PageInfo
 
 data class CategoryScrapeInfo(
-        val url : String,
-        val source: MarathonSources,
-        val marathonYear: Int,
-        val columnPositions: ColumnPositions,
+        override val url : String,
+        override val marathonSources: MarathonSources,
+        override val marathonYear: Int,
+        override val columnPositions: ColumnPositions,
         val category: String,
         val gender: Gender? = null,
-        val raceSelection : String? = null) {
+        val raceSelection : String? = null) : PageInfo {
 
     fun toCategoryResults() =
-            CategoryResults(source = source, marathonYear = marathonYear, url = url, category = category)
+            CategoryResults(source = marathonSources, marathonYear = marathonYear, url = url, category = category)
 }
+
+data class PagedResultsScrapeInfo(
+        override val url : String,
+        override val marathonSources: MarathonSources,
+        override val marathonYear: Int,
+        override val columnPositions: ColumnPositions,
+        val startPage : Int,
+        val nextPageSelector: String,
+        val backwardsSelector : String,
+        val tbodySelector : String,
+        val secondNextPageSelector : String? = null,
+        val rangeOptions : String? = null,
+        val comboBoxValue : String? = null,
+        val comboBoxSelector : String? = null,
+        val gender: Gender? = null) : PageInfo
