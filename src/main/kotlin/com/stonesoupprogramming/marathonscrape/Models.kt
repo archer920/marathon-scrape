@@ -124,8 +124,11 @@ data class PagedResultsScrapeInfo(
         val nextPageSelector: String,
         val backwardsSelector : String,
         val tbodySelector : String,
+        val headerRow: Boolean = true,
+        val tableFrame : String? = null,
         val secondNextPageSelector : String? = null,
         val rangeOptions : String? = null,
         val comboBoxValue : String? = null,
         val comboBoxSelector : String? = null,
+        val comboBoxFrame : String? = null,
         val gender: Gender? = null) : PageInfo

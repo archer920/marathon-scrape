@@ -254,12 +254,12 @@ class TcsAmsterdamJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDrive
     private val logger = LoggerFactory.getLogger(TcsAmsterdamJsDriver::class.java)
 
     private val pageJs = """
-        return $(".s").text()
+        return $("td.s").text()
     """.trimIndent()
 
     fun findCurrentPage(driver : RemoteWebDriver, attemptNum: Int = 0, giveup: Int = 10) : Int {
         return try {
-            driver.executeScript(pageJs) as Int
+            (driver.executeScript(pageJs) as String).toInt()
         } catch (e : Exception){
             if(attemptNum < giveup){
                 Thread.sleep(1000)

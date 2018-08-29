@@ -213,8 +213,10 @@ class TcsAmsterdamProducer(@Autowired pagedResultsRepository: PagedResultsReposi
                         "span.noprint:nth-child(2) > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(12) > a:nth-child(1)",
                         "span.noprint:nth-child(2) > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > a:nth-child(1)",
                         ".i > tbody:nth-child(1)",
+                        tableFrame = "frame[name=uinfo]",
                         comboBoxSelector = "select[name=on]",
-                        comboBoxValue = "TCS Amsterdam Marathon")
+                        comboBoxValue = "TCS Amsterdam Marathon",
+                        comboBoxFrame = "frame[name=umenu]")
                 threads.add(tcsAmsterdamScraper.scrape(pagedResultsScrapeInfo))
             }
         }

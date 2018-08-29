@@ -91,6 +91,9 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
 
         scrapeInfo.comboBoxSelector?.let { cb ->
             scrapeInfo.comboBoxValue?.let { value ->
+                scrapeInfo.comboBoxFrame?.let { fr ->
+                    driver.switchTo().frame(driver.findElementByCssSelector(fr))
+                }
                 Thread.sleep(1000)
                 driver.selectComboBoxOption(cb.toCss(), value)
             }
@@ -110,14 +113,24 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     }
 
     protected open fun processPage(driver: RemoteWebDriver, currentPage: Int, scrapeInfo: PagedResultsScrapeInfo){
-        val table = jsDriver.readTableRows(driver, scrapeInfo.tbodySelector)
-        val tableHtml = jsDriver.readTableRows(driver, scrapeInfo.tbodySelector, rawHtml = true)
+        scrapeInfo.tableFrame?.let {
+            driver.switchTo().parentFrame()
+            Thread.sleep(1000)
+            driver.switchTo().frame(driver.findElement(it.toCss()))
+        }
+
+        var table = jsDriver.readTableRows(driver, scrapeInfo.tbodySelector)
+        var tableHtml = jsDriver.readTableRows(driver, scrapeInfo.tbodySelector, rawHtml = true)
         if(table.isEmpty()){
             throw IllegalStateException("Failed to gather table information")
         }
+        if(scrapeInfo.headerRow){
+            table = table.subList(1, table.size)
+            tableHtml = tableHtml.subList(1, tableHtml.size)
+        }
 
         val resultsPage = table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }
-        resultsRepository.markPageComplete(runnerDataRepository, resultsPage, scrapeInfo, logger)
+        //resultsRepository.markPageComplete(runnerDataRepository, resultsPage, scrapeInfo, logger)
     }
 
     abstract fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PagedResultsScrapeInfo, rowHtml: List<String>): RunnerData
@@ -131,7 +144,7 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     }
 
     private fun synchronizePages(driver: RemoteWebDriver, currentPage: Int, jsPage: Int, scrapeInfo: PagedResultsScrapeInfo, attempt: Int = 0, giveUp: Int = 0){
-        logger.info("page = $currentPage, ui [age = $jsPage")
+        logger.info("page = $currentPage, ui page = $jsPage")
 
         if(jsPage < 0){
             if(attempt < giveUp){
@@ -178,7 +191,12 @@ class TcsAmsterdamScraper(@Autowired runnerDataRepository: RunnerDataRepository,
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PagedResultsScrapeInfo, rowHtml: List<String>): RunnerData {
 
         val place = row[columnPositions.place].safeInt(logger)
-        val nationality = row[columnPositions.nationality].unavailableIfBlank()
+        val nationality = try{
+            rowHtml[columnPositions.nationality].split("=")[4].replace(">", "").replace("\"", "")
+        } catch (e : Exception){
+            logger.error("Failed to parse nationality", e)
+            UNAVAILABLE
+        }
         val ageGender = row[columnPositions.ageGender]
         val age = if(ageGender.isNotBlank()){
             ageGender.substring(1)
@@ -195,6 +213,8 @@ class TcsAmsterdamScraper(@Autowired runnerDataRepository: RunnerDataRepository,
     }
 
     override fun findCurrentPageNum(driver: RemoteWebDriver): Int {
+        driver.switchTo().parentFrame()
+
         return tcsAmsterdamJsDriver.findCurrentPage(driver)
     }
 }
