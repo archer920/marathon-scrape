@@ -101,48 +101,67 @@ abstract class BaseCategoryPageProducer(logger: Logger, marathonSources: Maratho
 }
 
 abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMarathonScraper,
-                      private val pagedResultsRepository: PagedResultsRepository,
-                      logger : Logger,
-                      marathonSources: MarathonSources, private val urls : Map<Int, String>) : BaseProducer(logger, marathonSources){
+                               pagedResultsRepository: PagedResultsRepository,
+                               logger : Logger,
+                               marathonSources: MarathonSources,
+                               private val urls : Map<Int, String>)
+    : BaseResultPageProducer(logger, marathonSources, pagedResultsRepository){
 
-    private var lastPageNum2014 : Int = 0
-    private var lastPageNum2015 : Int = 0
-    private var lastPageNum2016 : Int = 0
-    private var lastPageNum2017 : Int = 0
-    private var lastPageNum2018 : Int = 0
+    private var scrapeInfo2014 : PagedResultsScrapeInfo? = null
+    private var scrapeInfo2015 : PagedResultsScrapeInfo? = null
+    private var scrapeInfo2016 : PagedResultsScrapeInfo? = null
+    private var scrapeInfo2017 : PagedResultsScrapeInfo? = null
+    private var scrapeInfo2018 : PagedResultsScrapeInfo? = null
 
     @PostConstruct
     private fun init(){
-        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2014).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2014 > 0){
-            lastPageNum2014++
+        val backwardsSelector = "#pager > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)"
+        val firstNextSelector = "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)"
+        val secondNextSelector = "#pager > div:nth-child(1) > div:nth-child(7) > button:nth-child(1)"
+
+        urls[2014]?.let {
+            scrapeInfo2014 = PagedResultsScrapeInfo(it, marathonSources, 2014, ColumnPositions(), lastPageNum2014, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
         }
-        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2015).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2015 > 0){
-            lastPageNum2015++
+        urls[2015]?.let {
+            scrapeInfo2015 = PagedResultsScrapeInfo(it, marathonSources, 2015, ColumnPositions(), lastPageNum2015, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
         }
-        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2016).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2016 > 0){
-            lastPageNum2016++
+        urls[2016]?.let {
+            scrapeInfo2016 = PagedResultsScrapeInfo(it, marathonSources, 2016, ColumnPositions(), lastPageNum2016, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
         }
-        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2017).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2017 > 0){
-            lastPageNum2017++
+        urls[2017]?.let {
+            scrapeInfo2017 = PagedResultsScrapeInfo(it, marathonSources, 2017, ColumnPositions(), lastPageNum2017, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
         }
-        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2018).maxBy { it.pageNum }?.pageNum ?: 0
-        if(lastPageNum2018 > 0){
-            lastPageNum2018++
+        urls[2018]?.let {
+            scrapeInfo2018 = PagedResultsScrapeInfo(it, marathonSources, 2018, ColumnPositions(), lastPageNum2018, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
         }
     }
 
-    override fun buildThreads() {
-        urls.forEach { year, url ->
-            when (year) {
-                2014 -> threads.add(athLinksMarathonScraper.scrape(url, year, marathonSources, lastPageNum2014))
-                2015 -> threads.add(athLinksMarathonScraper.scrape(url, year, marathonSources, lastPageNum2015))
-                2016 -> threads.add(athLinksMarathonScraper.scrape(url, year, marathonSources, lastPageNum2016))
-                2017 -> threads.add(athLinksMarathonScraper.scrape(url, year, marathonSources, lastPageNum2017))
-                2018 -> threads.add(athLinksMarathonScraper.scrape(url, year, marathonSources, lastPageNum2018))
+    override fun buildYearlyThreads(year: Int, lastPage: Int) {
+        when(year) {
+            2014 -> {
+                scrapeInfo2014?.let {
+                    threads.add(athLinksMarathonScraper.scrape(it))
+                }
+            }
+            2015 -> {
+                scrapeInfo2015?.let {
+                    threads.add(athLinksMarathonScraper.scrape(it))
+                }
+            }
+            2016 -> {
+                scrapeInfo2016?.let {
+                    threads.add(athLinksMarathonScraper.scrape(it))
+                }
+            }
+            2017 -> {
+                scrapeInfo2017?.let {
+                    threads.add(athLinksMarathonScraper.scrape(it))
+                }
+            }
+            2018 -> {
+                scrapeInfo2018?.let {
+                    threads.add(athLinksMarathonScraper.scrape(it))
+                }
             }
         }
     }
@@ -222,3 +241,16 @@ class TcsAmsterdamProducer(@Autowired pagedResultsRepository: PagedResultsReposi
         }
     }
 }
+
+@Component
+class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(SantiagoProducer::class.java),
+        MarathonSources.Santiago,
+        mapOf(2014 to "https://www.athlinks.com/event/34489/results/Event/350570/Course/512372/Results",
+                2015 to "https://www.athlinks.com/event/34489/results/Event/433872/Course/651614/Results",
+                2016 to "https://www.athlinks.com/event/34489/results/Event/533858/Course/793289/Results",
+                2017 to "https://www.athlinks.com/event/34489/results/Event/634661/Course/978409/Results"))

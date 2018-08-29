@@ -9,7 +9,9 @@ import javax.validation.constraints.NotNull
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
     Unassigned("Unassigned"),
     Stockholm("--stockholm", 2018),
-    Amsterdam("--amsterdam", 2017)
+    Amsterdam("--amsterdam", 2017),
+    Santiago("--santiago", 2017)
+
 }
 
 enum class Gender(val code : String){
@@ -131,4 +133,7 @@ data class PagedResultsScrapeInfo(
         val comboBoxValue : String? = null,
         val comboBoxSelector : String? = null,
         val comboBoxFrame : String? = null,
-        val gender: Gender? = null) : PageInfo
+        val gender: Gender? = null) : PageInfo {
+
+    fun toPagedResults(currentPage : Int) = PagedResults(source = marathonSources, marathonYear = marathonYear, url = url, pageNum = currentPage)
+}

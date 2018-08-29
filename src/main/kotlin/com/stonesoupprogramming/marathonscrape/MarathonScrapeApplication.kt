@@ -45,9 +45,11 @@ class Configuration {
 
     @Bean
     fun producers(@Autowired stockholmProducer: StockholmProducer,
-                  @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer) : Map<MarathonSources, BaseProducer> {
+                  @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer,
+                  @Autowired santiagoProducer: SantiagoProducer) : Map<MarathonSources, BaseProducer> {
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
-                MarathonSources.Amsterdam to tcsAmsterdamProducer)
+                MarathonSources.Amsterdam to tcsAmsterdamProducer,
+                MarathonSources.Santiago to santiagoProducer)
     }
 }
 

@@ -92,9 +92,17 @@ fun String.toCss(): By {
     return By.cssSelector(this)
 }
 
-fun List<String>.toCountry(code: String): String {
+fun List<String>.stateToUSA(code: String): String {
     return if (this.contains(code.trim())) {
         "USA"
+    } else {
+        code.trim()
+    }
+}
+
+fun List<String>.provinceToCanada(code : String): String {
+    return if(this.contains(code.trim())) {
+        "CAN"
     } else {
         code.trim()
     }
@@ -291,6 +299,33 @@ fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataR
     }
 }
 
-fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, pagedResultsScrapeInfo: PagedResultsScrapeInfo, logger: Logger){
+fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, pagedResultsScrapeInfo: PagedResultsScrapeInfo, currentPage : Int, logger: Logger){
+    try {
+        val violations = mutableListOf<RunnerData>()
+        val fails = mutableListOf<RunnerData>()
 
+        for(r in resultsPage){
+            try {
+                runnerDataRepository.save(r)
+            } catch (e : Exception){
+                when(e) {
+                    is ConstraintViolationException -> violations.add(r)
+                    else -> {
+                        logger.error("Failed to save $r", e)
+                        fails.add(r)
+                    }
+                }
+            }
+        }
+        if(violations.isNotEmpty()){
+            violations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
+        }
+        if(fails.isNotEmpty()){
+            fails.saveToCSV("Fails-${System.currentTimeMillis()}.csv")
+        }
+        this.save(pagedResultsScrapeInfo.toPagedResults(currentPage))
+    } catch (e : Exception){
+        logger.error("Failed to make complete $pagedResultsScrapeInfo", e)
+        throw e
+    }
 }

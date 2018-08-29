@@ -218,13 +218,25 @@ class AthJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
         return buttons
     """.trimIndent()
 
-    fun readPage(driver: RemoteWebDriver) : List<Map<String, String>> {
+    fun readPage(driver: RemoteWebDriver, attemptNum: Int = 0, giveUp: Int = 60) : List<Map<String, String>> {
         return try {
             injectJq(driver)
-            driver.executeScript(extractInformationJs) as List<Map<String, String>>
+            var results = driver.executeScript(extractInformationJs) as List<Map<String, String>>
+            var attempts = attemptNum
+            while(results.isEmpty() && attempts < giveUp){
+                Thread.sleep(1000)
+                results = readPage(driver, attempts)
+                attempts ++
+            }
+            results
         } catch (e : Exception){
-            logger.error("Failed to extract page information", e)
-            throw e
+            if(attemptNum < giveUp){
+                Thread.sleep(1000)
+                readPage(driver, attemptNum + 1)
+            } else {
+                logger.error("Failed to extract page information", e)
+                throw e
+            }
         }
     }
 
