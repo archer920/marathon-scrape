@@ -107,7 +107,7 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
         do {
             processPage(driver, page, scrapeInfo)
             page = scrollPage(driver, page, scrapeInfo)
-        } while(jsDriver.elementIsPresent(driver, scrapeInfo.nextPageSelector))
+        } while(jsDriver.elementIsPresent(driver, pickSelector(driver, scrapeInfo)))
 
         processPage(driver, page, scrapeInfo)
     }
@@ -138,7 +138,7 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     protected abstract fun findCurrentPageNum(driver: RemoteWebDriver): Int
 
     private fun scrollPage(driver: RemoteWebDriver, currentPage: Int, scrapeInfo: PagedResultsScrapeInfo): Int {
-        jsDriver.clickElement(driver, pickSelector(currentPage, scrapeInfo))
+        jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
         synchronizePages(driver, currentPage + 1, findCurrentPageNum(driver), scrapeInfo)
         return currentPage + 1
     }
@@ -151,7 +151,7 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
                 Thread.sleep(5000)
                 synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
             } else {
-                if(!jsDriver.elementIsPresent(driver, pickSelector(currentPage, scrapeInfo))){
+                if(!jsDriver.elementIsPresent(driver, pickSelector(driver, scrapeInfo))){
                     return
                 }
             }
@@ -165,15 +165,15 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
                 synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
             }
             currentPage > jsPage -> {
-                jsDriver.clickElement(driver, pickSelector(currentPage, scrapeInfo))
+                jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
                 Thread.sleep(5000)
                 synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
             }
         }
     }
 
-    private fun pickSelector(currentPage: Int, scrapeInfo: PagedResultsScrapeInfo) : String {
-        return if(currentPage == 1){
+    private fun pickSelector(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) : String {
+        return if(findCurrentPageNum(driver) == 1){
             scrapeInfo.nextPageSelector
         } else {
             scrapeInfo.secondNextPageSelector ?: scrapeInfo.nextPageSelector
