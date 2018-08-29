@@ -282,10 +282,24 @@ class RheinEnergieProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonS
     : BaseAthProducer(
         athLinksMarathonScraper,
         pagedResultsRepository,
-        LoggerFactory.getLogger(SantiagoProducer::class.java),
+        LoggerFactory.getLogger(RheinEnergieProducer::class.java),
         MarathonSources.RheinEnergie,
         mapOf(2014 to "https://www.athlinks.com/event/100584/results/Event/366315/Course/325711/Results",
                 2015 to "https://www.athlinks.com/event/100584/results/Event/485015/Course/721218/Results",
                 2016 to "https://www.athlinks.com/event/100584/results/Event/586267/Course/880800/Results",
                 2017 to "https://www.athlinks.com/event/100584/results/Event/677031/Course/1088092/Results"),
         mapOf(2014 to 80, 2015 to 88, 2016 to 102, 2017 to 91))
+
+@Component
+class BournemouthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                           @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(BournemouthProducer::class.java),
+        MarathonSources.Bournemouth,
+        mapOf(2014 to "https://www.athlinks.com/event/92529/results/Event/393634/Course/504521/Results",
+                2015 to "https://www.athlinks.com/event/92529/results/Event/484469/Course/720526/Results",
+                2016 to "https://www.athlinks.com/event/92529/results/Event/536423/Course/796931/Results",
+                2017 to "https://www.athlinks.com/event/92529/results/Event/655684/Course/1025408/Results"),
+        mapOf(2014 to 40, 2015 to 38, 2016 to 41, 2017 to 41))
