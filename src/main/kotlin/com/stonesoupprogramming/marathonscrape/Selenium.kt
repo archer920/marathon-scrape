@@ -87,6 +87,10 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     : BaseScraper<PagedResultsScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver){
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) {
+        if(scrapeInfo.startPage > scrapeInfo.endPage){
+            throw IllegalStateException("Start page can't be after end page")
+        }
+
         driver.get(scrapeInfo.url)
 
         scrapeInfo.comboBoxSelector?.let { cb ->
@@ -106,7 +110,6 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
         for(page in scrapeInfo.startPage .. scrapeInfo.endPage){
             synchronizePages(driver, page, findCurrentPageNum(driver), scrapeInfo)
             processPage(driver, page, scrapeInfo)
-
         }
     }
 

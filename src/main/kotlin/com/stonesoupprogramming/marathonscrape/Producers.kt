@@ -264,8 +264,8 @@ class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
 
 @Component
 class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                       @Autowired pagedResultsRepository: PagedResultsRepository)
-    : BaseAthProducer(
+                         @Autowired pagedResultsRepository: PagedResultsRepository)
+    :BaseAthProducer(
         athLinksMarathonScraper,
         pagedResultsRepository,
         LoggerFactory.getLogger(CopenhagenProducer::class.java),
@@ -275,3 +275,17 @@ class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
                 2016 to "https://www.athlinks.com/event/34641/results/Event/546820/Course/812974/Results",
                 2017 to "https://www.athlinks.com/event/34641/results/Event/643352/Course/1001712/Results"),
         mapOf(2014 to 193, 2015 to 185, 2016 to 168, 2017 to 164))
+
+@Component
+class RheinEnergieProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(SantiagoProducer::class.java),
+        MarathonSources.RheinEnergie,
+        mapOf(2014 to "https://www.athlinks.com/event/100584/results/Event/366315/Course/325711/Results",
+                2015 to "https://www.athlinks.com/event/100584/results/Event/485015/Course/721218/Results",
+                2016 to "https://www.athlinks.com/event/100584/results/Event/586267/Course/880800/Results",
+                2017 to "https://www.athlinks.com/event/100584/results/Event/677031/Course/1088092/Results"),
+        mapOf(2014 to 80, 2015 to 88, 2016 to 102, 2017 to 91))
