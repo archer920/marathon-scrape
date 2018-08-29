@@ -145,7 +145,7 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
         when(year) {
             2014 -> {
                 scrapeInfo2014?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2015 -> {
@@ -261,3 +261,17 @@ class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
                 2016 to "https://www.athlinks.com/event/34489/results/Event/533858/Course/793289/Results",
                 2017 to "https://www.athlinks.com/event/34489/results/Event/634661/Course/978409/Results"),
         mapOf(2014 to 74, 2015 to 91, 2016 to 93, 2017 to 93))
+
+@Component
+class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(CopenhagenProducer::class.java),
+        MarathonSources.Copenhagen,
+        mapOf(2014 to "https://www.athlinks.com/event/34641/results/Event/325403/Course/502513/Results",
+                2015 to "https://www.athlinks.com/event/34641/results/Event/397848/Course/596378/Results",
+                2016 to "https://www.athlinks.com/event/34641/results/Event/546820/Course/812974/Results",
+                2017 to "https://www.athlinks.com/event/34641/results/Event/643352/Course/1001712/Results"),
+        mapOf(2014 to 193, 2015 to 185, 2016 to 168, 2017 to 164))
