@@ -48,7 +48,7 @@ class Configuration {
                   @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer,
                   @Autowired santiagoProducer: SantiagoProducer,
                   @Autowired copenhagenProducer: CopenhagenProducer,
-                  @Autowired genevaProducer: GenevaProducer),
+                  @Autowired genevaProducer: GenevaProducer,
                   @Autowired rheinEnergieProducer: RheinEnergieProducer,
                   @Autowired bournemouthProducer: BournemouthProducer,
                   @Autowired stJudeProducer: StJudeProducer,

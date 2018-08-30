@@ -145,17 +145,17 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
         when(year) {
             2014 -> {
                 scrapeInfo2014?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2015 -> {
                 scrapeInfo2015?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2016 -> {
                 scrapeInfo2016?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2017 -> {
@@ -289,7 +289,8 @@ class GenevaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
                 2016 to "https://www.athlinks.com/event/34908/results/Event/605457/Course/803503/Results",
                 2017 to "https://www.athlinks.com/event/34908/results/Event/620452/Course/1015613/Results"),
         mapOf(2014 to 31, 2015 to 31, 2016 to 30, 2017 to 37))
-                         
+
+@Component
 class RheinEnergieProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                        @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
