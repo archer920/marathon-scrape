@@ -145,17 +145,17 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
         when(year) {
             2014 -> {
                 scrapeInfo2014?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    //threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2015 -> {
                 scrapeInfo2015?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    //threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2016 -> {
                 scrapeInfo2016?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    //threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2017 -> {
@@ -317,3 +317,17 @@ class StJudeProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
                 2016 to "https://www.athlinks.com/event/3403/results/Event/513413/Course/763475/Results",
                 2017 to "https://www.athlinks.com/event/3403/results/Event/692380/Course/1113189/Results"),
         mapOf(2014 to 54, 2015 to 51, 2016 to 51, 2017 to 47))
+
+@Component
+class IndianapolisProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(IndianapolisProducer::class.java),
+        MarathonSources.Indianapolis,
+        mapOf(2014 to "https://www.athlinks.com/event/20222/results/Event/403001/Course/604834/Results",
+                2015 to "https://www.athlinks.com/event/20222/results/Event/424695/Course/732359/Results",
+                2016 to "https://www.athlinks.com/event/20222/results/Event/536281/Course/796710/Results",
+                2017 to "https://www.athlinks.com/event/20222/results/Event/607772/Course/921921/Results"),
+        mapOf(2014 to 75, 2015 to 81, 2016 to 84, 2017 to 94))

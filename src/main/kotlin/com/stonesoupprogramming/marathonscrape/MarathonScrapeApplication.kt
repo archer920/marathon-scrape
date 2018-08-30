@@ -50,14 +50,16 @@ class Configuration {
                   @Autowired copenhagenProducer: CopenhagenProducer,
                   @Autowired rheinEnergieProducer: RheinEnergieProducer,
                   @Autowired bournemouthProducer: BournemouthProducer,
-                  @Autowired stJudeProducer: StJudeProducer) : Map<MarathonSources, BaseProducer> {
+                  @Autowired stJudeProducer: StJudeProducer,
+                  @Autowired indianapolisProducer: IndianapolisProducer) : Map<MarathonSources, BaseProducer> {
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
                 MarathonSources.Amsterdam to tcsAmsterdamProducer,
                 MarathonSources.Santiago to santiagoProducer,
                 MarathonSources.Copenhagen to copenhagenProducer,
                 MarathonSources.RheinEnergie to rheinEnergieProducer,
                 MarathonSources.Bournemouth to bournemouthProducer,
-                MarathonSources.Memphis to stJudeProducer)
+                MarathonSources.Memphis to stJudeProducer,
+                MarathonSources.Indianapolis to indianapolisProducer)
     }
 }
 
