@@ -275,3 +275,17 @@ class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
                 2016 to "https://www.athlinks.com/event/34641/results/Event/546820/Course/812974/Results",
                 2017 to "https://www.athlinks.com/event/34641/results/Event/643352/Course/1001712/Results"),
         mapOf(2014 to 193, 2015 to 185, 2016 to 168, 2017 to 164))
+
+@Component
+class GenevaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                         @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(GenevaProducer::class.java),
+        MarathonSources.Geneva,
+        mapOf(2014 to "https://www.athlinks.com/event/34908/results/Event/328309/Course/475398/Results",
+                2015 to "https://www.athlinks.com/event/34908/results/Event/443754/Course/658734/Results",
+                2016 to "https://www.athlinks.com/event/34908/results/Event/605457/Course/803503/Results",
+                2017 to "https://www.athlinks.com/event/34908/results/Event/620452/Course/1015613/Results"),
+        mapOf(2014 to 31, 2015 to 31, 2016 to 30, 2017 to 37))
