@@ -199,8 +199,10 @@ class AthJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
  	        const finishTime = ${'$'}(parent).find('.col-2').text()
             const gender = ${'$'}(spans[0]).text().split(' ')[0]
             const age = ${'$'}(spans[0]).text().split(' ')[1]
-            const nationality = ${'$'}(spans[2]).text()
-
+            let nationality = ${'$'}(spans[2]).text()
+            if(nationality === ''){
+                nationality = ${'$'}(elem).find('#location').text()
+            }
             results.push({place : place, finishTime : finishTime, gender : gender, age: age, nationality: nationality})
         });
 

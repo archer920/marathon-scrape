@@ -87,6 +87,10 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     : BaseScraper<PagedResultsScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver){
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) {
+        if(scrapeInfo.startPage > scrapeInfo.endPage){
+            throw IllegalStateException("Start page can't be after end page")
+        }
+
         driver.get(scrapeInfo.url)
 
         scrapeInfo.comboBoxSelector?.let { cb ->
@@ -106,7 +110,6 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
         for(page in scrapeInfo.startPage .. scrapeInfo.endPage){
             synchronizePages(driver, page, findCurrentPageNum(driver), scrapeInfo)
             processPage(driver, page, scrapeInfo)
-
         }
     }
 
@@ -200,9 +203,17 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
             val parts = nationality.split(",")
             nationality = usStateCodes.stateToUSA(parts.last().trim())
             nationality = canadaProvinceCodes.provinceToCanada(nationality)
+        } else {
+            nationality = usStateCodes.stateToUSA(nationality)
+            nationality = canadaProvinceCodes.provinceToCanada(nationality)
         }
         val place = row[1].safeInt(logger)
-        return createRunnerData(logger, row[2], row[4], row[3], scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+        return try {
+            createRunnerData(logger, row[2], row[4], row[3], scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+        } catch (e : Exception){
+            logger.error("Failed to create runner", e)
+            throw e
+        }
     }
 
     override fun findCurrentPageNum(driver: RemoteWebDriver): Int = athJsDriver.findCurrentPage(driver)
