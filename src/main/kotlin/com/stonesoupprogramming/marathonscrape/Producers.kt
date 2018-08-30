@@ -303,3 +303,17 @@ class BournemouthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
                 2016 to "https://www.athlinks.com/event/92529/results/Event/536423/Course/796931/Results",
                 2017 to "https://www.athlinks.com/event/92529/results/Event/655684/Course/1025408/Results"),
         mapOf(2014 to 40, 2015 to 38, 2016 to 41, 2017 to 41))
+
+@Component
+class StJudeProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                          @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(StJudeProducer::class.java),
+        MarathonSources.Memphis,
+        mapOf(2014 to "https://www.athlinks.com/event/3403/results/Event/408060/Course/565915/Results",
+                2015 to "https://www.athlinks.com/event/3403/results/Event/500268/Course/730979/Results",
+                2016 to "https://www.athlinks.com/event/3403/results/Event/513413/Course/763475/Results",
+                2017 to "https://www.athlinks.com/event/3403/results/Event/692380/Course/1113189/Results"),
+        mapOf(2014 to 54, 2015 to 51, 2016 to 51, 2017 to 47))
