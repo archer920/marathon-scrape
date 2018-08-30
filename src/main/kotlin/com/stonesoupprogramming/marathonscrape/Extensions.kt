@@ -278,7 +278,10 @@ fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataR
                 runnerDataRepository.save(r)
             } catch (e : Exception){
                 when(e) {
-                    is ConstraintViolationException -> violations.add(r)
+                    is ConstraintViolationException -> {
+                        logger.error("Adding record to violations", e)
+                        violations.add(r)
+                    }
                     else -> {
                         logger.error("Failed to save $r", e)
                         fails.add(r)
@@ -309,7 +312,10 @@ fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepo
                 runnerDataRepository.save(r)
             } catch (e : Exception){
                 when(e) {
-                    is ConstraintViolationException -> violations.add(r)
+                    is ConstraintViolationException -> {
+                        logger.error("Adding record to violations", e)
+                        violations.add(r)
+                    }
                     else -> {
                         logger.error("Failed to save $r", e)
                         fails.add(r)

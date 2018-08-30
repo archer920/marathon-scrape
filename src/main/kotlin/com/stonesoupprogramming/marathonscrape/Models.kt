@@ -12,6 +12,7 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Amsterdam("--amsterdam", 2017),
     Santiago("--santiago", 2017),
     RheinEnergie("--rhein-energie", 2017),
+    Austin("--austin", 2017),
     Copenhagen("--copenhagen", 2017),
     Bournemouth("--bournemouth", 2017)
 }
