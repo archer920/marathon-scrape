@@ -261,3 +261,17 @@ class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
                 2016 to "https://www.athlinks.com/event/34489/results/Event/533858/Course/793289/Results",
                 2017 to "https://www.athlinks.com/event/34489/results/Event/634661/Course/978409/Results"),
         mapOf(2014 to 74, 2015 to 91, 2016 to 93, 2017 to 93))
+
+@Component
+class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(BerlinProducer::class.java),
+        MarathonSources.Berlin,
+        mapOf(2014 to "https://www.athlinks.com/event/34448/results/Event/358856/Course/523662/Results",
+                2015 to "https://www.athlinks.com/event/34448/results/Event/406759/Course/609347/Results",
+                2016 to "https://www.athlinks.com/event/34448/results/Event/488569/Course/726394/Results",
+                2017 to "https://www.athlinks.com/event/34448/results/Event/602229/Course/911221/Results"),
+        mapOf(2014 to 580, 2015 to 737, 2016 to 722, 2017 to 783))
