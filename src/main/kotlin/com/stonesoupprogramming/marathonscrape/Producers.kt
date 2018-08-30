@@ -150,22 +150,22 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
             }
             2015 -> {
                 scrapeInfo2015?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2016 -> {
                 scrapeInfo2016?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2017 -> {
                 scrapeInfo2017?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
             2018 -> {
                 scrapeInfo2018?.let {
-                    //threads.add(athLinksMarathonScraper.scrape(it))
+                    threads.add(athLinksMarathonScraper.scrape(it))
                 }
             }
         }
@@ -291,6 +291,20 @@ class AustinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
         mapOf(2014 to 72, 2015 to 63, 2016 to 65, 2017 to 54))
 
 @Component
+class GenevaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                         @Autowired pagedResultsRepository: PagedResultsRepository)
+     : BaseAthProducer(
+     	athLinksMarathonScraper,
+     	pagedResultsRepository,
+     	LoggerFactory.getLogger(GenevaProducer::class.java),
+        MarathonSources.Geneva,
+        mapOf(2014 to "https://www.athlinks.com/event/34908/results/Event/328309/Course/475398/Results",
+                2015 to "https://www.athlinks.com/event/34908/results/Event/443754/Course/658734/Results",
+                2016 to "https://www.athlinks.com/event/34908/results/Event/605457/Course/803503/Results",
+                2017 to "https://www.athlinks.com/event/34908/results/Event/620452/Course/1015613/Results"),
+        mapOf(2014 to 31, 2015 to 31, 2016 to 30, 2017 to 37))
+
+@Component
 class RheinEnergieProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                        @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
@@ -317,3 +331,31 @@ class BournemouthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
                 2016 to "https://www.athlinks.com/event/92529/results/Event/536423/Course/796931/Results",
                 2017 to "https://www.athlinks.com/event/92529/results/Event/655684/Course/1025408/Results"),
         mapOf(2014 to 40, 2015 to 38, 2016 to 41, 2017 to 41))
+
+@Component
+class StJudeProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                          @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(StJudeProducer::class.java),
+        MarathonSources.Memphis,
+        mapOf(2014 to "https://www.athlinks.com/event/3403/results/Event/408060/Course/565915/Results",
+                2015 to "https://www.athlinks.com/event/3403/results/Event/500268/Course/730979/Results",
+                2016 to "https://www.athlinks.com/event/3403/results/Event/513413/Course/763475/Results",
+                2017 to "https://www.athlinks.com/event/3403/results/Event/692380/Course/1113189/Results"),
+        mapOf(2014 to 54, 2015 to 51, 2016 to 51, 2017 to 47))
+
+@Component
+class IndianapolisProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(IndianapolisProducer::class.java),
+        MarathonSources.Indianapolis,
+        mapOf(2014 to "https://www.athlinks.com/event/20222/results/Event/403001/Course/604834/Results",
+                2015 to "https://www.athlinks.com/event/20222/results/Event/424695/Course/732359/Results",
+                2016 to "https://www.athlinks.com/event/20222/results/Event/536281/Course/796710/Results",
+                2017 to "https://www.athlinks.com/event/20222/results/Event/607772/Course/921921/Results"),
+        mapOf(2014 to 75, 2015 to 81, 2016 to 84, 2017 to 94))
