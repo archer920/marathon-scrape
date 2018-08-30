@@ -362,6 +362,20 @@ class MunchenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrape
 
 @Component
 class FargoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+			@Autowired pagedResultsRepository: PagedResultsRepository)
+: BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(FargoProducer::class.java),
+        MarathonSources.Fargo,
+        mapOf(2014 to "https://www.athlinks.com/event/21780/results/Event/313589/Course/497735/Results",
+                2015 to "https://www.athlinks.com/event/21780/results/Event/444056/Course/664823/Results",
+                2016 to "https://www.athlinks.com/event/21780/results/Event/544842/Course/706230/Results",
+                2017 to "https://www.athlinks.com/event/21780/results/Event/603348/Course/913426/Results"),
+        mapOf(2014 to 34, 2015 to 31, 2016 to 30, 2017 to 27))
+        
+@Component
+class BrightonProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                       @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
         athLinksMarathonScraper,
@@ -373,6 +387,13 @@ class FargoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                 2016 to "https://www.athlinks.com/event/21780/results/Event/544842/Course/706230/Results",
                 2017 to "https://www.athlinks.com/event/21780/results/Event/603348/Course/913426/Results"),
         mapOf(2014 to 34, 2015 to 31, 2016 to 30, 2017 to 27))
+        LoggerFactory.getLogger(BrightonProducer::class.java),
+        MarathonSources.Brighton,
+        mapOf(2014 to "https://www.athlinks.com/event/34646/results/Event/373483/Course/492122/Results",
+                2015 to "https://www.athlinks.com/event/34646/results/Event/409399/Course/615614/Results",
+                2016 to "https://www.athlinks.com/event/34646/results/Event/485115/Course/721410/Results",
+                2017 to "https://www.athlinks.com/event/34646/results/Event/576115/Course/864078/Results"),
+        mapOf(2014 to 174, 2015 to 185, 2016 to 214, 2017 to 244))
 
 @Component
 class VancouverProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
