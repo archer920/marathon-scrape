@@ -359,3 +359,17 @@ class MunchenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrape
                 2016 to "https://www.athlinks.com/event/34524/results/Event/539699/Course/801925/Results",
                 2017 to "https://www.athlinks.com/event/34524/results/Event/679518/Course/1088010/Results"),
         mapOf(2014 to 125, 2015 to 119, 2016 to 98, 2017 to 88))
+
+@Component
+class FargoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                      @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(FargoProducer::class.java),
+        MarathonSources.Fargo,
+        mapOf(2014 to "https://www.athlinks.com/event/21780/results/Event/313589/Course/497735/Results",
+                2015 to "https://www.athlinks.com/event/21780/results/Event/444056/Course/664823/Results",
+                2016 to "https://www.athlinks.com/event/21780/results/Event/544842/Course/706230/Results",
+                2017 to "https://www.athlinks.com/event/21780/results/Event/603348/Course/913426/Results"),
+        mapOf(2014 to 34, 2015 to 31, 2016 to 30, 2017 to 27))
