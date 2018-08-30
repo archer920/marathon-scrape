@@ -345,3 +345,17 @@ class IndianapolisProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonS
                 2016 to "https://www.athlinks.com/event/20222/results/Event/536281/Course/796710/Results",
                 2017 to "https://www.athlinks.com/event/20222/results/Event/607772/Course/921921/Results"),
         mapOf(2014 to 75, 2015 to 81, 2016 to 84, 2017 to 94))
+
+@Component
+class MunchenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                           @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(MunchenProducer::class.java),
+        MarathonSources.Munchen,
+        mapOf(2014 to "https://www.athlinks.com/event/34524/results/Event/360545/Course/600937/Results",
+                2015 to "https://www.athlinks.com/event/34524/results/Event/485084/Course/721349/Results",
+                2016 to "https://www.athlinks.com/event/34524/results/Event/539699/Course/801925/Results",
+                2017 to "https://www.athlinks.com/event/34524/results/Event/679518/Course/1088010/Results"),
+        mapOf(2014 to 125, 2015 to 119, 2016 to 98, 2017 to 88))
