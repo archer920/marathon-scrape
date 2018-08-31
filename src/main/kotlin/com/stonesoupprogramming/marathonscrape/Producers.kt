@@ -490,3 +490,17 @@ class SanDiegoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
                 2016 to "https://www.athlinks.com/event/99943/results/Event/550317/Course/672290/Results",
                 2017 to "https://www.athlinks.com/event/99943/results/Event/550323/Course/1011651/Results"),
         mapOf(2014 to 107, 2015 to 87, 2016 to 117, 2017 to 108))
+
+@Component
+class AkronProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(AkronProducer::class.java),
+        MarathonSources.Akron,
+        mapOf(2014 to "https://www.athlinks.com/event/20371/results/Event/376915/Course/524041/Results",
+                2015 to "https://www.athlinks.com/event/20371/results/Event/440096/Course/659649/Results",
+                2016 to "https://www.athlinks.com/event/20371/results/Event/575099/Course/861873/Results",
+                2017 to "https://www.athlinks.com/event/20371/results/Event/602618/Course/911979/Results"),
+        mapOf(2014 to 32, 2015 to 30, 2016 to 24, 2017 to 19))

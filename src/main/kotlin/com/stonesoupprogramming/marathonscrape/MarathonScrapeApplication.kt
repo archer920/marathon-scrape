@@ -59,7 +59,8 @@ class Configuration {
                   @Autowired vancouverProducer: VancouverProducer,
                   @Autowired surfCityProducer: SurfCityProducer,
                   @Autowired liverpoolProducer: LiverpoolProducer,
-                  @Autowired sanDiegoProducer: SanDiegoProducer) : Map<MarathonSources, BaseProducer> {
+                  @Autowired sanDiegoProducer: SanDiegoProducer,
+                  @Autowired akronProducer: AkronProducer) : Map<MarathonSources, BaseProducer> {
 
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
                 MarathonSources.Amsterdam to tcsAmsterdamProducer,
@@ -76,7 +77,8 @@ class Configuration {
                 MarathonSources.Vancouver to vancouverProducer,
                 MarathonSources.SurfCity to surfCityProducer,
                 MarathonSources.Liverpool to liverpoolProducer,
-                MarathonSources.SanDiego to sanDiegoProducer)
+                MarathonSources.SanDiego to sanDiegoProducer,
+                MarathonSources.Akron to akronProducer)
     }
 }
 
