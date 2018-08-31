@@ -465,7 +465,7 @@ class SurfCityProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
 
 @Component
 class LiverpoolProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                       @Autowired pagedResultsRepository: PagedResultsRepository)
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
         athLinksMarathonScraper,
         pagedResultsRepository,
@@ -476,3 +476,17 @@ class LiverpoolProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScra
                 2016 to "https://www.athlinks.com/event/111636/results/Event/552882/Course/823759/Results",
                 2017 to "https://www.athlinks.com/event/111636/results/Event/613956/Course/934668/Results"),
         mapOf(2014 to 47, 2015 to 50, 2016 to 51, 2017 to 61))
+
+@Component
+class SanDiegoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(SanDiegoProducer::class.java),
+        MarathonSources.SanDiego,
+        mapOf(2014 to "https://www.athlinks.com/event/99943/results/Event/359333/Course/539078/Results",
+                2015 to "https://www.athlinks.com/event/99943/results/Event/451502/Course/674104/Results",
+                2016 to "https://www.athlinks.com/event/99943/results/Event/550317/Course/672290/Results",
+                2017 to "https://www.athlinks.com/event/99943/results/Event/550323/Course/1011651/Results"),
+        mapOf(2014 to 107, 2015 to 87, 2016 to 117, 2017 to 108))
