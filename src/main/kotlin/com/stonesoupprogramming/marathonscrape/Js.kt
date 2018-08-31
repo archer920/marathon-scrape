@@ -78,12 +78,12 @@ class JsDriverImpl : JsDriver {
         return ${'$'}('$selector').attr('$attr')
     """.trimIndent()
 
-    override fun readAttribute(driver: RemoteWebDriver, cssSelector: String, attribute: String, attemptNum : Int, giveup : Int): String {
+    override fun readAttribute(driver: RemoteWebDriver, cssSelector: String, attribute: String, attemptNum : Int, giveUp : Int): String {
         return try {
             injectJq(driver)
             driver.executeScript(readAttributeJs.replace(selector, cssSelector).replace(attr, attribute)) as String
         } catch (e : Exception){
-            if(attemptNum < giveup){
+            if(attemptNum < giveUp){
                 sleepRandom(1, 5)
                 readAttribute(driver, cssSelector, attribute, attemptNum + 1)
             } else {
@@ -116,7 +116,10 @@ class JsDriverImpl : JsDriver {
         return try {
             driver.executeScript(jquery)
             Thread.sleep(1000)
+
+            @Suppress("UNCHECKED_CAST")
             val results = driver.executeScript(js) as List<List<String>>
+
             if (trimResults) {
                 return results.map { row ->
                     row.map { cell -> cell.trim() }
@@ -223,7 +226,10 @@ class AthJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
     fun readPage(driver: RemoteWebDriver, attemptNum: Int = 0, giveUp: Int = 60) : List<Map<String, String>> {
         return try {
             injectJq(driver)
+
+            @Suppress("UNCHECKED_CAST")
             var results = driver.executeScript(extractInformationJs) as List<Map<String, String>>
+
             var attempts = attemptNum
             while(results.isEmpty() && attempts < giveUp){
                 Thread.sleep(1000)
@@ -245,7 +251,10 @@ class AthJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDriver {
     fun findCurrentPage(driver: RemoteWebDriver) : Int {
         return try {
             injectJq(driver)
+
+            @Suppress("UNCHECKED_CAST")
             val buttons = driver.executeScript(currentPageJs) as List<List<String>>
+
             var index = -1
             for(b in buttons){
                 val parts = b[0].split(";")
@@ -268,11 +277,12 @@ class TcsAmsterdamJsDriver(private val jsDriver: JsDriver) : JsDriver by jsDrive
     private val logger = LoggerFactory.getLogger(TcsAmsterdamJsDriver::class.java)
 
     private val pageJs = """
-        return $("td.s").text()
+        return ${'$'}('body > span:nth-child(2) > center > table > tbody > tr > td.s').text()
     """.trimIndent()
 
     fun findCurrentPage(driver : RemoteWebDriver, attemptNum: Int = 0, giveup: Int = 10) : Int {
         return try {
+            injectJq(driver)
             (driver.executeScript(pageJs) as String).toInt()
         } catch (e : Exception){
             if(attemptNum < giveup){

@@ -5,10 +5,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.LinkedBlockingQueue
 import javax.annotation.PostConstruct
 
-abstract class BaseProducer(private val logger : Logger, protected val marathonSources: MarathonSources) {
+abstract class BaseProducer(protected val logger : Logger, protected val marathonSources: MarathonSources) {
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
 
@@ -38,7 +37,7 @@ abstract class BaseUrlPageProducer(logger: Logger, marathonSources: MarathonSour
         completePages = urlPageRepository.findBySource(marathonSources)
     }
 
-    protected fun filterCompleted(inputs : List<UrlPage>) : List<UrlPage> =
+    protected fun filterCompleted(inputs : List<UrlScrapeInfo>) : List<UrlScrapeInfo> =
             inputs.filter { it -> completePages.none { cp -> it.url == cp.url }}
 }
 
@@ -116,27 +115,27 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
 
         urls[2014]?.let {url ->
             endPages[2014]?.let { endPage ->
-                scrapeInfo2014 = PagedResultsScrapeInfo(url, marathonSources, 2014, ColumnPositions(), lastPageNum2014, endPage, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2014 = PagedResultsScrapeInfo(url, marathonSources, 2014, ColumnPositions(), lastPageNum2014, endPage, lastPageNum2014, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
             }
         }
         urls[2015]?.let { url ->
             endPages[2015]?.let { endPage ->
-                scrapeInfo2015 = PagedResultsScrapeInfo(url, marathonSources, 2015, ColumnPositions(), lastPageNum2015, endPage, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2015 = PagedResultsScrapeInfo(url, marathonSources, 2015, ColumnPositions(), lastPageNum2015, endPage, lastPageNum2015, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
             }
         }
         urls[2016]?.let {url ->
             endPages[2016]?.let { endPage ->
-                scrapeInfo2016 = PagedResultsScrapeInfo(url, marathonSources, 2016, ColumnPositions(), lastPageNum2016, endPage, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2016 = PagedResultsScrapeInfo(url, marathonSources, 2016, ColumnPositions(), lastPageNum2016, endPage, lastPageNum2016, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
             }
         }
         urls[2017]?.let {url ->
             endPages[2017]?.let { endPage ->
-                scrapeInfo2017 = PagedResultsScrapeInfo(url, marathonSources, 2017, ColumnPositions(), lastPageNum2017, endPage, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2017 = PagedResultsScrapeInfo(url, marathonSources, 2017, ColumnPositions(), lastPageNum2017, endPage, lastPageNum2017, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
             }
         }
         urls[2018]?.let {url ->
             endPages[2018]?.let { endPage ->
-                scrapeInfo2018 = PagedResultsScrapeInfo(url, marathonSources, 2018, ColumnPositions(), lastPageNum2018, endPage, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2018 = PagedResultsScrapeInfo(url, marathonSources, 2018, ColumnPositions(), lastPageNum2018, endPage, lastPageNum2018, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
             }
         }
     }
@@ -172,6 +171,7 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
     }
 }
 
+//FIXME: Does not conform to current architecture
 @Component
 class StockholmProducer(@Autowired categoryResultsRepository: CategoryResultsRepository,
                         @Autowired private val registrationMarathonScraper: RegistrationMarathonScraper)
@@ -211,7 +211,7 @@ class StockholmProducer(@Autowired categoryResultsRepository: CategoryResultsRep
                 extendedColumnPositions
             }
             categoryScrapeInfoList.add(CategoryScrapeInfo("https://registration.marathongruppen.se/ResultList.aspx?LanguageCode=en&RaceId=51",
-                    marathonSources, year, positions, selector, gender, raceSelection))
+                    marathonSources, year, positions, selector, gender, raceSelection, "", true))
         }
     }
 
@@ -223,28 +223,75 @@ class StockholmProducer(@Autowired categoryResultsRepository: CategoryResultsRep
 }
 
 @Component
-class TcsAmsterdamProducer(@Autowired pagedResultsRepository: PagedResultsRepository,
-                           @Autowired private val tcsAmsterdamScraper: TcsAmsterdamScraper)
-    : BaseResultPageProducer(LoggerFactory.getLogger(TcsAmsterdamProducer::class.java), MarathonSources.Amsterdam, pagedResultsRepository){
+class TcsAmsterdamProducer(@Autowired urlPageRepository: UrlPageRepository,
+                           @Autowired pagedResultsRepository: PagedResultsRepository,
+                           @Autowired private val evenementenUitslagenScraper: EvenementenUitslagenScraper)
+    : BaseProducer(LoggerFactory.getLogger(TcsAmsterdamProducer::class.java), MarathonSources.Amsterdam){
 
-    override fun buildYearlyThreads(year: Int, lastPage: Int) {
+    val urlProducer = object : BaseUrlPageProducer(this.logger, marathonSources, urlPageRepository) {
+        private val urls2014 = mutableListOf<UrlScrapeInfo>()
+        private val urls2015 = mutableListOf<UrlScrapeInfo>()
 
-        when(year){
-            2014 -> {
-                val columnPositions = ColumnPositions(place = 0, nationality = 4, ageGender = 6, finishTime = 8)
-                val pagedResultsScrapeInfo = PagedResultsScrapeInfo("http://evenementen.uitslagen.nl/2014/amsterdammarathon/index-en.html",
-                        marathonSources, year, columnPositions, lastPage,
-                        0, //FIXME
-                        "span.noprint:nth-child(2) > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(12) > a:nth-child(1)",
-                        "span.noprint:nth-child(2) > center:nth-child(1) > table:nth-child(1) > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(3) > a:nth-child(1)",
-                        ".i > tbody:nth-child(1)",
-                        tableFrame = "frame[name=uinfo]",
-                        comboBoxSelector = "select[name=on]",
-                        comboBoxValue = "TCS Amsterdam Marathon",
-                        comboBoxFrame = "frame[name=umenu]")
-                threads.add(tcsAmsterdamScraper.scrape(pagedResultsScrapeInfo))
+        init {
+            val columnPositions = ColumnPositions(place = 0, nationality = 4, ageGender = 6, finishTime = 8)
+            val url2014 = "http://evenementen.uitslagen.nl/2014/amsterdammarathon/uitslag.php?on=1&ct=&p=&tl=en"
+            buildUrlScrapeInfo(urls2014, columnPositions, url2014, 2014,
+                    "Msen" to 26, "M35" to 16, "M40" to 19,
+                    "M45" to 16, "M50" to 11, "M55" to 6,
+                    "M60" to 3, "M65" to 1,"M70" to 1,
+                    "M75" to 1, "Vsen" to 10,  "V35" to 5,
+                    "V40" to 5,  "V45" to 5, "V50" to 3,
+                    "V55" to 2,  "V60" to 1,  "V65" to 1)
+
+            val url2015 = "http://evenementen.uitslagen.nl/2015/amsterdammarathon/uitslag.php?on=1&ct=&p=&tl=en"
+            buildUrlScrapeInfo(urls2015, columnPositions, url2015, 2015,
+                    "Msen" to 72, "M35" to 16, "M40" to 18,
+                    "M45" to 17, "M50" to 12, "M55" to 7,
+                    "M60" to 3, "M65" to 1, "M70" to 1,
+                    "M75" to 1, "Vsen" to 10,  "V35" to 4,
+                    "V40" to 5,  "V45" to 5, "V50" to 3,
+                    "V55" to 2,  "V60" to 1,  "V65" to 1)
+        }
+
+        private fun buildUrlScrapeInfo(list: MutableList<UrlScrapeInfo>, columnPositions: ColumnPositions, url: String, year: Int, vararg pair: Pair<String, Int>) {
+            pair.forEach { p ->  list.addAll(buildUrls(url, p.first, p.second, year, columnPositions))}
+        }
+
+        private fun buildUrls(url : String, category : String, lastPage: Int, year : Int, columnPositions: ColumnPositions) : List<UrlScrapeInfo> {
+            val mutableList = mutableListOf<UrlScrapeInfo>()
+            for(i in 1 .. lastPage){
+                mutableList.add(UrlScrapeInfo(url = url.replace("ct=", "ct=$category").replace("p=", "p=$i"),
+                        marathonSources = marathonSources,
+                        marathonYear = year,
+                        columnPositions = columnPositions,
+                        tableBodySelector = ".i > tbody:nth-child(1)",
+                        headerRow = true))
+            }
+            return mutableList.toList()
+        }
+
+        override fun buildThreads() {
+            filterCompleted(urls2014).forEach { it -> threads.add(evenementenUitslagenScraper.scrape(it)) }
+            filterCompleted(urls2015).forEach { it -> threads.add(evenementenUitslagenScraper.scrape(it)) }
+        }
+    }
+
+    val pagedProducer = object : BaseResultPageProducer(this.logger, marathonSources, pagedResultsRepository) {
+
+        override fun buildYearlyThreads(year: Int, lastPage: Int) {
+            when(year){
+                2016 -> threads.addAll()
             }
         }
+    }
+
+    @PostConstruct
+    fun initialize(){
+        urlProducer.init()
+    }
+
+    override fun buildThreads() {
+        threads.addAll(urlProducer.process())
     }
 }
 

@@ -92,6 +92,8 @@ interface PageInfo{
     val columnPositions : ColumnPositions
     val marathonSources : MarathonSources
     val marathonYear : Int
+    val tableBodySelector : String
+    val headerRow : Boolean
 }
 
 //-1 will trigger IndexOutBoundsException so these are ok defaults
@@ -111,7 +113,13 @@ data class UrlScrapeInfo(
         override val columnPositions: ColumnPositions,
         val tbodySelector : String ? = null,
         val rangeOptions : String? = null,
-        val gender: Gender? = null) : PageInfo
+        val gender: Gender? = null,
+        override val tableBodySelector: String,
+        override val headerRow: Boolean) : PageInfo {
+
+    fun toUrlResults(): UrlPage =
+            UrlPage(source = marathonSources, marathonYear = marathonYear, url = url)
+}
 
 data class CategoryScrapeInfo(
         override val url : String,
@@ -120,7 +128,7 @@ data class CategoryScrapeInfo(
         override val columnPositions: ColumnPositions,
         val category: String,
         val gender: Gender? = null,
-        val raceSelection : String? = null) : PageInfo {
+        val raceSelection : String? = null, override val tableBodySelector: String, override val headerRow: Boolean) : PageInfo {
 
     fun toCategoryResults() =
             CategoryResults(source = marathonSources, marathonYear = marathonYear, url = url, category = category)
@@ -133,17 +141,14 @@ data class PagedResultsScrapeInfo(
         override val columnPositions: ColumnPositions,
         val startPage : Int,
         val endPage: Int,
+        var currentPage: Int = startPage,
         val nextPageSelector: String,
         val backwardsSelector : String,
-        val tableBodySelector : String,
-        val headerRow: Boolean = true,
+        override val tableBodySelector : String,
+        override val headerRow: Boolean = true,
         val tableFrame : String? = null,
         val secondNextPageSelector : String? = null,
-        val rangeOptions : String? = null,
-        val comboBoxValue : String? = null,
-        val comboBoxSelector : String? = null,
-        val comboBoxFrame : String? = null,
         val gender: Gender? = null) : PageInfo {
 
-    fun toPagedResults(currentPage : Int) = PagedResults(source = marathonSources, marathonYear = marathonYear, url = url, pageNum = currentPage)
+    fun toPagedResults() = PagedResults(source = marathonSources, marathonYear = marathonYear, url = url, pageNum = currentPage)
 }

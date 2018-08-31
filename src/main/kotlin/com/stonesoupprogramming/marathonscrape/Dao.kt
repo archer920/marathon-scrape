@@ -23,3 +23,4 @@ interface PagedResultsRepository : JpaRepository<PagedResults, Long>, PagedRepos
 interface GenderPagedResultsRepository : JpaRepository<GenderPagedResults, Long>, PagedRepository<GenderPagedResults>
 
 interface CategoryResultsRepository : JpaRepository<CategoryResults, Long>, PagedRepository<CategoryResults>
+

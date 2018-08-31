@@ -286,12 +286,22 @@ fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataR
     }
 }
 
-fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, pagedResultsScrapeInfo: PagedResultsScrapeInfo, currentPage : Int, logger: Logger){
+fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, pagedResultsScrapeInfo: PagedResultsScrapeInfo, logger: Logger){
     try {
         runnerDataRepository.saveAll(resultsPage)
-        this.save(pagedResultsScrapeInfo.toPagedResults(currentPage))
+        this.save(pagedResultsScrapeInfo.toPagedResults())
     } catch (e : Exception){
         logger.error("Failed to make complete $pagedResultsScrapeInfo", e)
+        throw e
+    }
+}
+
+fun UrlPageRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, urlScrapeInfo: UrlScrapeInfo, logger: Logger){
+    try {
+        runnerDataRepository.saveAll(resultsPage)
+        this.save(urlScrapeInfo.toUrlResults())
+    } catch (e : Exception){
+        logger.error("Failed to make complete $urlScrapeInfo", e)
         throw e
     }
 }
