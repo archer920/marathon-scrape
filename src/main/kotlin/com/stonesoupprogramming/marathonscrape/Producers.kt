@@ -280,7 +280,7 @@ class TcsAmsterdamProducer(@Autowired urlPageRepository: UrlPageRepository,
 
         override fun buildYearlyThreads(year: Int, lastPage: Int) {
             when(year){
-                2016 -> threads.addAll()
+                //2016 -> threads.addAll()
             }
         }
     }
@@ -437,7 +437,7 @@ class BrightonProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
 
 @Component
 class VancouverProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                    @Autowired pagedResultsRepository: PagedResultsRepository)
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
         athLinksMarathonScraper,
         pagedResultsRepository,
@@ -448,3 +448,17 @@ class VancouverProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScra
                 2016 to "https://www.athlinks.com/event/34531/results/Event/538354/Course/803195/Results",
                 2017 to "https://www.athlinks.com/event/34531/results/Event/607474/Course/947043/Results"),
         mapOf(2014 to 76, 2015 to 72, 2016 to 76, 2017 to 72))
+
+@Component
+class SurfCityProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(SurfCityProducer::class.java),
+        MarathonSources.SurfCity,
+        mapOf(2014 to "https://www.athlinks.com/event/1224/results/Event/280563/Course/580484/Results",
+                2015 to "https://www.athlinks.com/event/1224/results/Event/373686/Course/553346/Results",
+                2016 to "https://www.athlinks.com/event/1224/results/Event/425859/Course/755717/Results",
+                2017 to "https://www.athlinks.com/event/1224/results/Event/615349/Course/767284/Results"),
+        mapOf(2014 to 48, 2015 to 44, 2016 to 39, 2017 to 32))

@@ -33,6 +33,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                     MarathonSources.Fargo -> logger.printProgress(source, 1655, 1535, 1494, 1303)
                     MarathonSources.Brighton -> logger.printProgress(source, 8686, 9214, 10666, 12158)
                     MarathonSources.Vancouver -> logger.printProgress(source, 3784, 3578, 3778, 3577)
+                    MarathonSources.SurfCity -> logger.printProgress(source, 2379, 2170, 1949, 1582)
                     else -> throw IllegalArgumentException("No status for this marathon: $source")
                 }
                 Thread.sleep(10000)
