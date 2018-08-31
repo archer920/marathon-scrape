@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.sun.org.apache.xml.internal.resolver.readers.ExtendedXMLCatalogReader
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 import java.util.concurrent.BlockingQueue
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Semaphore
+import java.util.concurrent.atomic.AtomicInteger
 
 @Component
 class DriverFactory {
@@ -83,10 +85,10 @@ abstract class BaseScraper<T : PageInfo> (protected val logger : Logger, protect
             tableHtml = tableHtml.subList(1, tableHtml.size)
         }
 
-        return table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }
+        return table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull()
     }
 
-    abstract fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData
+    abstract fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData?
 
     protected abstract fun webscrape(driver: RemoteWebDriver, scrapeInfo: T)
 }
@@ -727,5 +729,68 @@ class PacificSportScraper(@Autowired runnerDataRepository: RunnerDataRepository,
         }
 
         UrlPage(source = urlScrapeInfo.marathonSources, marathonYear = urlScrapeInfo.marathonYear, url = urlScrapeInfo.url).markComplete(urlPageRepository, runnerDataRepository, resultPage, logger)
+    }
+}
+
+@Component
+class BelfestCityMarathonScraper(
+        @Autowired runnerDataRepository: RunnerDataRepository,
+        @Autowired driverFactory: DriverFactory,
+        @Autowired jsDriver: JsDriver,
+        @Autowired pagedResultsRepository: PagedResultsRepository)
+    : SelectBoxPageScraper(LoggerFactory.getLogger(BelfestCityMarathonScraper::class.java), runnerDataRepository, driverFactory, jsDriver, pagedResultsRepository) {
+
+    private val skipped = AtomicInteger(0)
+
+    override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData? {
+        val pos = row[columnPositions.place].safeInt(logger)
+        val ageGender = row[columnPositions.ageGender]
+
+        if(ageGender.isBlank() ||
+                ageGender.length == 1 ||
+                ageGender.contains("O") ||
+                ageGender.contains("J") ||
+                ageGender.contains("WCH") ||
+                ageGender.contains("Elite")){
+
+            skipped.skipAndReport(scrapeInfo, ageGender)
+            return null
+        }
+        val gender = ageGender[0].toString()
+        val age = ageGender.substring(1)
+        val nationality = row[columnPositions.nationality].unavailableIfBlank()
+        val finishTime = row[columnPositions.finishTime]
+
+        return try {
+            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, pos, scrapeInfo.marathonSources)
+        } catch (e : Exception){
+            logger.error("Unable to create record", e)
+            throw e
+        }
+    }
+
+    override fun findCurrentPageNum(driver: RemoteWebDriver): Int {
+        return try {
+            val raw = jsDriver.readText(driver, "#resultsTable_info")
+            val pos = raw.split(" ")[1].replace(",", "").toInt() - 1
+            when {
+                pos == 0 -> 1
+                pos % 100 == 0 -> pos / 100 + 1
+                else -> throw IllegalStateException("Position is not 1 or divisible by 100")
+            }
+        } catch (e : Exception){
+            logger.error("Unable to read page number", e)
+            throw e
+        }
+    }
+
+    override fun pickSelectBoxOption(driver: RemoteWebDriver) {
+        driver.selectComboBoxOption("#resultsTable_length > label:nth-child(1) > select:nth-child(1)".toCss(), "100")
+        Thread.sleep(1000)
+    }
+
+    fun AtomicInteger.skipAndReport(scrapeInfo: PageInfo, ageGender : String){
+        this.incrementAndGet()
+        logger.info("year=${scrapeInfo.marathonYear}, ageGender=$ageGender, Skipped ${this.get()} of 8951 records per requirements")
     }
 }

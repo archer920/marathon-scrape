@@ -11,6 +11,7 @@ import java.io.InputStreamReader
 interface JsDriver {
     fun readTableRows(driver: RemoteWebDriver, tbodySelector: String, trimResults: Boolean = true, rawHtml: Boolean = false): List<List<String>>
     fun readHtml(driver: RemoteWebDriver, elem: String): String
+    fun readText(driver: RemoteWebDriver, elem: String): String
     fun elementIsPresent(driver: RemoteWebDriver, cssSelector: String): Boolean
     fun clickElement(driver: RemoteWebDriver, cssSelector: String)
     fun scrollToPage(driver: RemoteWebDriver, clickButtonSelector: String, pageNum: Int, sleepAmount: Long = 1000, secondClickButtonSelector : String = "" )
@@ -70,6 +71,10 @@ class JsDriverImpl : JsDriver {
         return $('$selector').html()
     """.trimIndent()
 
+    private val readTextJs = """
+        return $('$selector').text()
+    """.trimIndent()
+
     private val clickLinkByTextJs = """
         ${'$'}('a').filter(function(index) { return ${'$'}(this).text() === "$selector"; }).click();
     """.trimIndent()
@@ -77,6 +82,16 @@ class JsDriverImpl : JsDriver {
     private val readAttributeJs = """
         return ${'$'}('$selector').attr('$attr')
     """.trimIndent()
+
+    override fun readText(driver: RemoteWebDriver, elem: String): String {
+        return try {
+            injectJq(driver)
+            driver.executeScript(readTextJs.replace(selector, elem)) as String
+        } catch (e: Exception) {
+            logger.error("Unable to return text", e)
+            throw e
+        }
+    }
 
     override fun readAttribute(driver: RemoteWebDriver, cssSelector: String, attribute: String, attemptNum : Int, giveUp : Int): String {
         return try {

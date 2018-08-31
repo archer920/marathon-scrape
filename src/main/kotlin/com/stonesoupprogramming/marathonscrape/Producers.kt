@@ -504,3 +504,63 @@ class AkronProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                 2016 to "https://www.athlinks.com/event/20371/results/Event/575099/Course/861873/Results",
                 2017 to "https://www.athlinks.com/event/20371/results/Event/602618/Course/911979/Results"),
         mapOf(2014 to 32, 2015 to 30, 2016 to 24, 2017 to 19))
+
+@Component
+class RiverRockProducer(@Autowired private val belfestCityMarathonScraper: BelfestCityMarathonScraper,
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseResultPageProducer (LoggerFactory.getLogger(RiverRockProducer::class.java), MarathonSources.RiverRock, pagedResultsRepository) {
+
+    override fun buildYearlyThreads(year: Int, lastPage: Int) {
+        val columnPositions = ColumnPositions(place = 0, nationality = 2, ageGender = 3, finishTime = 5)
+        val nextPageSelector = "#resultsTable_next"
+        val backwardsSelector = "#resultsTable_previous"
+        val tBodySelector = "#resultsTable > tbody:nth-child(2)"
+
+        when(year) {
+            2014 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
+                    url = "https://www.belfastcitymarathon.com/results/2014#fullResults",
+                    marathonSources = marathonSources,
+                    marathonYear = 2014,
+                    columnPositions = columnPositions,
+                    startPage = lastPage,
+                    endPage = 24,
+                    nextPageSelector = nextPageSelector,
+                    backwardsSelector = backwardsSelector,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false)))
+            2015 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
+                    url = "https://www.belfastcitymarathon.com/results/2015#fullResults",
+                    marathonSources = marathonSources,
+                    marathonYear = 2015,
+                    columnPositions = columnPositions,
+                    startPage = lastPage,
+                    endPage = 22,
+                    nextPageSelector = nextPageSelector,
+                    backwardsSelector = backwardsSelector,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false)))
+            2016 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
+                    url = "https://www.belfastcitymarathon.com/results/2016#fullResults",
+                    marathonSources = marathonSources,
+                    marathonYear = 2016,
+                    columnPositions = columnPositions,
+                    startPage = lastPage,
+                    endPage = 22,
+                    nextPageSelector = nextPageSelector,
+                    backwardsSelector = backwardsSelector,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false)))
+            2017 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
+                    url = "https://www.belfastcitymarathon.com/results/2017#fullResults",
+                    marathonSources = marathonSources,
+                    marathonYear = 2017,
+                    columnPositions = columnPositions,
+                    startPage = lastPage,
+                    endPage = 22,
+                    nextPageSelector = nextPageSelector,
+                    backwardsSelector = backwardsSelector,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false)))
+        }
+    }
+}
