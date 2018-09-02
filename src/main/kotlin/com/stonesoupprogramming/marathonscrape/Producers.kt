@@ -310,6 +310,20 @@ class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
         mapOf(2014 to 74, 2015 to 91, 2016 to 93, 2017 to 93))
 
 @Component
+class LouisianaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(LouisianaProducer::class.java),
+        MarathonSources.Louisiana,
+        mapOf(2014 to "https://www.athlinks.com/event/12702/results/Event/329007/Course/518869/Results",
+                2015 to "https://www.athlinks.com/event/12702/results/Event/375976/Course/599640/Results",
+                2016 to "https://www.athlinks.com/event/12702/results/Event/493148/Course/637535/Results",
+                2017 to "https://www.athlinks.com/event/12702/results/Event/611265/Course/786917/Results"),
+        mapOf(2014 to 30, 2015 to 28, 2016 to 23, 2017 to 20))
+
+@Component
 class BangkokProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                        @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
