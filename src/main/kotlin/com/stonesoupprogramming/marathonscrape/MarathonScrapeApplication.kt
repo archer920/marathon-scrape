@@ -59,6 +59,7 @@ class Configuration {
                   @Autowired vancouverProducer: VancouverProducer,
                   @Autowired surfCityProducer: SurfCityProducer,
                   @Autowired bayshoreProducer: BayshoreProducer,
+                  @Autowired veniceProducer: VeniceProducer,
                   @Autowired liverpoolProducer: LiverpoolProducer,
                   @Autowired sanDiegoProducer: SanDiegoProducer,
                   @Autowired akronProducer: AkronProducer,
@@ -81,6 +82,7 @@ class Configuration {
                 MarathonSources.SurfCity to surfCityProducer,
                 MarathonSources.Liverpool to liverpoolProducer,
                 MarathonSources.SanDiego to sanDiegoProducer,
+                MarathonSources.Venice to veniceProducer,
                 MarathonSources.Akron to akronProducer,
                 MarathonSources.RiverRock to riverRockProducer)
     }
