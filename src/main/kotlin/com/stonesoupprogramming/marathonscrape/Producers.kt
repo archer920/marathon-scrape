@@ -408,6 +408,20 @@ class VeniceProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
         mapOf(2014 to 108, 2015 to 133, 2016 to 93, 2017 to 119))
 
 @Component
+class RouteSixSixProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(RouteSixSixProducer::class.java),
+        MarathonSources.Route66,
+        mapOf(2014 to "https://www.athlinks.com/event/23791/results/Event/406936/Course/611434/Results",
+                2015 to "https://www.athlinks.com/event/23791/results/Event/497737/Course/644783/Results",
+                2016 to "https://www.athlinks.com/event/23791/results/Event/601598/Course/909913/Results",
+                2017 to "https://www.athlinks.com/event/23791/results/Event/602207/Course/911175/Results"),
+        mapOf(2014 to 34, 2015 to 52, 2016 to 30, 2017 to 32))
+
+@Component
 class IndianapolisProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                      @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
