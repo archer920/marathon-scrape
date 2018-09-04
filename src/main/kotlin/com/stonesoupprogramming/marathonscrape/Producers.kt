@@ -332,6 +332,19 @@ class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
                 2016 to "https://www.athlinks.com/event/34641/results/Event/546820/Course/812974/Results",
                 2017 to "https://www.athlinks.com/event/34641/results/Event/643352/Course/1001712/Results"),
         mapOf(2014 to 193, 2015 to 185, 2016 to 168, 2017 to 164))
+
+@Component
+class ChaingMaiProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                         @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(ChaingMaiProducer::class.java),
+        MarathonSources.ChaingMai,
+        mapOf(2015 to "https://www.athlinks.com/event/51019/results/Event/513545/Course/763630/Results",
+                2016 to "https://www.athlinks.com/event/51019/results/Event/606222/Course/918921/Results",
+                2017 to "https://www.athlinks.com/event/51019/results/Event/714533/Course/1169841/Results"),
+        mapOf(2015 to 26, 2016 to 41, 2017 to 32))
     
 @Component
 class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
