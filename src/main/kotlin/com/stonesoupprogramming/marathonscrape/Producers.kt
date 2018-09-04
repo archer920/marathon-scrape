@@ -587,6 +587,20 @@ class AkronProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
         mapOf(2014 to 32, 2015 to 30, 2016 to 24, 2017 to 19))
 
 @Component
+class WineglassProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                    @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(WineglassProducer::class.java),
+        MarathonSources.Wineglass,
+        mapOf(2014 to "https://www.athlinks.com/event/6518/results/Event/350916/Course/597227/Results",
+                2015 to "https://www.athlinks.com/event/6518/results/Event/409978/Course/616470/Results",
+                2016 to "https://www.athlinks.com/event/6518/results/Event/497524/Course/739868/Results",
+                2017 to "https://www.athlinks.com/event/6518/results/Event/675144/Course/913191/Results"),
+        mapOf(2014 to 40, 2015 to 39, 2016 to 39, 2017 to 37))
+
+@Component
 class RiverRockProducer(@Autowired private val belfestCityMarathonScraper: BelfestCityMarathonScraper,
                         @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseResultPageProducer (LoggerFactory.getLogger(RiverRockProducer::class.java), MarathonSources.RiverRock, pagedResultsRepository) {

@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
     Unassigned("Unassigned"),
     Stockholm("--stockholm", 2018),
+    Wineglass("--wineglass", 2017),
     Amsterdam("--amsterdam", 2017),
     Santiago("--santiago", 2017),
     Berlin("--berlin", 2017),

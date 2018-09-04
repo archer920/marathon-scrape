@@ -46,6 +46,7 @@ class Configuration {
     @Bean
     fun producers(@Autowired stockholmProducer: StockholmProducer,
                   @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer,
+                  @Autowired wineglassProducer: WineglassProducer,
                   @Autowired santiagoProducer: SantiagoProducer,
                   @Autowired berlinProducer: BerlinProducer,
                   @Autowired taipeiProducer: TaipeiProducer,
@@ -80,6 +81,7 @@ class Configuration {
                 MarathonSources.RheinEnergie to rheinEnergieProducer,
                 MarathonSources.Bournemouth to bournemouthProducer,
                 MarathonSources.Dusseldorf to dusseldorfProducer,
+                MarathonSources.Wineglass to wineglassProducer,
                 MarathonSources.Memphis to stJudeProducer,
                 MarathonSources.Bayshore to bayshoreProducer,
                 MarathonSources.Indianapolis to indianapolisProducer,
