@@ -57,7 +57,7 @@ class Configuration {
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
                 MarathonSources.Amsterdam to tcsAmsterdamProducer,
                 MarathonSources.Santiago to santiagoProducer,
-                MarathonSources.Berlin to berlinProducer)
+                MarathonSources.Berlin to berlinProducer,
                 MarathonSources.Copenhagen to copenhagenProducer,
                 MarathonSources.Geneva to genevaProducer,
                 MarathonSources.RheinEnergie to rheinEnergieProducer,

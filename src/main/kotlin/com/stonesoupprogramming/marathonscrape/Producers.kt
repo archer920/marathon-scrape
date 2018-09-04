@@ -263,8 +263,8 @@ class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
         mapOf(2014 to 74, 2015 to 91, 2016 to 93, 2017 to 93))
 
 @Component
-class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                       @Autowired pagedResultsRepository: PagedResultsRepository)
+class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
     	athLinksMarathonScraper,
     	pagedResultsRepository,
@@ -277,8 +277,8 @@ class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
         mapOf(2014 to 193, 2015 to 185, 2016 to 168, 2017 to 164))
     
 @Component
-class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                         @Autowired pagedResultsRepository: PagedResultsRepository)
+class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired pagedResultsRepository: PagedResultsRepository)
     :BaseAthProducer(
         athLinksMarathonScraper,
         pagedResultsRepository,
