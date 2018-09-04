@@ -419,6 +419,20 @@ class StJudeProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
         mapOf(2014 to 54, 2015 to 51, 2016 to 51, 2017 to 47))
 
 @Component
+class SpaceCoastProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(SpaceCoastProducer::class.java),
+        MarathonSources.SpaceCoast,
+        mapOf(2014 to "https://www.athlinks.com/event/20190/results/Event/407145/Course/612890/Results",
+                2015 to "https://www.athlinks.com/event/20190/results/Event/498994/Course/741958/Results",
+                2016 to "https://www.athlinks.com/event/20190/results/Event/519410/Course/772089/Results",
+                2017 to "https://www.athlinks.com/event/20190/results/Event/602976/Course/912560/Results"),
+        mapOf(2014 to 50, 2015 to 46, 2016 to 39, 2017 to 27))
+
+@Component
 class VeniceProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                      @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
