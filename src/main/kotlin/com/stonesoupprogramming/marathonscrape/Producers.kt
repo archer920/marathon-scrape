@@ -450,6 +450,20 @@ class MunchenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrape
         mapOf(2014 to 125, 2015 to 119, 2016 to 98, 2017 to 88))
 
 @Component
+class DusseldorfProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                      @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(DusseldorfProducer::class.java),
+        MarathonSources.Dusseldorf,
+        mapOf(2014 to "https://www.athlinks.com/event/35584/results/Event/322280/Course/465403/Results",
+                2015 to "https://www.athlinks.com/event/35584/results/Event/439818/Course/659148/Results",
+                2016 to "https://www.athlinks.com/event/35584/results/Event/536632/Course/797281/Results",
+                2017 to "https://www.athlinks.com/event/35584/results/Event/604685/Course/916174/Results"),
+        mapOf(2014 to 54, 2015 to 54, 2016 to 58, 2017 to 53))
+
+@Component
 class FargoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
 			@Autowired pagedResultsRepository: PagedResultsRepository)
 : BaseAthProducer(

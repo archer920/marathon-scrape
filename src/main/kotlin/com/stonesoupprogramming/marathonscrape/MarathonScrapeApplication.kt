@@ -64,6 +64,7 @@ class Configuration {
                   @Autowired sanDiegoProducer: SanDiegoProducer,
                   @Autowired akronProducer: AkronProducer,
                   @Autowired routeSixSixProducer: RouteSixSixProducer,
+                  @Autowired dusseldorfProducer: DusseldorfProducer,
                   @Autowired riverRockProducer: RiverRockProducer) : Map<MarathonSources, BaseProducer> {
 
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
@@ -74,6 +75,7 @@ class Configuration {
                 MarathonSources.Geneva to genevaProducer,
                 MarathonSources.RheinEnergie to rheinEnergieProducer,
                 MarathonSources.Bournemouth to bournemouthProducer,
+                MarathonSources.Dusseldorf to dusseldorfProducer,
                 MarathonSources.Memphis to stJudeProducer,
                 MarathonSources.Bayshore to bayshoreProducer,
                 MarathonSources.Indianapolis to indianapolisProducer,
