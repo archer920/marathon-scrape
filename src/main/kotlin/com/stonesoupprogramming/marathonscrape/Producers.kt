@@ -223,75 +223,71 @@ class StockholmProducer(@Autowired categoryResultsRepository: CategoryResultsRep
 }
 
 @Component
-class TcsAmsterdamProducer(@Autowired urlPageRepository: UrlPageRepository,
-                           @Autowired pagedResultsRepository: PagedResultsRepository,
-                           @Autowired private val evenementenUitslagenScraper: EvenementenUitslagenScraper)
-    : BaseProducer(LoggerFactory.getLogger(TcsAmsterdamProducer::class.java), MarathonSources.Amsterdam){
+class TcsAmsterdamUrlProducer(@Autowired private val evenementenUitslagenScraper: EvenementenUitslagenScraper,
+                              @Autowired urlPageRepository: UrlPageRepository) : BaseUrlPageProducer(LoggerFactory.getLogger(TcsAmsterdamUrlProducer::class.java), MarathonSources.Amsterdam, urlPageRepository){
 
-    val urlProducer = object : BaseUrlPageProducer(this.logger, marathonSources, urlPageRepository) {
-        private val urls2014 = mutableListOf<UrlScrapeInfo>()
-        private val urls2015 = mutableListOf<UrlScrapeInfo>()
+    private val urls2014 = mutableListOf<UrlScrapeInfo>()
+    private val urls2015 = mutableListOf<UrlScrapeInfo>()
 
-        init {
-            val columnPositions = ColumnPositions(place = 0, nationality = 4, ageGender = 6, finishTime = 8)
-            val url2014 = "http://evenementen.uitslagen.nl/2014/amsterdammarathon/uitslag.php?on=1&ct=&p=&tl=en"
-            buildUrlScrapeInfo(urls2014, columnPositions, url2014, 2014,
-                    "Msen" to 26, "M35" to 16, "M40" to 19,
-                    "M45" to 16, "M50" to 11, "M55" to 6,
-                    "M60" to 3, "M65" to 1,"M70" to 1,
-                    "M75" to 1, "Vsen" to 10,  "V35" to 5,
-                    "V40" to 5,  "V45" to 5, "V50" to 3,
-                    "V55" to 2,  "V60" to 1,  "V65" to 1)
+    init {
+        val columnPositions = ColumnPositions(place = 0, nationality = 4, ageGender = 6, finishTime = 8)
+        val url2014 = "http://evenementen.uitslagen.nl/2014/amsterdammarathon/uitslag.php?on=1&ct=&p=&tl=en"
+        buildUrlScrapeInfo(urls2014, columnPositions, url2014, 2014,
+                "Msen" to 26, "M35" to 16, "M40" to 19,
+                "M45" to 16, "M50" to 11, "M55" to 6,
+                "M60" to 3, "M65" to 1,"M70" to 1,
+                "M75" to 1, "Vsen" to 10,  "V35" to 5,
+                "V40" to 5,  "V45" to 5, "V50" to 3,
+                "V55" to 2,  "V60" to 1,  "V65" to 1)
 
-            val url2015 = "http://evenementen.uitslagen.nl/2015/amsterdammarathon/uitslag.php?on=1&ct=&p=&tl=en"
-            buildUrlScrapeInfo(urls2015, columnPositions, url2015, 2015,
-                    "Msen" to 72, "M35" to 16, "M40" to 18,
-                    "M45" to 17, "M50" to 12, "M55" to 7,
-                    "M60" to 3, "M65" to 1, "M70" to 1,
-                    "M75" to 1, "Vsen" to 10,  "V35" to 4,
-                    "V40" to 5,  "V45" to 5, "V50" to 3,
-                    "V55" to 2,  "V60" to 1,  "V65" to 1)
-        }
-
-        private fun buildUrlScrapeInfo(list: MutableList<UrlScrapeInfo>, columnPositions: ColumnPositions, url: String, year: Int, vararg pair: Pair<String, Int>) {
-            pair.forEach { p ->  list.addAll(buildUrls(url, p.first, p.second, year, columnPositions))}
-        }
-
-        private fun buildUrls(url : String, category : String, lastPage: Int, year : Int, columnPositions: ColumnPositions) : List<UrlScrapeInfo> {
-            val mutableList = mutableListOf<UrlScrapeInfo>()
-            for(i in 1 .. lastPage){
-                mutableList.add(UrlScrapeInfo(url = url.replace("ct=", "ct=$category").replace("p=", "p=$i"),
-                        marathonSources = marathonSources,
-                        marathonYear = year,
-                        columnPositions = columnPositions,
-                        tableBodySelector = ".i > tbody:nth-child(1)",
-                        headerRow = true))
-            }
-            return mutableList.toList()
-        }
-
-        override fun buildThreads() {
-            filterCompleted(urls2014).forEach { it -> threads.add(evenementenUitslagenScraper.scrape(it)) }
-            filterCompleted(urls2015).forEach { it -> threads.add(evenementenUitslagenScraper.scrape(it)) }
-        }
+        val url2015 = "http://evenementen.uitslagen.nl/2015/amsterdammarathon/uitslag.php?on=1&ct=&p=&tl=en"
+        buildUrlScrapeInfo(urls2015, columnPositions, url2015, 2015,
+                "Msen" to 72, "M35" to 16, "M40" to 18,
+                "M45" to 17, "M50" to 12, "M55" to 7,
+                "M60" to 3, "M65" to 1, "M70" to 1,
+                "M75" to 1, "Vsen" to 10,  "V35" to 4,
+                "V40" to 5,  "V45" to 5, "V50" to 3,
+                "V55" to 2,  "V60" to 1,  "V65" to 1)
     }
 
-    val pagedProducer = object : BaseResultPageProducer(this.logger, marathonSources, pagedResultsRepository) {
-
-        override fun buildYearlyThreads(year: Int, lastPage: Int) {
-            when(year){
-                //2016 -> threads.addAll()
-            }
-        }
+    private fun buildUrlScrapeInfo(list: MutableList<UrlScrapeInfo>, columnPositions: ColumnPositions, url: String, year: Int, vararg pair: Pair<String, Int>) {
+        pair.forEach { p ->  list.addAll(buildUrls(url, p.first, p.second, year, columnPositions))}
     }
 
-    @PostConstruct
-    fun initialize(){
-        urlProducer.init()
+    private fun buildUrls(url : String, category : String, lastPage: Int, year : Int, columnPositions: ColumnPositions) : List<UrlScrapeInfo> {
+        val mutableList = mutableListOf<UrlScrapeInfo>()
+        for(i in 1 .. lastPage){
+            mutableList.add(UrlScrapeInfo(url = url.replace("ct=", "ct=$category").replace("p=", "p=$i"),
+                    marathonSources = marathonSources,
+                    marathonYear = year,
+                    columnPositions = columnPositions,
+                    tableBodySelector = ".i > tbody:nth-child(1)",
+                    headerRow = true))
+        }
+        return mutableList.toList()
     }
 
     override fun buildThreads() {
-        threads.addAll(urlProducer.process())
+        filterCompleted(urls2014).forEach { it -> threads.add(evenementenUitslagenScraper.scrape(it)) }
+        filterCompleted(urls2015).forEach { it -> threads.add(evenementenUitslagenScraper.scrape(it)) }
+
+    }
+}
+
+@Component
+class TcsAmsterdamPagedProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper, @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository, LoggerFactory.getLogger(TcsAmsterdamPagedProducer::class.java), MarathonSources.Amsterdam,
+        mapOf(2016 to "https://www.athlinks.com/event/90947/results/Event/594035/Course/730197/Results", 2017 to "https://www.athlinks.com/event/90947/results/Event/597611/Course/902507/Results"),
+        mapOf(2016 to 244, 2017 to 229))
+
+@Component
+class TcsAmsterdamProducer(@Autowired private val tcsAmsterdamUrlProducer: TcsAmsterdamUrlProducer,
+                           @Autowired private val tcsAmsterdamPagedProducer: TcsAmsterdamPagedProducer)
+    : BaseProducer(LoggerFactory.getLogger(TcsAmsterdamProducer::class.java), MarathonSources.Amsterdam){
+
+    override fun buildThreads() {
+        threads.addAll(tcsAmsterdamUrlProducer.process())
+        threads.addAll(tcsAmsterdamPagedProducer.process())
     }
 }
 
