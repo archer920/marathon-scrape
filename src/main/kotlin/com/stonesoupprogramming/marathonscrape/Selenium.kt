@@ -119,7 +119,7 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) {
         if(scrapeInfo.startPage > scrapeInfo.endPage){
-            throw IllegalStateException("Start page can't be after end page")
+            throw IllegalStateException("Start page can't be after end page: start=${scrapeInfo.startPage}, end=${scrapeInfo.endPage}")
         }
 
         for(page in 1 until scrapeInfo.startPage){
@@ -127,7 +127,8 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
             synchronizePages(driver, page, findCurrentPageNum(driver), scrapeInfo)
         }
 
-        logger.info("Staring web scrape for year=${scrapeInfo.marathonYear}")
+        logger.info("Arrived at starting page! (${scrapeInfo.startPage})")
+
         for(page in scrapeInfo.startPage .. scrapeInfo.endPage){
             synchronizePages(driver, page, findCurrentPageNum(driver), scrapeInfo)
             scrapeInfo.currentPage = page
@@ -140,29 +141,40 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     protected open fun synchronizePages(driver: RemoteWebDriver, currentPage: Int, jsPage: Int, scrapeInfo: PagedResultsScrapeInfo, attempt: Int = 0, giveUp: Int = 10){
         logger.info("page = $currentPage, ui page = $jsPage")
 
-        when {
-            jsPage == -1 -> {
-                if(attempt < giveUp){
+        try{
+            when {
+                jsPage == -1 -> {
+                    if(attempt < giveUp){
+                        jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
+                        Thread.sleep(1000)
+                        synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
+                    } else {
+                        driver.navigate().refresh()
+                        synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
+                    }
+                }
+                currentPage < jsPage -> {
+                    jsDriver.clickElement(driver, scrapeInfo.backwardsSelector)
+                    Thread.sleep(1000)
+                    synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
+
+                }
+                currentPage > jsPage -> {
                     jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
                     Thread.sleep(1000)
-                    synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
-                } else {
-                    driver.navigate().refresh()
                     synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
                 }
             }
-            currentPage < jsPage -> {
-                jsDriver.clickElement(driver, scrapeInfo.backwardsSelector)
-                Thread.sleep(1000)
-                synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
-
-            }
-            currentPage > jsPage -> {
-                jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
-                Thread.sleep(1000)
-                synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
+        } catch (e : Exception){
+            if(attempt < giveUp){
+                driver.navigate().refresh()
+                synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
+            } else {
+                logger.error("Unable to synchronize pages", e)
+                throw e
             }
         }
+
     }
 
     private fun pickSelector(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) : String {

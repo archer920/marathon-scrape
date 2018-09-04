@@ -307,17 +307,32 @@ class SantiagoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
 
 @Component
 class CopenhagenProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                         @Autowired pagedResultsRepository: PagedResultsRepository)
-    :BaseAthProducer(
-        athLinksMarathonScraper,
-        pagedResultsRepository,
-        LoggerFactory.getLogger(CopenhagenProducer::class.java),
+                        @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+    	athLinksMarathonScraper,
+    	pagedResultsRepository,
+    	LoggerFactory.getLogger(CopenhagenProducer::class.java),
         MarathonSources.Copenhagen,
         mapOf(2014 to "https://www.athlinks.com/event/34641/results/Event/325403/Course/502513/Results",
                 2015 to "https://www.athlinks.com/event/34641/results/Event/397848/Course/596378/Results",
                 2016 to "https://www.athlinks.com/event/34641/results/Event/546820/Course/812974/Results",
                 2017 to "https://www.athlinks.com/event/34641/results/Event/643352/Course/1001712/Results"),
         mapOf(2014 to 193, 2015 to 185, 2016 to 168, 2017 to 164))
+    
+@Component
+class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired pagedResultsRepository: PagedResultsRepository)
+    :BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(BerlinProducer::class.java),
+        MarathonSources.Berlin,
+        mapOf(2014 to "https://www.athlinks.com/event/34448/results/Event/358856/Course/523662/Results",
+                2015 to "https://www.athlinks.com/event/34448/results/Event/406759/Course/609347/Results",
+                2016 to "https://www.athlinks.com/event/34448/results/Event/488569/Course/726394/Results",
+                2017 to "https://www.athlinks.com/event/34448/results/Event/602229/Course/911221/Results"),
+        mapOf(2014 to 580, 2015 to 737, 2016 to 722, 2017 to 783))
+        
 
 @Component
 class GenevaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
