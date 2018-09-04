@@ -65,6 +65,7 @@ class Configuration {
                   @Autowired liverpoolProducer: LiverpoolProducer,
                   @Autowired sanDiegoProducer: SanDiegoProducer,
                   @Autowired akronProducer: AkronProducer,
+                  @Autowired tiberiasProducer: TiberiasProducer,
                   @Autowired routeSixSixProducer: RouteSixSixProducer,
                   @Autowired dusseldorfProducer: DusseldorfProducer,
                   @Autowired riverRockProducer: RiverRockProducer) : Map<MarathonSources, BaseProducer> {
@@ -88,6 +89,7 @@ class Configuration {
                 MarathonSources.Brighton to brightonProducer,
                 MarathonSources.Vancouver to vancouverProducer,
                 MarathonSources.SurfCity to surfCityProducer,
+                MarathonSources.Tiberias to tiberiasProducer,
                 MarathonSources.Liverpool to liverpoolProducer,
                 MarathonSources.SanDiego to sanDiegoProducer,
                 MarathonSources.Venice to veniceProducer,

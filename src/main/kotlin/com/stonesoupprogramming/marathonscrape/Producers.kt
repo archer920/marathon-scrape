@@ -364,7 +364,7 @@ class GenevaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
 
 @Component
 class RheinEnergieProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                       @Autowired pagedResultsRepository: PagedResultsRepository)
+                           @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(
         athLinksMarathonScraper,
         pagedResultsRepository,
@@ -375,6 +375,20 @@ class RheinEnergieProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonS
                 2016 to "https://www.athlinks.com/event/100584/results/Event/586267/Course/880800/Results",
                 2017 to "https://www.athlinks.com/event/100584/results/Event/677031/Course/1088092/Results"),
         mapOf(2014 to 80, 2015 to 88, 2016 to 102, 2017 to 91))
+
+@Component
+class TiberiasProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                           @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(TiberiasProducer::class.java),
+        MarathonSources.Tiberias,
+        mapOf(2014 to "https://www.athlinks.com/event/128932/results/Event/402701/Course/604434/Results",
+                2015 to "https://www.athlinks.com/event/128932/results/Event/412450/Course/620520/Results",
+                2016 to "https://www.athlinks.com/event/128932/results/Event/508227/Course/755629/Results",
+                2017 to "https://www.athlinks.com/event/128932/results/Event/722019/Course/1199670/Results"),
+        mapOf(2014 to 35, 2015 to 38, 2016 to 41, 2017 to 27))
 
 @Component
 class BournemouthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
