@@ -32,6 +32,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                     MarathonSources.Bournemouth -> logger.printProgress(source, 1968, 1880, 2025, 2029)
                     MarathonSources.Memphis -> logger.printProgress(source, 2657, 2510, 2506, 2346)
                     MarathonSources.Indianapolis -> logger.printProgress(source, 3735, 4026, 4137, 4677)
+                    MarathonSources.Buffalo -> logger.printProgress(source, 1285, 1331, 1420, 1176)
                     MarathonSources.Munchen -> logger.printProgress(source, 6228, 5903, 4882, 4359)
                     MarathonSources.Fargo -> logger.printProgress(source, 1655, 1535, 1494, 1303)
                     MarathonSources.Brighton -> logger.printProgress(source, 8686, 9214, 10666, 12158)

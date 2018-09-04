@@ -404,6 +404,20 @@ class BournemouthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
         mapOf(2014 to 40, 2015 to 38, 2016 to 41, 2017 to 41))
 
 @Component
+class BuffaloProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                          @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(
+        athLinksMarathonScraper,
+        pagedResultsRepository,
+        LoggerFactory.getLogger(BuffaloProducer::class.java),
+        MarathonSources.Buffalo,
+        mapOf(2014 to "https://www.athlinks.com/event/118259/results/Event/363989/Course/568770/Results",
+                2015 to "https://www.athlinks.com/event/118259/results/Event/447582/Course/668369/Results",
+                2016 to "https://www.athlinks.com/event/118259/results/Event/483784/Course/719668/Results",
+                2017 to "https://www.athlinks.com/event/118259/results/Event/591671/Course/890140/Results"),
+        mapOf(2014 to 26, 2015 to 27, 2016 to 29, 2017 to 24))
+
+@Component
 class BayshoreProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                           @Autowired pagedResultsRepository: PagedResultsRepository)
     : BaseAthProducer(

@@ -66,6 +66,7 @@ class Configuration {
                   @Autowired sanDiegoProducer: SanDiegoProducer,
                   @Autowired akronProducer: AkronProducer,
                   @Autowired routeSixSixProducer: RouteSixSixProducer,
+                  @Autowired buffaloProducer: BuffaloProducer,
                   @Autowired dusseldorfProducer: DusseldorfProducer,
                   @Autowired chaingMaiProducer: ChaingMaiProducer,
                   @Autowired riverRockProducer: RiverRockProducer) : Map<MarathonSources, BaseProducer> {
@@ -85,6 +86,7 @@ class Configuration {
                 MarathonSources.Bayshore to bayshoreProducer,
                 MarathonSources.Indianapolis to indianapolisProducer,
                 MarathonSources.Munchen to munchenProducer,
+                MarathonSources.Buffalo to buffaloProducer,
                 MarathonSources.Fargo to fargoProducer,
                 MarathonSources.Brighton to brightonProducer,
                 MarathonSources.Vancouver to vancouverProducer,
