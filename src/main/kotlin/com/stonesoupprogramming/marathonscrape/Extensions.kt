@@ -168,16 +168,6 @@ fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, ru
     }
 }
 
-fun GenderPagedResults.markComplete(genderPagedResultsRepository: GenderPagedResultsRepository, queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger : Logger){
-    try {
-        genderPagedResultsRepository.save(this)
-        queue.addResultsPage(resultsPage)
-        logger.info(("Successfully scraped: $this"))
-    } catch (e : Exception){
-        logger.error("Failed to mark complete: $this)")
-    }
-}
-
 fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
     Select(this.findElement(selector)).selectByVisibleText(value)
 }
@@ -205,17 +195,6 @@ fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 10, attemptNu
             throw e
         }
     }
-}
-
-fun RemoteWebDriver.scrollIntoView(selector: By) {
-    val elem = this.findElement(selector)
-    this.executeScript("arguments[0].scrollIntoView(true);", elem)
-    this.waitUntilVisible(selector)
-}
-
-fun WebElement.scrollIntoView(driver: RemoteWebDriver) {
-    driver.executeScript("arguments[0].scrollIntoView(true);", this)
-    this.waitUntilVisible(driver)
 }
 
 fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut: Long = 60) {
