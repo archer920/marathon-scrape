@@ -232,8 +232,11 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
             nationality = canadaProvinceCodes.provinceToCanada(nationality)
         }
         val place = row[1].safeInt(logger)
+        val finishTime = row[4].unavailableIfBlank()
+        val age = row[2].unavailableIfBlank()
+        val gender = row[3].unavailableIfBlank()
         return try {
-            createRunnerData(logger, row[2], row[4], row[3], scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
         } catch (e : Exception){
             logger.error("Failed to create runner data", e)
             throw e
