@@ -54,6 +54,14 @@ fun MutableList<RunnerData>.insertRunnerData(logger: Logger, age: String, finish
 }
 
 fun createRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = ""): RunnerData {
+    check(age.isNotBlank()) { "age cannot be blank. Mark as $UNAVAILABLE if not present" }
+    check(finishTime.isNotBlank()) { "finishTime cannot be blank. Mark as $UNAVAILABLE if not present" }
+    check(gender.isNotBlank()) { "gender cannot be blank. Mark as $UNAVAILABLE if not present" }
+    check(year in 2014..2018) { "The year has to be between 2014-2018" }
+    check(nationality.isNotBlank()) { "nationality cannot be blank. Mark as $UNAVAILABLE if not present" }
+    check(place > 0) { "Place can't be negative. Use Int.MAX if it isn't present" }
+    check(source != MarathonSources.Unassigned) { "source has to be assigned" }
+
     val runnerData = RunnerData(
             source = source,
             age = age,
@@ -160,16 +168,6 @@ fun PagedResults.markComplete(pagedResultsRepository: PagedResultsRepository, ru
     }
 }
 
-fun GenderPagedResults.markComplete(genderPagedResultsRepository: GenderPagedResultsRepository, queue: BlockingQueue<RunnerData>, resultsPage: MutableList<RunnerData>, logger : Logger){
-    try {
-        genderPagedResultsRepository.save(this)
-        queue.addResultsPage(resultsPage)
-        logger.info(("Successfully scraped: $this"))
-    } catch (e : Exception){
-        logger.error("Failed to mark complete: $this)")
-    }
-}
-
 fun RemoteWebDriver.selectComboBoxOption(selector: By, value: String) {
     Select(this.findElement(selector)).selectByVisibleText(value)
 }
@@ -197,17 +195,6 @@ fun RemoteWebDriver.waitUntilVisible(selector: By, timeout: Long = 10, attemptNu
             throw e
         }
     }
-}
-
-fun RemoteWebDriver.scrollIntoView(selector: By) {
-    val elem = this.findElement(selector)
-    this.executeScript("arguments[0].scrollIntoView(true);", elem)
-    this.waitUntilVisible(selector)
-}
-
-fun WebElement.scrollIntoView(driver: RemoteWebDriver) {
-    driver.executeScript("arguments[0].scrollIntoView(true);", this)
-    this.waitUntilVisible(driver)
 }
 
 fun WebElement.waitUntilVisible(driver: RemoteWebDriver, timeOut: Long = 60) {
@@ -270,28 +257,7 @@ fun String.unavailableIfBlank() : String {
 
 fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, categoryScrapeInfo: CategoryScrapeInfo, logger: Logger){
     try {
-        val violations = mutableListOf<RunnerData>()
-        val fails = mutableListOf<RunnerData>()
-
-        for(r in resultsPage){
-            try {
-                runnerDataRepository.save(r)
-            } catch (e : Exception){
-                when(e) {
-                    is ConstraintViolationException -> violations.add(r)
-                    else -> {
-                        logger.error("Failed to save $r", e)
-                        fails.add(r)
-                    }
-                }
-            }
-        }
-        if(violations.isNotEmpty()){
-            violations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
-        }
-        if(fails.isNotEmpty()){
-            fails.saveToCSV("Fails-${System.currentTimeMillis()}.csv")
-        }
+        runnerDataRepository.saveAll(resultsPage)
         this.save(categoryScrapeInfo.toCategoryResults())
     } catch (e : Exception){
         logger.error("Failed to make complete $categoryScrapeInfo", e)
@@ -301,28 +267,7 @@ fun CategoryResultsRepository.markPageComplete(runnerDataRepository: RunnerDataR
 
 fun PagedResultsRepository.markPageComplete(runnerDataRepository: RunnerDataRepository, resultsPage: List<RunnerData>, pagedResultsScrapeInfo: PagedResultsScrapeInfo, currentPage : Int, logger: Logger){
     try {
-        val violations = mutableListOf<RunnerData>()
-        val fails = mutableListOf<RunnerData>()
-
-        for(r in resultsPage){
-            try {
-                runnerDataRepository.save(r)
-            } catch (e : Exception){
-                when(e) {
-                    is ConstraintViolationException -> violations.add(r)
-                    else -> {
-                        logger.error("Failed to save $r", e)
-                        fails.add(r)
-                    }
-                }
-            }
-        }
-        if(violations.isNotEmpty()){
-            violations.saveToCSV("Violations-${System.currentTimeMillis()}.csv")
-        }
-        if(fails.isNotEmpty()){
-            fails.saveToCSV("Fails-${System.currentTimeMillis()}.csv")
-        }
+        runnerDataRepository.saveAll(resultsPage)
         this.save(pagedResultsScrapeInfo.toPagedResults(currentPage))
     } catch (e : Exception){
         logger.error("Failed to make complete $pagedResultsScrapeInfo", e)

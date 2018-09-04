@@ -47,11 +47,23 @@ class Configuration {
     fun producers(@Autowired stockholmProducer: StockholmProducer,
                   @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer,
                   @Autowired santiagoProducer: SantiagoProducer,
-                  @Autowired taipeiProducer: TaipeiProducer) : Map<MarathonSources, BaseProducer> {
+                  @Autowired taipeiProducer: TaipeiProducer,
+                  @Autowired copenhagenProducer: CopenhagenProducer,
+                  @Autowired genevaProducer: GenevaProducer,
+                  @Autowired rheinEnergieProducer: RheinEnergieProducer,
+                  @Autowired bournemouthProducer: BournemouthProducer,
+                  @Autowired stJudeProducer: StJudeProducer,
+                  @Autowired indianapolisProducer: IndianapolisProducer) : Map<MarathonSources, BaseProducer> {
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
                 MarathonSources.Amsterdam to tcsAmsterdamProducer,
                 MarathonSources.Santiago to santiagoProducer,
-                MarathonSources.Taipei to taipeiProducer)
+                MarathonSources.Taipei to taipeiProducer,
+                MarathonSources.Copenhagen to copenhagenProducer,
+                MarathonSources.Geneva to genevaProducer,
+                MarathonSources.RheinEnergie to rheinEnergieProducer,
+                MarathonSources.Bournemouth to bournemouthProducer,
+                MarathonSources.Memphis to stJudeProducer,
+                MarathonSources.Indianapolis to indianapolisProducer)
     }
 }
 
