@@ -72,7 +72,7 @@ abstract class AbstractAthCategoryProducer(
     @PostConstruct
     private fun init() {
         categoryAthLinks.forEach { it ->
-            categoryLastPageMap[it] = numberedResultsPageRepository.queryLastPage(it.year, marathonSources, it.category)
+            categoryLastPageMap[it] = numberedResultsPageRepository.queryLastPage(it.year, marathonSources, it.category) ?: 1
         }
     }
 

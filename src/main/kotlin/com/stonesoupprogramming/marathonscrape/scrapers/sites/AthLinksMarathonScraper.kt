@@ -37,7 +37,7 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
         }
 
         val tableRows = tableData.map { it -> listOf(it["nationality"]!!, it["place"]!!, it["age"]!!, it["gender"]!!, it["finishTime"]!!) }
-        val resultSet = tableRows.map { processRow(it, scrapeInfo.columnPositions, scrapeInfo, emptyList()) }.filterNotNull()
+        val resultSet = tableRows.mapNotNull { processRow(it, scrapeInfo.columnPositions, scrapeInfo, emptyList()) }
         markCompleteService.markComplete(clazz, scrapeInfo, resultSet)
     }
 

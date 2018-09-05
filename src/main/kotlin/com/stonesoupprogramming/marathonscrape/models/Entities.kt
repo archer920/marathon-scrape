@@ -11,6 +11,7 @@ import javax.validation.constraints.Min
 import javax.validation.constraints.NotBlank
 
 @Inheritance
+@Entity
 open class ResultsPage(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
         @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
