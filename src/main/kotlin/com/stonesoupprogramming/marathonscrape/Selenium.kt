@@ -1,6 +1,12 @@
 package com.stonesoupprogramming.marathonscrape
 
-import com.sun.org.apache.xml.internal.resolver.readers.ExtendedXMLCatalogReader
+import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.extension.*
+import com.stonesoupprogramming.marathonscrape.models.RunnerData
+import com.stonesoupprogramming.marathonscrape.repository.CategoryResultsRepository
+import com.stonesoupprogramming.marathonscrape.repository.PagedResultsRepository
+import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
+import com.stonesoupprogramming.marathonscrape.repository.UrlPageRepository
 import org.openqa.selenium.By
 import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.firefox.FirefoxDriver
@@ -52,16 +58,25 @@ class DriverFactory {
     }
 }
 
-abstract class BaseScraper<T : PageInfo> (protected val logger : Logger, protected val runnerDataRepository : RunnerDataRepository,
-                           protected val driverFactory: DriverFactory, protected val jsDriver: JsDriver){
+interface PreWebScrapeEvent {
+    fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: PageInfo)
+}
+
+abstract class BaseScraper<T : PageInfo> (protected val logger : Logger,
+                                          protected val runnerDataRepository : RunnerDataRepository,
+                                          protected val driverFactory: DriverFactory,
+                                          protected val jsDriver: JsDriver,
+                                          protected val usStateCodes: List<String>,
+                                          protected val canadaProvinceCodes: List<String>){
 
     @Async
-    open fun scrape(scrapeInfo: T) : CompletableFuture<String> {
+    open fun scrape(scrapeInfo: T, preWebScrapeEvent : PreWebScrapeEvent? = null) : CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         return try {
             driver.get(scrapeInfo.url)
 
+            preWebScrapeEvent?.execute(driver, jsDriver, scrapeInfo)
             webscrape(driver, scrapeInfo)
 
             successResult()
@@ -93,29 +108,42 @@ abstract class BaseScraper<T : PageInfo> (protected val logger : Logger, protect
     protected abstract fun webscrape(driver: RemoteWebDriver, scrapeInfo: T)
 }
 
-abstract class UrlPageScraper(logger: Logger, runnerDataRepository: RunnerDataRepository,
-                              driverFactory: DriverFactory, jsDriver: JsDriver,
-                              protected val urlPageRepository: UrlPageRepository) : BaseScraper<UrlScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver) {
+abstract class UrlPageScraper(logger: Logger,
+                              runnerDataRepository: RunnerDataRepository,
+                              driverFactory: DriverFactory,
+                              jsDriver: JsDriver,
+                              usStateCodes: List<String>,
+                              canadaProvinceCodes: List<String>,
+                              protected val urlPageRepository: UrlPageRepository)
+    : BaseScraper<UrlScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes) {
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: UrlScrapeInfo) {
         urlPageRepository.markPageComplete(runnerDataRepository, processPage(driver, scrapeInfo), scrapeInfo, logger)
     }
 }
 
-abstract class CategoryPageScraper(logger: Logger, runnerDataRepository: RunnerDataRepository,
-                                   driverFactory: DriverFactory, jsDriver: JsDriver,
+abstract class CategoryPageScraper(logger: Logger,
+                                   runnerDataRepository: RunnerDataRepository,
+                                   driverFactory: DriverFactory,
+                                   jsDriver: JsDriver,
+                                   usStateCodes: List<String>,
+                                   canadaProvinceCodes: List<String>,
                                    protected val categoryResultsRepository: CategoryResultsRepository) :
-    BaseScraper<CategoryScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver) {
+    BaseScraper<CategoryScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes) {
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: CategoryScrapeInfo) {
 
     }
 }
 
-abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerDataRepository,
-                                 driverFactory: DriverFactory, jsDriver: JsDriver,
-                                 protected val resultsRepository: PagedResultsRepository)
-    : BaseScraper<PagedResultsScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver){
+abstract class PagedResultsScraper(logger: Logger,
+                                   runnerDataRepository: RunnerDataRepository,
+                                   driverFactory: DriverFactory,
+                                   jsDriver: JsDriver,
+                                   usStateCodes: List<String>,
+                                   canadaProvinceCodes: List<String>,
+                                   private val resultsRepository: PagedResultsRepository)
+    : BaseScraper<PagedResultsScrapeInfo>(logger, runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes){
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) {
         if(scrapeInfo.startPage > scrapeInfo.endPage){
@@ -139,13 +167,13 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
     protected abstract fun findCurrentPageNum(driver: RemoteWebDriver): Int
 
     protected open fun synchronizePages(driver: RemoteWebDriver, currentPage: Int, jsPage: Int, scrapeInfo: PagedResultsScrapeInfo, attempt: Int = 0, giveUp: Int = 10){
-        logger.info("page = $currentPage, ui page = $jsPage")
+        logger.info("page = $currentPage, ui page = $jsPage, scrapeInfo = $scrapeInfo")
 
         try{
             when {
                 jsPage == -1 -> {
                     if(attempt < giveUp){
-                        jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
+                        scrollPage(driver, scrapeInfo)
                         Thread.sleep(1000)
                         synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
                     } else {
@@ -154,13 +182,13 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
                     }
                 }
                 currentPage < jsPage -> {
-                    jsDriver.clickElement(driver, scrapeInfo.backwardsSelector)
+                    scrollPage(driver, scrapeInfo, forward = false)
                     Thread.sleep(1000)
                     synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
 
                 }
                 currentPage > jsPage -> {
-                    jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
+                    scrollPage(driver, scrapeInfo)
                     Thread.sleep(1000)
                     synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
                 }
@@ -184,28 +212,108 @@ abstract class PagedResultsScraper(logger: Logger, runnerDataRepository: RunnerD
             scrapeInfo.secondNextPageSelector ?: scrapeInfo.nextPageSelector
         }
     }
+
+    protected open fun scrollPage(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo, forward : Boolean = true) {
+        if(forward){
+            jsDriver.clickElement(driver, pickSelector(driver, scrapeInfo))
+        } else {
+            jsDriver.clickElement(driver, scrapeInfo.backwardsSelector)
+        }
+    }
 }
 
-abstract class SelectBoxPageScraper(logger: Logger, runnerDataRepository: RunnerDataRepository, driverFactory: DriverFactory,
-                                   jsDriver: JsDriver, resultsRepository: PagedResultsRepository)
-    : PagedResultsScraper(logger, runnerDataRepository, driverFactory, jsDriver, resultsRepository) {
+class PhiladelphiaPreWebScrapeEvent(private val category : String) : PreWebScrapeEvent {
 
-    override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo) {
-        pickSelectBoxOption(driver)
-        super.webscrape(driver, scrapeInfo)
+    private val logger = LoggerFactory.getLogger(PhiladelphiaPreWebScrapeEvent::class.java)
+
+    override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: PageInfo) {
+        try {
+            driver.waitUntilVisible("li.ui-state-default:nth-child(2)".toCss())
+            if(scrapeInfo.marathonYear == 2016){
+                driver.selectComboBoxOption("#xact_results_event".toCss(), "2016 Philadelphia Marathon Race Weekend")
+            }
+            driver.click("li.ui-state-default:nth-child(2)".toCss(), logger)
+
+            driver.waitUntilClickable("#xact_results_agegroup_agegroup".toCss())
+            driver.selectComboBoxOption("#xact_results_agegroup_agegroup".toCss(), category)
+
+            driver.selectComboBoxOption("#xact_results_agegroup_results_length > label > select".toCss(), "100")
+            Thread.sleep(1000)
+        } catch (e : Exception){
+            logger.error("Failed to execute pre-webscrape event", e)
+            throw e
+        }
+    }
+}
+
+@Component
+class XacteMarathonScraper(@Autowired runnerDataRepository: RunnerDataRepository,
+                           @Autowired driverFactory: DriverFactory,
+                           @Autowired jsDriver: JsDriver,
+                           @Autowired pagedResultsRepository: PagedResultsRepository,
+                           @Autowired usStateCodes: List<String>,
+                           @Autowired canadaProvinceCodes: List<String>)
+
+    : PagedResultsScraper(LoggerFactory.getLogger(XacteMarathonScraper::class.java), runnerDataRepository, driverFactory,
+        jsDriver, usStateCodes, canadaProvinceCodes, pagedResultsRepository) {
+
+    override fun findCurrentPageNum(driver: RemoteWebDriver): Int {
+        return try {
+            jsDriver.readText(driver, "#xact_results_agegroup_results_wrapper > div.fg-toolbar.ui-toolbar.ui-widget-header.ui-corner-bl.ui-corner-br.ui-helper-clearfix > div.dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_full_numbers > span > .ui-state-disabled").toInt()
+        } catch (e : Exception){
+            logger.error("Unable to read page number", e)
+            throw e
+        }
     }
 
-    abstract fun pickSelectBoxOption(driver : RemoteWebDriver)
+    override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData? {
+        val place = row[columnPositions.place].safeInt(logger)
+        val ageGender = row[columnPositions.ageGender]
+        val gender = ageGender[0].toString()
+        val age = ageGender.split("/").last().trim()
+        val nationality = row[columnPositions.nationality].toNationality(usStateCodes, canadaProvinceCodes, " ")
+        val finishTime = row[columnPositions.finishTime]
+
+        return try {
+            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+        } catch (e : Exception){
+            logger.error("Failed to create runner data", e)
+            throw e
+        }
+    }
+
+    override fun scrollPage(driver: RemoteWebDriver, scrapeInfo: PagedResultsScrapeInfo, forward: Boolean) {
+        if(forward){
+            driver.click(scrapeInfo.nextPageSelector.toCss(), logger)
+        } else {
+            driver.click(scrapeInfo.backwardsSelector.toCss(), logger)
+        }
+    }
 }
+
+class AthLinksPreWebScrapeEvent(private val division : String, private val divisionMap: Map<String, String>) : PreWebScrapeEvent {
+
+    private val logger = LoggerFactory.getLogger(AthLinksPreWebScrapeEvent::class.java)
+
+    override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: PageInfo) {
+        driver.click("#division > div:nth-child(1) > svg".toCss(), logger)
+
+        divisionMap[division]?.let { css ->
+            driver.waitUntilClickable(css.toCss())
+            driver.click(css.toCss(), logger)
+        }
+    }
+}
+
 
 @Component
 class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
                               @Autowired private val athJsDriver: AthJsDriver,
-                              @Autowired private val usStateCodes: List<String>,
-                              @Autowired private val canadaProvinceCodes: List<String>,
+                              @Autowired usStateCodes: List<String>,
+                              @Autowired canadaProvinceCodes: List<String>,
                               @Autowired runnerDataRepository: RunnerDataRepository,
                               @Autowired private val pagedResultsRepository: PagedResultsRepository)
-    : PagedResultsScraper(LoggerFactory.getLogger(AthLinksMarathonScraper::class.java), runnerDataRepository, driverFactory, athJsDriver, pagedResultsRepository){
+    : PagedResultsScraper(LoggerFactory.getLogger(AthLinksMarathonScraper::class.java), runnerDataRepository, driverFactory, athJsDriver, usStateCodes, canadaProvinceCodes, pagedResultsRepository){
 
     override fun processPage(driver: RemoteWebDriver, scrapeInfo: PageInfo) : List<RunnerData> {
         scrapeInfo as PagedResultsScrapeInfo
@@ -222,21 +330,13 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
     }
 
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData {
-        var nationality = row[0]
-        if(nationality.contains(",")){
-            val parts = nationality.split(",")
-            nationality = usStateCodes.stateToUSA(parts.last().trim())
-            nationality = canadaProvinceCodes.provinceToCanada(nationality)
-        } else {
-            nationality = usStateCodes.stateToUSA(nationality)
-            nationality = canadaProvinceCodes.provinceToCanada(nationality)
-        }
+        val nationality = row[0].toNationality(usStateCodes, canadaProvinceCodes)
         val place = row[1].safeInt(logger)
         val finishTime = row[4].unavailableIfBlank()
         val age = row[2].unavailableIfBlank()
         val gender = row[3].unavailableIfBlank()
         return try {
-            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
         } catch (e : Exception){
             logger.error("Failed to create runner data", e)
             throw e
@@ -250,8 +350,10 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
 class EvenementenUitslagenScraper(@Autowired runnerDataRepository: RunnerDataRepository,
                                   @Autowired driverFactory: DriverFactory,
                                   @Autowired jsDriver: JsDriver,
+                                  @Autowired usStateCodes: List<String>,
+                                  @Autowired canadaProvinceCodes: List<String>,
                                   @Autowired urlPageRepository: UrlPageRepository)
-    : UrlPageScraper(LoggerFactory.getLogger(EvenementenUitslagenScraper::class.java), runnerDataRepository, driverFactory, jsDriver, urlPageRepository) {
+    : UrlPageScraper(LoggerFactory.getLogger(EvenementenUitslagenScraper::class.java), runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes, urlPageRepository) {
 
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData {
         val place = row[columnPositions.place].safeInt(logger)
@@ -274,7 +376,7 @@ class EvenementenUitslagenScraper(@Autowired runnerDataRepository: RunnerDataRep
         }
         val finish = row[columnPositions.finishTime].unavailableIfBlank()
         return try {
-            createRunnerData(logger, age, finish, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            RunnerData.createRunnerData(logger, age, finish, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
         } catch (e : Exception){
             logger.error("Failed to create runner data", e)
             throw e
@@ -286,9 +388,11 @@ class EvenementenUitslagenScraper(@Autowired runnerDataRepository: RunnerDataRep
 class SportHiveScraper(@Autowired runnerDataRepository: RunnerDataRepository,
                        @Autowired driverFactory: DriverFactory,
                        @Autowired jsDriver: JsDriver,
+                       @Autowired usStateCodes: List<String>,
+                       @Autowired canadaProvinceCodes: List<String>,
                        @Autowired pagedResultsRepository: PagedResultsRepository) :
         PagedResultsScraper(LoggerFactory.getLogger(SportHiveScraper::class.java), runnerDataRepository,
-                driverFactory, jsDriver, pagedResultsRepository) {
+                driverFactory, jsDriver, usStateCodes, canadaProvinceCodes, pagedResultsRepository) {
 
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -305,8 +409,10 @@ class SportHiveScraper(@Autowired runnerDataRepository: RunnerDataRepository,
 class RegistrationMarathonScraper(@Autowired runnerDataRepository: RunnerDataRepository,
                                   @Autowired driverFactory: DriverFactory,
                                   @Autowired jsDriver: JsDriver,
+                                  @Autowired usStateCodes: List<String>,
+                                  @Autowired canadaProvinceCodes: List<String>,
                                   @Autowired categoryResultsRepository: CategoryResultsRepository)
-    :CategoryPageScraper(LoggerFactory.getLogger(RegistrationMarathonScraper::class.java), runnerDataRepository, driverFactory, jsDriver, categoryResultsRepository) {
+    :CategoryPageScraper(LoggerFactory.getLogger(RegistrationMarathonScraper::class.java), runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes, categoryResultsRepository) {
 
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -337,7 +443,7 @@ class RegistrationMarathonScraper(@Autowired runnerDataRepository: RunnerDataRep
             val age = row[columnPositions.age].calcAge(logger)
             val nationality = row[columnPositions.nationality].unavailableIfBlank()
             val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
-            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
         }.toList()
 
         categoryResultsRepository.markPageComplete(runnerDataRepository, resultsPage, scrapeInfo, logger)
@@ -349,7 +455,10 @@ class RegistrationMarathonScraper(@Autowired runnerDataRepository: RunnerDataRep
 class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
                            @Autowired jsDriver: JsDriver,
                            @Autowired runnerDataRepository: RunnerDataRepository,
-                           @Autowired urlPageRepository: UrlPageRepository) : UrlPageScraper(LoggerFactory.getLogger(MarathonGuideScraper::class.java), runnerDataRepository, driverFactory, jsDriver, urlPageRepository) {
+                           @Autowired usStateCodes: List<String>,
+                           @Autowired canadaProvinceCodes: List<String>,
+                           @Autowired urlPageRepository: UrlPageRepository)
+    : UrlPageScraper(LoggerFactory.getLogger(MarathonGuideScraper::class.java), runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes, urlPageRepository) {
 
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -357,7 +466,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
 
 
     override fun webscrape(driver: RemoteWebDriver, scrapeInfo: UrlScrapeInfo) {
-        val rangeOption = scrapeInfo.rangeOptions ?: throw IllegalArgumentException("Range option is required")
+        val rangeOption = ""//scrapeInfo.rangeOptions ?: throw IllegalArgumentException("Range option is required")
         val columnPositions = scrapeInfo.columnPositions
         val pageResults = mutableListOf<RunnerData>()
 
@@ -387,7 +496,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
                 UNAVAILABLE
             }
 
-            pageResults.add(createRunnerData(logger, age, finish, gender, scrapeInfo.marathonYear, UNAVAILABLE, place, scrapeInfo.marathonSources))
+            pageResults.add(RunnerData.createRunnerData(logger, age, finish, gender, scrapeInfo.marathonYear, UNAVAILABLE, place, scrapeInfo.marathonSources))
         }
 
         val url = scrapeInfo.url + ", " + rangeOption
@@ -448,7 +557,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
                     val finishTime = row[columnPositions.finishTime]
                     val nationality = row[columnPositions.nationality]
 
-                    createRunnerData(logger, age, finishTime, gender, year, nationality, place, source)
+                    RunnerData.createRunnerData(logger, age, finishTime, gender, year, nationality, place, source)
                 } catch (e : Exception){
                     logger.error("Failed to process row=$row", e)
                     throw e
@@ -630,7 +739,7 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
                         } catch (e: NumberFormatException) {
                             Int.MAX_VALUE
                         }
-                        createRunnerData(logger,
+                        RunnerData.createRunnerData(logger,
                                 age,
                                 row[columnPositions.finishTime],
                                 gender,
@@ -691,7 +800,10 @@ class SportStatsScrape(@Autowired private val driverFactory: DriverFactory,
 class PacificSportScraper(@Autowired runnerDataRepository: RunnerDataRepository,
                           @Autowired driverFactory: DriverFactory,
                           @Autowired jsDriver: JsDriver,
-                          @Autowired urlPageRepository: UrlPageRepository) : UrlPageScraper(LoggerFactory.getLogger(PacificSportScraper::class.java), runnerDataRepository, driverFactory, jsDriver, urlPageRepository) {
+                          @Autowired usStateCodes: List<String>,
+                          @Autowired canadaProvinceCodes: List<String>,
+                          @Autowired urlPageRepository: UrlPageRepository)
+    : UrlPageScraper(LoggerFactory.getLogger(PacificSportScraper::class.java), runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes, urlPageRepository) {
 
     override fun processRow(row: List<String>, columnPositions: ColumnPositions, scrapeInfo: PageInfo, rowHtml: List<String>): RunnerData {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
@@ -701,7 +813,7 @@ class PacificSportScraper(@Autowired runnerDataRepository: RunnerDataRepository,
         driver.get(urlScrapeInfo.url)
 
         val elite = "Elite"
-        val selector = urlScrapeInfo.tbodySelector ?: throw IllegalArgumentException("Table selector is required")
+        val selector = urlScrapeInfo.tableBodySelector
         val table = jsDriver.readTableRows(driver, selector)
         val resultPage = mutableListOf<RunnerData>()
 
@@ -740,7 +852,7 @@ class PacificSportScraper(@Autowired runnerDataRepository: RunnerDataRepository,
             val finish = row[positions.finishTime]
             val half = row[positions.halfwayTime]
 
-            resultPage.add(createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, nationality, place, urlScrapeInfo.marathonSources, halfwayTime = half))
+            resultPage.add(RunnerData.createRunnerData(logger, age, finish, gender, urlScrapeInfo.marathonYear, nationality, place, urlScrapeInfo.marathonSources, halfwayTime = half))
         }
 
         UrlPage(source = urlScrapeInfo.marathonSources, marathonYear = urlScrapeInfo.marathonYear, url = urlScrapeInfo.url).markComplete(urlPageRepository, runnerDataRepository, resultPage, logger)
@@ -752,8 +864,10 @@ class BelfestCityMarathonScraper(
         @Autowired runnerDataRepository: RunnerDataRepository,
         @Autowired driverFactory: DriverFactory,
         @Autowired jsDriver: JsDriver,
+        @Autowired usStateCodes: List<String>,
+        @Autowired canadaProvinceCodes: List<String>,
         @Autowired pagedResultsRepository: PagedResultsRepository)
-    : SelectBoxPageScraper(LoggerFactory.getLogger(BelfestCityMarathonScraper::class.java), runnerDataRepository, driverFactory, jsDriver, pagedResultsRepository) {
+    : PagedResultsScraper(LoggerFactory.getLogger(BelfestCityMarathonScraper::class.java), runnerDataRepository, driverFactory, jsDriver, usStateCodes, canadaProvinceCodes, pagedResultsRepository) {
 
     private val skipped = AtomicInteger(0)
 
@@ -777,7 +891,7 @@ class BelfestCityMarathonScraper(
         val finishTime = row[columnPositions.finishTime]
 
         return try {
-            createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, pos, scrapeInfo.marathonSources)
+            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, pos, scrapeInfo.marathonSources)
         } catch (e : Exception){
             logger.error("Unable to create record", e)
             throw e
@@ -799,7 +913,8 @@ class BelfestCityMarathonScraper(
         }
     }
 
-    override fun pickSelectBoxOption(driver: RemoteWebDriver) {
+    //TODO: Move this into a preScrapeClass
+    fun pickSelectBoxOption(driver: RemoteWebDriver) {
         driver.selectComboBoxOption("#resultsTable_length > label:nth-child(1) > select:nth-child(1)".toCss(), "100")
         Thread.sleep(1000)
     }

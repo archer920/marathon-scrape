@@ -1,5 +1,10 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.extension.failResult
+import com.stonesoupprogramming.marathonscrape.extension.printBlankLines
+import com.stonesoupprogramming.marathonscrape.extension.successResult
+import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -46,6 +51,7 @@ class StatusReporter(@Autowired private val runnerDataRepository: RunnerDataRepo
                     MarathonSources.Route66 -> logger.printProgress(source, 1671, 2562, 1500, 1564)
                     MarathonSources.RiverRock -> logger.printProgress(source, 2330, 2282, 2191, 2148)
                     MarathonSources.ChaingMai -> logger.printProgress(source, 1255, 2027, 1558)
+                    MarathonSources.Philadelphia -> logger.printProgress(source, 10359, 9161, 9000, 7773)
                     else -> throw IllegalArgumentException("No status for this marathon: $source")
                 }
                 Thread.sleep(10000)

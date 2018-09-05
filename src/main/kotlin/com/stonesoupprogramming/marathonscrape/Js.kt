@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.stonesoupprogramming.marathonscrape.extension.sleepRandom
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Qualifier
@@ -18,6 +19,7 @@ interface JsDriver {
     fun injectJq(driver: RemoteWebDriver)
     fun clickLinkByText(driver: RemoteWebDriver, linkText : String)
     fun readAttribute(driver: RemoteWebDriver, cssSelector: String, attribute: String, attemptNum : Int = 0, giveUp : Int = 10) : String
+    fun selectComboBoxOption(driver: RemoteWebDriver, cssSelector: String, value : String, attemptNum: Int = 0, giveUp: Int = 10)
 }
 
 //NOTE: Do not inject a remote driver into this class because they are not thread safe
@@ -29,6 +31,7 @@ class JsDriverImpl : JsDriver {
 
     private val selector = "{{selector}}"
     private val attr = "{{attr}}"
+    private val arg = "{{arg}}"
 
     private val jquery = BufferedReader(InputStreamReader(JsDriverImpl::class.java.getResourceAsStream("/js/jquery-3.3.1.js"))).readText()
     private val readTableJs = """
@@ -82,6 +85,25 @@ class JsDriverImpl : JsDriver {
     private val readAttributeJs = """
         return ${'$'}('$selector').attr('$attr')
     """.trimIndent()
+
+    private val selectComboBoxOptionJs = """
+        ${'$'}('$selector').val('$arg')
+    """.trimIndent()
+
+    override fun selectComboBoxOption(driver: RemoteWebDriver, cssSelector: String, value: String, attemptNum: Int, giveUp: Int) {
+        try {
+            injectJq(driver)
+            driver.executeScript(selectComboBoxOptionJs.replace(selector, cssSelector).replace(arg, value))
+        } catch (e : Exception){
+            if(attemptNum < giveUp){
+                sleepRandom(1, 5)
+                selectComboBoxOption(driver, cssSelector, value, attemptNum + 1)
+            } else {
+                logger.error("Unable to set value $selector = $value", e)
+                throw e
+            }
+        }
+    }
 
     override fun readText(driver: RemoteWebDriver, elem: String): String {
         return try {

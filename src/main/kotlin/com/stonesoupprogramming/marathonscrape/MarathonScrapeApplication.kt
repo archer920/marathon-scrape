@@ -1,5 +1,9 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
+import com.stonesoupprogramming.marathonscrape.models.RunnerData
+import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
@@ -69,9 +73,11 @@ class Configuration {
                   @Autowired buffaloProducer: BuffaloProducer,
                   @Autowired dusseldorfProducer: DusseldorfProducer,
                   @Autowired chaingMaiProducer: ChaingMaiProducer,
+                  @Autowired philadelphiaProducer: PhiladelphiaProducer,
                   @Autowired riverRockProducer: RiverRockProducer) : Map<MarathonSources, BaseProducer> {
 
         return mapOf(MarathonSources.Stockholm to stockholmProducer,
+                MarathonSources.Philadelphia to philadelphiaProducer,
                 MarathonSources.Route66 to routeSixSixProducer,
                 MarathonSources.Amsterdam to tcsAmsterdamProducer,
                 MarathonSources.Santiago to santiagoProducer,

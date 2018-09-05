@@ -1,5 +1,9 @@
 package com.stonesoupprogramming.marathonscrape
 
+import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.repository.CategoryResultsRepository
+import com.stonesoupprogramming.marathonscrape.repository.PagedResultsRepository
+import com.stonesoupprogramming.marathonscrape.repository.UrlPageRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,19 +56,19 @@ abstract class BaseResultPageProducer(logger: Logger, marathonSources: MarathonS
 
     @PostConstruct
     private fun init(){
-        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2014).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2014 = pagedResultsRepository.findBySourceAndMarathonYearAndCategory(marathonSources, 2014).maxBy { it.pageNum }?.pageNum ?: 0
         lastPageNum2014++
 
-        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2015).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2015 = pagedResultsRepository.findBySourceAndMarathonYearAndCategory(marathonSources, 2015).maxBy { it.pageNum }?.pageNum ?: 0
         lastPageNum2015++
 
-        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2016).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2016 = pagedResultsRepository.findBySourceAndMarathonYearAndCategory(marathonSources, 2016).maxBy { it.pageNum }?.pageNum ?: 0
         lastPageNum2016++
 
-        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2017).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2017 = pagedResultsRepository.findBySourceAndMarathonYearAndCategory(marathonSources, 2017).maxBy { it.pageNum }?.pageNum ?: 0
         lastPageNum2017++
 
-        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYear(marathonSources, 2018).maxBy { it.pageNum }?.pageNum ?: 0
+        lastPageNum2018 = pagedResultsRepository.findBySourceAndMarathonYearAndCategory(marathonSources, 2018).maxBy { it.pageNum }?.pageNum ?: 0
         lastPageNum2018++
     }
 
@@ -93,7 +97,7 @@ abstract class BaseCategoryPageProducer(logger: Logger, marathonSources: Maratho
             inputs.filter { it -> completedCategories.none { cr -> cr.matches(it) } }
 }
 
-abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMarathonScraper,
+abstract class BaseAthProducer(protected val athLinksMarathonScraper: AthLinksMarathonScraper,
                                pagedResultsRepository: PagedResultsRepository,
                                logger : Logger,
                                marathonSources: MarathonSources,
@@ -101,11 +105,11 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
                                private val endPages : Map<Int, Int>)
     : BaseResultPageProducer(logger, marathonSources, pagedResultsRepository){
 
-    private var scrapeInfo2014 : PagedResultsScrapeInfo? = null
-    private var scrapeInfo2015 : PagedResultsScrapeInfo? = null
-    private var scrapeInfo2016 : PagedResultsScrapeInfo? = null
-    private var scrapeInfo2017 : PagedResultsScrapeInfo? = null
-    private var scrapeInfo2018 : PagedResultsScrapeInfo? = null
+    protected var scrapeInfo2014 : PagedResultsScrapeInfo? = null
+    protected var scrapeInfo2015 : PagedResultsScrapeInfo? = null
+    protected var scrapeInfo2016 : PagedResultsScrapeInfo? = null
+    protected var scrapeInfo2017 : PagedResultsScrapeInfo? = null
+    protected var scrapeInfo2018 : PagedResultsScrapeInfo? = null
 
     @PostConstruct
     private fun init(){
@@ -115,27 +119,82 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
 
         urls[2014]?.let {url ->
             endPages[2014]?.let { endPage ->
-                scrapeInfo2014 = PagedResultsScrapeInfo(url, marathonSources, 2014, ColumnPositions(), lastPageNum2014, endPage, lastPageNum2014, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2014 = PagedResultsScrapeInfo(url = url,
+                        columnPositions = ColumnPositions(),
+                        marathonSources = marathonSources,
+                        marathonYear = 2014,
+                        startPage = lastPageNum2014,
+                        endPage = endPage,
+                        currentPage = lastPageNum2014,
+                        nextPageSelector = firstNextSelector,
+                        backwardsSelector = backwardsSelector,
+                        tableBodySelector = "",
+                        secondNextPageSelector = secondNextSelector,
+                        headerRow = false)
             }
         }
         urls[2015]?.let { url ->
             endPages[2015]?.let { endPage ->
-                scrapeInfo2015 = PagedResultsScrapeInfo(url, marathonSources, 2015, ColumnPositions(), lastPageNum2015, endPage, lastPageNum2015, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2015 = PagedResultsScrapeInfo(url = url,
+                        columnPositions = ColumnPositions(),
+                        marathonSources = marathonSources,
+                        marathonYear = 2015,
+                        startPage = lastPageNum2015,
+                        endPage = endPage,
+                        currentPage = lastPageNum2015,
+                        nextPageSelector = firstNextSelector,
+                        backwardsSelector = backwardsSelector,
+                        tableBodySelector = "",
+                        secondNextPageSelector = secondNextSelector,
+                        headerRow = false)
             }
         }
         urls[2016]?.let {url ->
             endPages[2016]?.let { endPage ->
-                scrapeInfo2016 = PagedResultsScrapeInfo(url, marathonSources, 2016, ColumnPositions(), lastPageNum2016, endPage, lastPageNum2016, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2016 = PagedResultsScrapeInfo(url = url,
+                        columnPositions = ColumnPositions(),
+                        marathonSources = marathonSources,
+                        marathonYear = 2016,
+                        startPage = lastPageNum2016,
+                        endPage = endPage,
+                        currentPage = lastPageNum2016,
+                        nextPageSelector = firstNextSelector,
+                        backwardsSelector = backwardsSelector,
+                        tableBodySelector = "",
+                        secondNextPageSelector = secondNextSelector,
+                        headerRow = false)
             }
         }
         urls[2017]?.let {url ->
             endPages[2017]?.let { endPage ->
-                scrapeInfo2017 = PagedResultsScrapeInfo(url, marathonSources, 2017, ColumnPositions(), lastPageNum2017, endPage, lastPageNum2017, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2017 = PagedResultsScrapeInfo(url = url,
+                        columnPositions = ColumnPositions(),
+                        marathonSources = marathonSources,
+                        marathonYear = 2017,
+                        startPage = lastPageNum2017,
+                        endPage = endPage,
+                        currentPage = lastPageNum2017,
+                        nextPageSelector = firstNextSelector,
+                        backwardsSelector = backwardsSelector,
+                        tableBodySelector = "",
+                        secondNextPageSelector = secondNextSelector,
+                        headerRow = false)
             }
         }
         urls[2018]?.let {url ->
             endPages[2018]?.let { endPage ->
-                scrapeInfo2018 = PagedResultsScrapeInfo(url, marathonSources, 2018, ColumnPositions(), lastPageNum2018, endPage, lastPageNum2018, firstNextSelector, backwardsSelector, "", secondNextPageSelector = secondNextSelector)
+                scrapeInfo2018 = PagedResultsScrapeInfo(url = url,
+                        columnPositions = ColumnPositions(),
+                        marathonSources = marathonSources,
+                        marathonYear = 2018,
+                        startPage = lastPageNum2018,
+                        endPage = endPage,
+                        currentPage = lastPageNum2018,
+                        nextPageSelector = firstNextSelector,
+                        backwardsSelector = backwardsSelector,
+                        tableBodySelector = "",
+                        secondNextPageSelector = secondNextSelector,
+                        headerRow = false)
             }
         }
     }
@@ -144,30 +203,50 @@ abstract class BaseAthProducer(private val athLinksMarathonScraper: AthLinksMara
         when(year) {
             2014 -> {
                 scrapeInfo2014?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    scrape2014(it)
                 }
             }
             2015 -> {
                 scrapeInfo2015?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    scrape2015(it)
                 }
             }
             2016 -> {
                 scrapeInfo2016?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    scrape2016(it)
                 }
             }
             2017 -> {
                 scrapeInfo2017?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    scrape2017(it)
                 }
             }
             2018 -> {
                 scrapeInfo2018?.let {
-                    threads.add(athLinksMarathonScraper.scrape(it))
+                    scrape2018(it)
                 }
             }
         }
+    }
+
+    protected open fun scrape2014(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        threads.add(athLinksMarathonScraper.scrape(pagedResultsScrapeInfo))
+    }
+
+    protected open fun scrape2015(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        threads.add(athLinksMarathonScraper.scrape(pagedResultsScrapeInfo))
+    }
+
+    protected open fun scrape2016(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        threads.add(athLinksMarathonScraper.scrape(pagedResultsScrapeInfo))
+    }
+
+    protected open fun scrape2017(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        threads.add(athLinksMarathonScraper.scrape(pagedResultsScrapeInfo))
+    }
+
+    protected open fun scrape2018(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        threads.add(athLinksMarathonScraper.scrape(pagedResultsScrapeInfo))
     }
 }
 
@@ -210,8 +289,16 @@ class StockholmProducer(@Autowired categoryResultsRepository: CategoryResultsRep
             } else {
                 extendedColumnPositions
             }
-            categoryScrapeInfoList.add(CategoryScrapeInfo("https://registration.marathongruppen.se/ResultList.aspx?LanguageCode=en&RaceId=51",
-                    marathonSources, year, positions, selector, gender, raceSelection, "", true))
+            categoryScrapeInfoList.add(CategoryScrapeInfo(
+                    url = "https://registration.marathongruppen.se/ResultList.aspx?LanguageCode=en&RaceId=51",
+                    marathonSources = marathonSources,
+                    marathonYear = year,
+                    columnPositions = positions,
+                    tableBodySelector = selector,
+                    gender = gender,
+                    raceSelection = raceSelection,
+                    category = "",
+                    headerRow = true))
         }
     }
 
@@ -288,6 +375,74 @@ class TcsAmsterdamProducer(@Autowired private val tcsAmsterdamUrlProducer: TcsAm
     override fun buildThreads() {
         threads.addAll(tcsAmsterdamUrlProducer.process())
         threads.addAll(tcsAmsterdamPagedProducer.process())
+    }
+}
+
+@Component
+class PhiladelphiaAthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                              @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseAthProducer(athLinksMarathonScraper, pagedResultsRepository, LoggerFactory.getLogger(PhiladelphiaAthProducer::class.java), MarathonSources.Philadelphia,
+        mapOf(2014 to "https://www.athlinks.com/event/156909/results/Event/406017/Course/610531/Results",
+                2015 to "https://www.athlinks.com/event/156909/results/Event/495263/Course/739431/Results"),
+        mapOf(2014 to 208, 2015 to 184)) {
+
+    override fun scrape2014(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        threads.add(athLinksMarathonScraper.scrape(pagedResultsScrapeInfo, AthLinksPreWebScrapeEvent("")))
+    }
+
+    override fun scrape2016(pagedResultsScrapeInfo: PagedResultsScrapeInfo) {
+        //super.scrape2016(pagedResultsScrapeInfo)
+    }
+}
+
+@Component
+class PhiladelphiaXacteProducer(@Autowired private val xacteMarathonScraper : XacteMarathonScraper,
+                                @Autowired pagedResultsRepository: PagedResultsRepository)
+    : BaseResultPageProducer(LoggerFactory.getLogger(PhiladelphiaProducer::class.java), MarathonSources.Philadelphia, pagedResultsRepository){
+
+    private val columnPositions = ColumnPositions(
+            place = 8,
+            nationality = 3,
+            finishTime = 5,
+            ageGender = 4)
+
+    private val scrapeInfo = PagedResultsScrapeInfo(
+            url = "http://live.xacte.com/templates/philadelphiamarathon.com/for-runners/",
+            columnPositions = columnPositions,
+            marathonSources = this.marathonSources,
+            marathonYear = -1,
+            tableBodySelector = "#xact_results_agegroup_results > tbody:nth-child(3)",
+            headerRow = false,
+            startPage = -1,
+            endPage = -1,
+            currentPage = -1,
+            nextPageSelector = "#xact_results_agegroup_results_wrapper > div.fg-toolbar.ui-toolbar.ui-widget-header.ui-corner-bl.ui-corner-br.ui-helper-clearfix > div.dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_full_numbers > a.next.fg-button.ui-button.ui-state-default",
+            backwardsSelector = "#xact_results_agegroup_results_wrapper > div.fg-toolbar.ui-toolbar.ui-widget-header.ui-corner-bl.ui-corner-br.ui-helper-clearfix > div.dataTables_paginate.fg-buttonset.ui-buttonset.fg-buttonset-multi.ui-buttonset-multi.paging_full_numbers > a.previous.fg-button.ui-button.ui-state-default"
+    )
+
+    override fun buildYearlyThreads(year: Int, lastPage: Int) {
+        val localScrapeInfo = scrapeInfo.copy(marathonYear = year, startPage = lastPage, currentPage = lastPage)
+        when(year){
+            2016 -> {
+                threads.add(xacteMarathonScraper.scrape(localScrapeInfo.copy(endPage = 51), PhiladelphiaPreWebScrapeEvent("Overall Male")))
+                threads.add(xacteMarathonScraper.scrape(localScrapeInfo.copy(endPage = 40), PhiladelphiaPreWebScrapeEvent("Overall Female")))
+            }
+            2017 -> {
+                threads.add(xacteMarathonScraper.scrape(localScrapeInfo.copy(endPage = 46), PhiladelphiaPreWebScrapeEvent("Overall Male")))
+                threads.add(xacteMarathonScraper.scrape(localScrapeInfo.copy(endPage = 33), PhiladelphiaPreWebScrapeEvent("Overall Female")))
+            }
+        }
+    }
+}
+
+@Component
+class PhiladelphiaProducer(@Autowired private val philadelphiaAthProducer : PhiladelphiaAthProducer,
+                           @Autowired private val philadelphiaXacteProducer: PhiladelphiaXacteProducer)
+        : BaseProducer(LoggerFactory.getLogger(PhiladelphiaProducer::class.java), MarathonSources.Philadelphia) {
+
+    override fun buildThreads() {
+        threads.addAll(philadelphiaAthProducer.process())
+        //threads.addAll(philadelphiaXacteProducer.process())
     }
 }
 
@@ -627,48 +782,48 @@ class RiverRockProducer(@Autowired private val belfestCityMarathonScraper: Belfe
         when(year) {
             2014 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
                     url = "https://www.belfastcitymarathon.com/results/2014#fullResults",
+                    columnPositions = columnPositions,
                     marathonSources = marathonSources,
                     marathonYear = 2014,
-                    columnPositions = columnPositions,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false,
                     startPage = lastPage,
                     endPage = 24,
                     nextPageSelector = nextPageSelector,
-                    backwardsSelector = backwardsSelector,
-                    tableBodySelector = tBodySelector,
-                    headerRow = false)))
+                    backwardsSelector = backwardsSelector)))
             2015 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
                     url = "https://www.belfastcitymarathon.com/results/2015#fullResults",
+                    columnPositions = columnPositions,
                     marathonSources = marathonSources,
                     marathonYear = 2015,
-                    columnPositions = columnPositions,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false,
                     startPage = lastPage,
                     endPage = 22,
                     nextPageSelector = nextPageSelector,
-                    backwardsSelector = backwardsSelector,
-                    tableBodySelector = tBodySelector,
-                    headerRow = false)))
+                    backwardsSelector = backwardsSelector)))
             2016 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
                     url = "https://www.belfastcitymarathon.com/results/2016#fullResults",
+                    columnPositions = columnPositions,
                     marathonSources = marathonSources,
                     marathonYear = 2016,
-                    columnPositions = columnPositions,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false,
                     startPage = lastPage,
                     endPage = 22,
                     nextPageSelector = nextPageSelector,
-                    backwardsSelector = backwardsSelector,
-                    tableBodySelector = tBodySelector,
-                    headerRow = false)))
+                    backwardsSelector = backwardsSelector)))
             2017 -> threads.add(belfestCityMarathonScraper.scrape(PagedResultsScrapeInfo(
                     url = "https://www.belfastcitymarathon.com/results/2017#fullResults",
+                    columnPositions = columnPositions,
                     marathonSources = marathonSources,
                     marathonYear = 2017,
-                    columnPositions = columnPositions,
+                    tableBodySelector = tBodySelector,
+                    headerRow = false,
                     startPage = lastPage,
                     endPage = 22,
                     nextPageSelector = nextPageSelector,
-                    backwardsSelector = backwardsSelector,
-                    tableBodySelector = tBodySelector,
-                    headerRow = false)))
+                    backwardsSelector = backwardsSelector)))
         }
     }
 }
