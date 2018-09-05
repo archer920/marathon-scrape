@@ -1,8 +1,8 @@
 package com.stonesoupprogramming.marathonscrape.models
 
-import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.UNAVAILABLE
 import com.stonesoupprogramming.marathonscrape.enums.Gender
+import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 import org.slf4j.Logger
 import javax.persistence.*
 import javax.persistence.CascadeType.ALL
@@ -15,7 +15,7 @@ open class ResultsPage(
         @field: Id @field: GeneratedValue(strategy = GenerationType.IDENTITY) var id: Long? = null,
         @field: Enumerated(EnumType.STRING) var source : MarathonSources = MarathonSources.Unassigned,
         @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
-        @field: OneToMany(cascade = [ALL], orphanRemoval = true) var runnerData: Set<RunnerData> = emptySet(),
+        @field: OneToMany(cascade = [ALL], orphanRemoval = true) var runnerData: MutableList<RunnerData> = mutableListOf(),
         @field: NotBlank var url : String = "",
         var category: String? = null,
         @field: Enumerated(EnumType.STRING) var gender : Gender = Gender.UNASSIGNED)

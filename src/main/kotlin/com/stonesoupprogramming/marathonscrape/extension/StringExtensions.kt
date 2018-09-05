@@ -1,6 +1,5 @@
 package com.stonesoupprogramming.marathonscrape.extension
 
-import com.stonesoupprogramming.marathonscrape.UNAVAILABLE
 import org.openqa.selenium.By
 import org.slf4j.Logger
 import java.time.LocalDate
@@ -57,3 +56,5 @@ fun String.toNationality(usCodes : List<String>, canadaCodes : List<String>, sep
         this.unavailableIfBlank()
     }
 }
+
+const val UNAVAILABLE = "Unavailable"

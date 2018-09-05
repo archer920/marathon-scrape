@@ -1,9 +1,13 @@
 package com.stonesoupprogramming.marathonscrape
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
+import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
+import com.stonesoupprogramming.marathonscrape.producers.philadelphia.PhilidelphiaProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
+import com.stonesoupprogramming.marathonscrape.service.StatusReporterServiceImpl
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
@@ -28,8 +32,8 @@ class Configuration {
     fun runnerDataQueue() = LinkedBlockingQueue<RunnerData>()
 
     @Bean
-    fun asyncExecute () : ThreadPoolTaskExecutor {
-        with (ThreadPoolTaskExecutor()){
+    fun asyncExecute(): ThreadPoolTaskExecutor {
+        with(ThreadPoolTaskExecutor()) {
             corePoolSize = Runtime.getRuntime().availableProcessors()
             setQueueCapacity(1000)
             setThreadNamePrefix("Marathon-Scraper-")
@@ -42,68 +46,14 @@ class Configuration {
     fun canadaProvinceCodes() = listOf("AB", "BC", "MB", "NB", "NL", "NS", "NT", "NU", "ON", "PE", "QC", "SK", "YT")
 
     @Bean
-    fun usStateCodes () = listOf("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI",
+    fun usStateCodes() = listOf("AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI",
             "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH",
             "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA",
             "WV", "WI", "WY", "AS", "GU", "MH", "FM", "MP", "PW", "PR", "VI")
 
     @Bean
-    fun producers(@Autowired stockholmProducer: StockholmProducer,
-                  @Autowired tcsAmsterdamProducer: TcsAmsterdamProducer,
-                  @Autowired santiagoProducer: SantiagoProducer,
-                  @Autowired berlinProducer: BerlinProducer,
-                  @Autowired taipeiProducer: TaipeiProducer,
-                  @Autowired copenhagenProducer: CopenhagenProducer,
-                  @Autowired genevaProducer: GenevaProducer,
-                  @Autowired rheinEnergieProducer: RheinEnergieProducer,
-                  @Autowired bournemouthProducer: BournemouthProducer,
-                  @Autowired stJudeProducer: StJudeProducer,
-                  @Autowired indianapolisProducer: IndianapolisProducer,
-                  @Autowired munchenProducer: MunchenProducer,
-                  @Autowired fargoProducer: FargoProducer,
-                  @Autowired brightonProducer: BrightonProducer,
-                  @Autowired vancouverProducer: VancouverProducer,
-                  @Autowired surfCityProducer: SurfCityProducer,
-                  @Autowired bayshoreProducer: BayshoreProducer,
-                  @Autowired veniceProducer: VeniceProducer,
-                  @Autowired liverpoolProducer: LiverpoolProducer,
-                  @Autowired sanDiegoProducer: SanDiegoProducer,
-                  @Autowired akronProducer: AkronProducer,
-                  @Autowired routeSixSixProducer: RouteSixSixProducer,
-                  @Autowired buffaloProducer: BuffaloProducer,
-                  @Autowired dusseldorfProducer: DusseldorfProducer,
-                  @Autowired chaingMaiProducer: ChaingMaiProducer,
-                  @Autowired philadelphiaProducer: PhiladelphiaProducer,
-                  @Autowired riverRockProducer: RiverRockProducer) : Map<MarathonSources, BaseProducer> {
+    fun producers(@Autowired philadelphiaProducer: PhilidelphiaProducer): Map<MarathonSources, AbstractBaseProducer> = mapOf(MarathonSources.Philadelphia to philadelphiaProducer)
 
-        return mapOf(MarathonSources.Stockholm to stockholmProducer,
-                MarathonSources.Philadelphia to philadelphiaProducer,
-                MarathonSources.Route66 to routeSixSixProducer,
-                MarathonSources.Amsterdam to tcsAmsterdamProducer,
-                MarathonSources.Santiago to santiagoProducer,
-                MarathonSources.Berlin to berlinProducer,
-                MarathonSources.Taipei to taipeiProducer,
-                MarathonSources.Copenhagen to copenhagenProducer,
-                MarathonSources.Geneva to genevaProducer,
-                MarathonSources.RheinEnergie to rheinEnergieProducer,
-                MarathonSources.Bournemouth to bournemouthProducer,
-                MarathonSources.Dusseldorf to dusseldorfProducer,
-                MarathonSources.Memphis to stJudeProducer,
-                MarathonSources.Bayshore to bayshoreProducer,
-                MarathonSources.Indianapolis to indianapolisProducer,
-                MarathonSources.Munchen to munchenProducer,
-                MarathonSources.Buffalo to buffaloProducer,
-                MarathonSources.Fargo to fargoProducer,
-                MarathonSources.Brighton to brightonProducer,
-                MarathonSources.Vancouver to vancouverProducer,
-                MarathonSources.SurfCity to surfCityProducer,
-                MarathonSources.Liverpool to liverpoolProducer,
-                MarathonSources.SanDiego to sanDiegoProducer,
-                MarathonSources.Venice to veniceProducer,
-                MarathonSources.Akron to akronProducer,
-                MarathonSources.RiverRock to riverRockProducer,
-                MarathonSources.ChaingMai to chaingMaiProducer)
-    }
 }
 
 @SpringBootApplication
@@ -117,21 +67,21 @@ fun main(args: Array<String>) {
 class Application(
         @Autowired private val applicationContext: ApplicationContext,
         @Autowired private val runnerDataRepository: RunnerDataRepository,
-        @Autowired private val statusReporter: StatusReporter,
-        @Autowired private val producers: Map<MarathonSources, BaseProducer>) : CommandLineRunner {
+        @Autowired private val statusReporterImpl: StatusReporterServiceImpl,
+        @Autowired private val producers: Map<MarathonSources, AbstractBaseProducer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
-        args.toMarathonSources().forEach {
-            it?.let {
-                statusReporter.reportStatus(it)
+        args.toMarathonSources().forEach { source ->
+            source?.let {
+                statusReporterImpl.reportStatus(it)
             }
         }
 
         process(*args)
 
-        this.statusReporter.shutdown = true
+        this.statusReporterImpl.shutdown = true
 
         writeCompleted(*args)
 
@@ -140,7 +90,7 @@ class Application(
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
-    private fun process(vararg args : String){
+    private fun process(vararg args: String) {
         val threads = mutableListOf<CompletableFuture<String>>()
         args.toMarathonSources().forEach { it ->
             it?.let {
@@ -154,7 +104,7 @@ class Application(
         logger.info("Finished Web Scraping")
     }
 
-    private fun writeCompleted(vararg args: String){
+    private fun writeCompleted(vararg args: String) {
         args.toMarathonSources().forEach { it ->
             it?.let {
                 writeFile(it, it.startYear, it.endYear)
@@ -162,9 +112,9 @@ class Application(
         }
     }
 
-    private fun writeFile(source : MarathonSources, startYear : Int, endYear : Int){
+    private fun writeFile(source: MarathonSources, startYear: Int, endYear: Int) {
         logger.info("Starting file export...")
-        for(i in startYear..endYear){
+        for (i in startYear..endYear) {
             runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
         }
         logger.info("Finished file export...")

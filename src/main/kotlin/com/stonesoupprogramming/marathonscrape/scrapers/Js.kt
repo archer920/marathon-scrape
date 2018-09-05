@@ -1,4 +1,4 @@
-package com.stonesoupprogramming.marathonscrape
+package com.stonesoupprogramming.marathonscrape.scrapers
 
 import com.stonesoupprogramming.marathonscrape.extension.sleepRandom
 import org.openqa.selenium.remote.RemoteWebDriver
