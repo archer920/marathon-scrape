@@ -58,8 +58,12 @@ class Configuration {
                   @Autowired maritzburgProducer: MaritzburgProducer,
                   @Autowired myrtleBeachProducer: MyrtleBeachProducer,
                   @Autowired belfastProducer: BelfastProducer,
+                  @Autowired nordeaRigaProducer: NordeaRigaProducer,
+                  @Autowired rockRollLasVegasProducer: RockRollLasVegasProducer,
                   @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
             mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
+                    MarathonSources.RockRollLasVegas to rockRollLasVegasProducer,
+                    MarathonSources.NoredaRiga to nordeaRigaProducer,
                     MarathonSources.Cottonwood to cottonwoodProducer,
                     MarathonSources.Berlin to berlinProducer,
                     MarathonSources.Maritzburg to maritzburgProducer,
@@ -88,7 +92,7 @@ class Application(
     override fun run(vararg args: String) {
         args.toMarathonSources().forEach { source ->
             source?.let {
-                statusReporterService.reportStatus(it)
+                statusReporterService.reportStatusAsync(it)
             }
         }
 
@@ -100,6 +104,11 @@ class Application(
 
         logger.info("Exiting...")
 
+        args.toMarathonSources().forEach { source ->
+            source?.let {
+                statusReporterService.reportStatus(it)
+            }
+        }
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
