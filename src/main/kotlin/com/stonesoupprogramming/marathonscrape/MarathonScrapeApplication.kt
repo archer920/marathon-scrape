@@ -53,6 +53,7 @@ class Configuration {
 
     @Bean
     fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
+                  @Autowired istanbulProducer: IstanbulProducer,
                   @Autowired pfChangsArizonaProducer: PfChangsArizonaProducer,
                   @Autowired helsinkiProducer: HelsinkiProducer,
                   @Autowired berlinProducer: BerlinProducer,
@@ -63,6 +64,7 @@ class Configuration {
                   @Autowired rockRollLasVegasProducer: RockRollLasVegasProducer,
                   @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
             mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
+                    MarathonSources.Istanbul to istanbulProducer,
                     MarathonSources.PfChangsArizona to pfChangsArizonaProducer,
                     MarathonSources.RockRollLasVegas to rockRollLasVegasProducer,
                     MarathonSources.NoredaRiga to nordeaRigaProducer,
