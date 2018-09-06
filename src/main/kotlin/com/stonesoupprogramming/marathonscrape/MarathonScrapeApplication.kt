@@ -5,6 +5,7 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BelfastProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BerlinProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.MaritzburgProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.PhiladelphiaProducer
@@ -56,10 +57,12 @@ class Configuration {
     @Bean
     fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
                   @Autowired berlinProducer: BerlinProducer,
-                  @Autowired maritzburgProducer: MaritzburgProducer): Map<MarathonSources, AbstractBaseProducer> =
+                  @Autowired maritzburgProducer: MaritzburgProducer,
+                  @Autowired belfastProducer: BelfastProducer): Map<MarathonSources, AbstractBaseProducer> =
             mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
                     MarathonSources.Berlin to berlinProducer,
-                    MarathonSources.Maritzburg to maritzburgProducer)
+                    MarathonSources.Maritzburg to maritzburgProducer,
+                    MarathonSources.Belfast to belfastProducer)
 
 }
 
