@@ -46,6 +46,15 @@ class MyrtleBeachProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/34968/results/Event/622176/Course/956955/Results", 25)))
 
 @Component
+class MilwaukeeProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                          @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(MilwaukeeProducer::class.java), MarathonSources.Milwaukee,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/181603/results/Event/350590/Course/512405/Results", 42),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/181603/results/Event/424400/Course/638397/Results", 46),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/181603/results/Event/591199/Course/754364/Results", 41),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/181603/results/Event/603741/Course/914282/Results", 35)))
+
+@Component
 class BelfastProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                          @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BelfastProducer::class.java), MarathonSources.Belfast,
