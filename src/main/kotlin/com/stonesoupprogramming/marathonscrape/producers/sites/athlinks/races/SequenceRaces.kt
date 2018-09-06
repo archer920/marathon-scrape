@@ -108,3 +108,12 @@ class PoweradeMonterreyProducer(@Autowired athLinksMarathonScraper: AthLinksMara
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/35592/results/Event/501209/Course/745432/Results", 107),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/35592/results/Event/622256/Course/953492/Results", 125),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/35592/results/Event/688063/Course/1112757/Results", 134)))
+
+@Component
+class LongBeachProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                                @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(LongBeachProducer::class.java), MarathonSources.LongBeach,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/20146/results/Event/393344/Course/513404/Results", 56),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/20146/results/Event/467463/Course/724745/Results", 47),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/20146/results/Event/591445/Course/878229/Results", 40),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/20146/results/Event/691269/Course/1119057/Results", 35)))
