@@ -117,3 +117,12 @@ class LongBeachProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScra
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/20146/results/Event/467463/Course/724745/Results", 47),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/20146/results/Event/591445/Course/878229/Results", 40),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/20146/results/Event/691269/Course/1119057/Results", 35)))
+
+@Component
+class StLouisProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                        @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(StLouisProducer::class.java), MarathonSources.StLouis,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/4852/results/Event/312739/Course/552839/Results", 28),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/4852/results/Event/435476/Course/600133/Results", 28),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/4852/results/Event/506778/Course/753617/Results", 27),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/4852/results/Event/632942/Course/912154/Results", 24)))
