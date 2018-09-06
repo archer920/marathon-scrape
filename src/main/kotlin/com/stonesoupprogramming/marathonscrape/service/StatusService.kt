@@ -32,6 +32,7 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
             while (!shutdown) {
                 when (source) {
                     MarathonSources.MyrtleBeach -> logger.printProgress(source, 1624, 1477, 1421, 1239)
+                    MarathonSources.Belfast -> logger.printProgress(source, 2329, 2283, 2156, 2147)
                     MarathonSources.Cottonwood -> logger.printProgress(source, 1528, 1265, 1330, 1372)
                     MarathonSources.Philadelphia -> logger.printProgress(source, 10359, 9161, 9000, 7773)
                     MarathonSources.Berlin -> logger.printProgress(source, 28984, 36838, 36084, 39146)
