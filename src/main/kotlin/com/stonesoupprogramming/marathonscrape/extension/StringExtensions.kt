@@ -53,7 +53,10 @@ fun String.toNationality(usCodes : List<String>, canadaCodes : List<String>, sep
         code = canadaCodes.provinceToCanada(code)
         code
     } else {
-        this.unavailableIfBlank()
+        var code = this.unavailableIfBlank()
+        code = usCodes.stateToUSA(code)
+        code = canadaCodes.provinceToCanada(code)
+        code
     }
 }
 

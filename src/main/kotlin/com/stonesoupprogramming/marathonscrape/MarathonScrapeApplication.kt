@@ -5,12 +5,7 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BelfastProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BerlinProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.CottonwoodProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.MaritzburgProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.MyrtleBeachProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.PhiladelphiaProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -60,10 +55,12 @@ class Configuration {
     fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
                   @Autowired berlinProducer: BerlinProducer,
                   @Autowired maritzburgProducer: MaritzburgProducer,
+                  @Autowired milwaukeeProducer: MilwaukeeProducer,
                   @Autowired myrtleBeachProducer: MyrtleBeachProducer,
                   @Autowired belfastProducer: BelfastProducer,
                   @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
             mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
+                    MarathonSources.Milwaukee to milwaukeeProducer,
                     MarathonSources.Cottonwood to cottonwoodProducer,
                     MarathonSources.Berlin to berlinProducer,
                     MarathonSources.Maritzburg to maritzburgProducer,
