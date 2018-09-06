@@ -71,3 +71,12 @@ class RockRollLasVegasProducer(@Autowired athLinksMarathonScraper: AthLinksMarat
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/19454/results/Event/494340/Course/734391/Results", 63),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/19454/results/Event/514055/Course/910974/Results", 52),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/19454/results/Event/614539/Course/1120038/Results", 52)))
+
+@Component
+class PfChangsArizonaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                               @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(PfChangsArizonaProducer::class.java), MarathonSources.PfChangsArizona,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/19453/results/Event/351162/Course/456973/Results", 58),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/19453/results/Event/413550/Course/623479/Results", 52),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/19453/results/Event/519385/Course/758201/Results", 47),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/19453/results/Event/524669/Course/780238/Results", 47)))
