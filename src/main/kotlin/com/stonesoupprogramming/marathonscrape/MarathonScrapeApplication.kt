@@ -5,12 +5,7 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BelfastProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BerlinProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.CottonwoodProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.MaritzburgProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.MyrtleBeachProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.PhiladelphiaProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -62,8 +57,10 @@ class Configuration {
                   @Autowired maritzburgProducer: MaritzburgProducer,
                   @Autowired myrtleBeachProducer: MyrtleBeachProducer,
                   @Autowired belfastProducer: BelfastProducer,
+                  @Autowired nordeaRigaProducer: NordeaRigaProducer,
                   @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
             mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
+                    MarathonSources.NoredaRiga to nordeaRigaProducer,
                     MarathonSources.Cottonwood to cottonwoodProducer,
                     MarathonSources.Berlin to berlinProducer,
                     MarathonSources.Maritzburg to maritzburgProducer,

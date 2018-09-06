@@ -36,6 +36,7 @@ class MyrtleBeachProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/34968/results/Event/525247/Course/733804/Results", 29),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/34968/results/Event/622176/Course/956955/Results", 25)))
 
+@Component
 class BelfastProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                          @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BelfastProducer::class.java), MarathonSources.Belfast,
@@ -43,3 +44,12 @@ class BelfastProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrape
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/6631/results/Event/450323/Course/672631/Results", 46),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/6631/results/Event/609040/Course/924274/Results", 44),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/6631/results/Event/655780/Course/1000105/Results", 43)))
+
+@Component
+class NordeaRigaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                      @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(NordeaRigaProducer::class.java), MarathonSources.NoredaRiga,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34500/results/Event/382345/Course/502115/Results", 25),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/34500/results/Event/472253/Course/703216/Results", 30),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/34500/results/Event/636074/Course/982135/Results", 30),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34500/results/Event/641817/Course/997742/Results", 33)))
