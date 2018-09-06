@@ -52,19 +52,24 @@ class Configuration {
             "WV", "WI", "WY", "AS", "GU", "MH", "FM", "MP", "PW", "PR", "VI")
 
     @Bean
-    fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
-                  @Autowired istanbulProducer: IstanbulProducer,
-                  @Autowired pfChangsArizonaProducer: PfChangsArizonaProducer,
-                  @Autowired helsinkiProducer: HelsinkiProducer,
-                  @Autowired berlinProducer: BerlinProducer,
-                  @Autowired maritzburgProducer: MaritzburgProducer,
-                  @Autowired milwaukeeProducer: MilwaukeeProducer,
-                  @Autowired myrtleBeachProducer: MyrtleBeachProducer,
-                  @Autowired belfastProducer: BelfastProducer,
-                  @Autowired nordeaRigaProducer: NordeaRigaProducer,
-                  @Autowired rockRollLasVegasProducer: RockRollLasVegasProducer,
-                  @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
-            mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
+    fun producers(
+            @Autowired poweradeMonterreyProducer: PoweradeMonterreyProducer,
+            @Autowired philadelphiaProducer: PhiladelphiaProducer,
+            @Autowired istanbulProducer: IstanbulProducer,
+            @Autowired pfChangsArizonaProducer: PfChangsArizonaProducer,
+            @Autowired helsinkiProducer: HelsinkiProducer,
+            @Autowired berlinProducer: BerlinProducer,
+            @Autowired maritzburgProducer: MaritzburgProducer,
+            @Autowired milwaukeeProducer: MilwaukeeProducer,
+            @Autowired myrtleBeachProducer: MyrtleBeachProducer,
+            @Autowired belfastProducer: BelfastProducer,
+            @Autowired nordeaRigaProducer: NordeaRigaProducer,
+            @Autowired rockRollLasVegasProducer: RockRollLasVegasProducer,
+            @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
+            
+            mapOf(
+                    MarathonSources.PoweradeMonterrery to poweradeMonterreyProducer,
+                    MarathonSources.Philadelphia to philadelphiaProducer,
                     MarathonSources.Istanbul to istanbulProducer,
                     MarathonSources.Milwaukee to milwaukeeProducer,
                     MarathonSources.PfChangsArizona to pfChangsArizonaProducer,

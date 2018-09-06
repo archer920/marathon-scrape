@@ -98,3 +98,13 @@ class IstanbulProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/34771/results/Event/495768/Course/737457/Results", 56),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/34771/results/Event/599550/Course/906321/Results", 56),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/34771/results/Event/696213/Course/1129944/Results", 35)))
+
+//NOTE: This may need to be done on a category basis
+@Component
+class PoweradeMonterreyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(PoweradeMonterreyProducer::class.java), MarathonSources.PoweradeMonterrery,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35592/results/Event/365335/Course/537650/Results", 84),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/35592/results/Event/501209/Course/745432/Results", 107),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/35592/results/Event/622256/Course/953492/Results", 125),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/35592/results/Event/688063/Course/1112757/Results", 134)))
