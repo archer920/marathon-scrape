@@ -5,10 +5,8 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BerlinProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.EdinburgProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.MaritzburgProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.PhiladelphiaProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -58,11 +56,21 @@ class Configuration {
     fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
                   @Autowired berlinProducer: BerlinProducer,
                   @Autowired edinburgProducer: EdinburgProducer,
-                  @Autowired maritzburgProducer: MaritzburgProducer): Map<MarathonSources, AbstractBaseProducer> =
+                  @Autowired maritzburgProducer: MaritzburgProducer,
+                  @Autowired myrtleBeachProducer: MyrtleBeachProducer,
+                  @Autowired belfastProducer: BelfastProducer,
+                  @Autowired nordeaRigaProducer: NordeaRigaProducer,
+                  @Autowired rockRollLasVegasProducer: RockRollLasVegasProducer,
+                  @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
             mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
                     MarathonSources.Edinburg to edinburgProducer,
+                    MarathonSources.RockRollLasVegas to rockRollLasVegasProducer,
+                    MarathonSources.NoredaRiga to nordeaRigaProducer,
+                    MarathonSources.Cottonwood to cottonwoodProducer,
                     MarathonSources.Berlin to berlinProducer,
-                    MarathonSources.Maritzburg to maritzburgProducer)
+                    MarathonSources.Maritzburg to maritzburgProducer,
+                    MarathonSources.MyrtleBeach to myrtleBeachProducer,
+                    MarathonSources.Belfast to belfastProducer)
 
 }
 
@@ -85,7 +93,7 @@ class Application(
     override fun run(vararg args: String) {
         args.toMarathonSources().forEach { source ->
             source?.let {
-                statusReporterService.reportStatus(it)
+                statusReporterService.reportStatusAsync(it)
             }
         }
 
@@ -97,6 +105,11 @@ class Application(
 
         logger.info("Exiting...")
 
+        args.toMarathonSources().forEach { source ->
+            source?.let {
+                statusReporterService.reportStatus(it)
+            }
+        }
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
