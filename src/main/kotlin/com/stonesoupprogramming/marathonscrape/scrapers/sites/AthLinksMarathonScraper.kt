@@ -13,10 +13,23 @@ class AthLinksPreWebScrapeEvent(private val divisionCss: String) : PreWebScrapeE
 
     private val logger = LoggerFactory.getLogger(AthLinksPreWebScrapeEvent::class.java)
 
-    override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<AbstractColumnPositions, NumberedResultsPage>) {
-        driver.click("#division > div:nth-child(1) > svg".toCss(), logger)
-        driver.waitUntilClickable(divisionCss.toCss())
-        driver.click(divisionCss.toCss(), logger)
+    override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<AbstractColumnPositions, NumberedResultsPage>, attempt: Int, giveUp: Int) {
+        try {
+            driver.click("#division > div:nth-child(1) > svg".toCss(), logger)
+
+            driver.scrollIntoView(divisionCss.toCss(), logger)
+            driver.waitUntilClickable(divisionCss.toCss())
+            driver.click(divisionCss.toCss(), logger)
+        } catch (e : Exception){
+            if(attempt < giveUp){
+                Thread.sleep(1000)
+                execute(driver, jsDriver, scrapeInfo, attempt + 1)
+            } else {
+                logger.error("Unable to click element", e)
+                throw e
+            }
+        }
+
     }
 }
 

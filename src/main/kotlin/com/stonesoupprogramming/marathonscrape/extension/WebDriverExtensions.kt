@@ -51,3 +51,20 @@ fun RemoteWebDriver.click(element: By, logger: Logger) {
         throw e
     }
 }
+
+fun RemoteWebDriver.scrollIntoView(selector: By, logger: Logger, attemptNum: Int = 0, giveUp: Int = 10) {
+    try {
+        val elem = this.findElement(selector)
+        this.executeScript("arguments[0].scrollIntoView(true);", elem)
+        this.waitUntilVisible(selector)
+    } catch (e : Exception){
+        if(attemptNum < giveUp){
+            Thread.sleep(1000)
+            scrollIntoView(selector, logger, attemptNum + 1)
+        } else {
+            logger.error("Failed to scroll $selector into view", e)
+            throw e
+        }
+    }
+
+}

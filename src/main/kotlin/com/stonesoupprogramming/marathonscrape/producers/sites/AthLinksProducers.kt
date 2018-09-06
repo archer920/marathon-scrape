@@ -72,7 +72,9 @@ abstract class AbstractAthCategoryProducer(
     @PostConstruct
     private fun init() {
         categoryAthLinks.forEach { it ->
-            categoryLastPageMap[it] = numberedResultsPageRepository.queryLastPage(it.year, marathonSources, it.category) ?: 1
+            var startPage = numberedResultsPageRepository.queryLastPage(it.year, marathonSources, it.category) ?: 0
+            startPage++
+            categoryLastPageMap[it] = startPage
         }
     }
 
@@ -80,7 +82,8 @@ abstract class AbstractAthCategoryProducer(
         categoryAthLinks.forEach { it ->
             val page = categoryLastPageMap[it] ?: 0
             threads.add(athLinksMarathonScraper.scrape(
-                    baseScrapeInfo.copy(url = it.url, marathonYear = it.year, startPage = page, currentPage = page, endPage = page),
+                    baseScrapeInfo.copy(url = it.url, marathonYear = it.year, startPage = page, currentPage = page,
+                            endPage = it.endPage, category = it.category),
                     AthLinksPreWebScrapeEvent(it.divisionCss)))
         }
     }

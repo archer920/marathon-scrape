@@ -5,8 +5,9 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.philadelphia.PhilidelphiaProducer
+import com.stonesoupprogramming.marathonscrape.producers.philadelphia.PhiladelphiaProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
+import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterServiceImpl
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -52,7 +53,7 @@ class Configuration {
             "WV", "WI", "WY", "AS", "GU", "MH", "FM", "MP", "PW", "PR", "VI")
 
     @Bean
-    fun producers(@Autowired philadelphiaProducer: PhilidelphiaProducer): Map<MarathonSources, AbstractBaseProducer> = mapOf(MarathonSources.Philadelphia to philadelphiaProducer)
+    fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer): Map<MarathonSources, AbstractBaseProducer> = mapOf(MarathonSources.Philadelphia to philadelphiaProducer)
 
 }
 
@@ -67,7 +68,7 @@ fun main(args: Array<String>) {
 class Application(
         @Autowired private val applicationContext: ApplicationContext,
         @Autowired private val runnerDataRepository: RunnerDataRepository,
-        @Autowired private val statusReporterImpl: StatusReporterServiceImpl,
+        @Autowired private val statusReporterService: StatusReporterService,
         @Autowired private val producers: Map<MarathonSources, AbstractBaseProducer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -75,13 +76,13 @@ class Application(
     override fun run(vararg args: String) {
         args.toMarathonSources().forEach { source ->
             source?.let {
-                statusReporterImpl.reportStatus(it)
+                statusReporterService.reportStatus(it)
             }
         }
 
         process(*args)
 
-        this.statusReporterImpl.shutdown = true
+        this.statusReporterService.shutdown = true
 
         writeCompleted(*args)
 

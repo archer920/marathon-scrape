@@ -56,11 +56,20 @@ abstract class AbstractResultsPageProducer<T : AbstractColumnPositions>(protecte
 
     @PostConstruct
     private fun init() {
-        lastPageNum2014 = numberedResultsPageRepository.queryLastPage(2014, marathonSources) ?: 1
-        lastPageNum2015 = numberedResultsPageRepository.queryLastPage(2015, marathonSources) ?: 1
-        lastPageNum2016 = numberedResultsPageRepository.queryLastPage(2016, marathonSources) ?: 1
-        lastPageNum2017 = numberedResultsPageRepository.queryLastPage(2017, marathonSources) ?: 1
-        lastPageNum2018 = numberedResultsPageRepository.queryLastPage(2018, marathonSources) ?: 1
+        lastPageNum2014 = numberedResultsPageRepository.queryLastPage(2014, marathonSources) ?: 0
+        lastPageNum2014++
+
+        lastPageNum2015 = numberedResultsPageRepository.queryLastPage(2015, marathonSources) ?: 0
+        lastPageNum2015++
+
+        lastPageNum2016 = numberedResultsPageRepository.queryLastPage(2016, marathonSources) ?: 0
+        lastPageNum2016++
+
+        lastPageNum2017 = numberedResultsPageRepository.queryLastPage(2017, marathonSources) ?: 0
+        lastPageNum2017++
+
+        lastPageNum2018 = numberedResultsPageRepository.queryLastPage(2018, marathonSources) ?: 0
+        lastPageNum2018++
     }
 
     override fun buildThreads() {

@@ -13,7 +13,7 @@ class PhiladelphiaPreWebScrapeEvent(private val category: String) : PreWebScrape
 
     private val logger = LoggerFactory.getLogger(PhiladelphiaPreWebScrapeEvent::class.java)
 
-    override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumPositions, NumberedResultsPage>) {
+    override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumPositions, NumberedResultsPage>, attempt: Int, giveUp: Int) {
         try {
             driver.waitUntilVisible("li.ui-state-default:nth-child(2)".toCss())
             if (scrapeInfo.marathonYear == 2016) {
@@ -27,8 +27,13 @@ class PhiladelphiaPreWebScrapeEvent(private val category: String) : PreWebScrape
             driver.selectComboBoxOption("#xact_results_agegroup_results_length > label > select".toCss(), "100")
             Thread.sleep(1000)
         } catch (e: Exception) {
-            logger.error("Failed to execute pre-webscrape event", e)
-            throw e
+            if(attempt < giveUp){
+                driver.get(scrapeInfo.url)
+                execute(driver, jsDriver, scrapeInfo, attempt + 1)
+            } else {
+                logger.error("Failed to execute pre-webscrape event", e)
+                throw e
+            }
         }
     }
 }

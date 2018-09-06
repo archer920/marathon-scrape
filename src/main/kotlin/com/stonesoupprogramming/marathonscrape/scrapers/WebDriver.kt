@@ -2,6 +2,7 @@ package com.stonesoupprogramming.marathonscrape.scrapers
 
 import com.stonesoupprogramming.marathonscrape.extension.sleepRandom
 import org.openqa.selenium.chrome.ChromeDriver
+import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.LoggerFactory
@@ -14,14 +15,18 @@ class DriverFactory {
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
     private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
 
-    fun createDriver(): RemoteWebDriver {
+    fun createDriver(headless: Boolean = true): RemoteWebDriver {
         return try {
             logger.info("Waiting on Permit")
             semaphore.acquire()
             logger.info("Permit Acquired")
 
             sleepRandom()
-            ChromeDriver()
+            if(headless){
+                ChromeDriver(ChromeOptions().addArguments("headless"))
+            } else {
+                ChromeDriver()
+            }
         } catch (e: Exception) {
             when (e) {
                 is InterruptedException -> {
