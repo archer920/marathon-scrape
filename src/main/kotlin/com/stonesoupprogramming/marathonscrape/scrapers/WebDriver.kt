@@ -15,7 +15,8 @@ class DriverFactory {
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
     private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
 
-    fun createDriver(headless: Boolean = true): RemoteWebDriver {
+    fun createDriver(): RemoteWebDriver {
+        val headless = System.getenv().containsKey("GO_HEADLESS")
         return try {
             logger.info("Waiting on Permit")
             semaphore.acquire()
@@ -23,7 +24,9 @@ class DriverFactory {
 
             sleepRandom()
             if(headless){
-                ChromeDriver(ChromeOptions().addArguments("headless"))
+                val options = ChromeOptions()
+                options.setHeadless(true)
+                ChromeDriver(options)
             } else {
                 ChromeDriver()
             }

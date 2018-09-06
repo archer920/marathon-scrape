@@ -10,4 +10,10 @@ data class CategoryAthLinks(
         val url: String,
         val category: String,
         val divisionCss: String,
-        val endPage: Int)
+        val endPage: Int) {
+
+    companion object {
+        fun selectOption(num : Int) : String =
+                "#option-$num > div > div > div"
+    }
+}

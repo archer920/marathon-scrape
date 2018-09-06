@@ -1,4 +1,4 @@
-package com.stonesoupprogramming.marathonscrape.producers.sites
+package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.AbstractColumnPositions

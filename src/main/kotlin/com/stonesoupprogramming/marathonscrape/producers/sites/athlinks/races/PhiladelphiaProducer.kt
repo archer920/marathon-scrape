@@ -1,4 +1,4 @@
-package com.stonesoupprogramming.marathonscrape.producers.philadelphia
+package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
@@ -6,7 +6,7 @@ import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.CategoryAthLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.AbstractAthCategoryProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractAthCategoryProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.scrapers.philadelphia.PhiladelphiaPreWebScrapeEvent
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksMarathonScraper
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 private const val URL_2014 = "https://www.athlinks.com/event/156909/results/Event/406017/Course/610531/Results"
-const val URL_2015 = "https://www.athlinks.com/event/156909/results/Event/495263/Course/739431/Results"
+private const val URL_2015 = "https://www.athlinks.com/event/156909/results/Event/495263/Course/739431/Results"
 private val categories = listOf(
        CategoryAthLinks(2014, URL_2014, "F 0-0", "#option-1 > div > div > div", 1),
         CategoryAthLinks(2014, URL_2014, "F 12-15", "#option-2 > div > div > div", 1),

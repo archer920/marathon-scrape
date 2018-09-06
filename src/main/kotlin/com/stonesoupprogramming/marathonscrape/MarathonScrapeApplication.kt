@@ -5,10 +5,10 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.philadelphia.PhiladelphiaProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BerlinProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.PhiladelphiaProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
-import com.stonesoupprogramming.marathonscrape.service.StatusReporterServiceImpl
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.CommandLineRunner
@@ -53,7 +53,10 @@ class Configuration {
             "WV", "WI", "WY", "AS", "GU", "MH", "FM", "MP", "PW", "PR", "VI")
 
     @Bean
-    fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer): Map<MarathonSources, AbstractBaseProducer> = mapOf(MarathonSources.Philadelphia to philadelphiaProducer)
+    fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
+                  @Autowired berlinProducer: BerlinProducer): Map<MarathonSources, AbstractBaseProducer> =
+            mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
+                    MarathonSources.Berlin to berlinProducer)
 
 }
 
