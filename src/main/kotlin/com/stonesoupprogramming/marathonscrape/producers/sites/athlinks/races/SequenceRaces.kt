@@ -70,7 +70,7 @@ class RockRollLasVegasProducer(@Autowired athLinksMarathonScraper: AthLinksMarat
         listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/19454/results/Event/405110/Course/608406/Results", 65),
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/19454/results/Event/494340/Course/734391/Results", 63),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/19454/results/Event/514055/Course/910974/Results", 52),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/19454/results/Event/614539/Course/1120038/Results", 52)))
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/19454/results/Event/614539/Course/1120038/Results", 60)))
 
 @Component
 class PfChangsArizonaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
