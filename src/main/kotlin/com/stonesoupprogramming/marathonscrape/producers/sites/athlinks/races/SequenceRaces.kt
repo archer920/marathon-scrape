@@ -10,6 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
+class HelsinkiProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                         @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(HelsinkiProducer::class.java), MarathonSources.Helsinki,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34484/results/Event/356618/Course/522702/Results", 78),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/34484/results/Event/459769/Course/685690/Results", 71),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/34484/results/Event/573818/Course/859013/Results", 55),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34484/results/Event/655614/Course/1025305/Results", 45)))
+
+@Component
 class CottonwoodProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                          @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(CottonwoodProducer::class.java), MarathonSources.Cottonwood,
@@ -36,6 +45,7 @@ class MyrtleBeachProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/34968/results/Event/525247/Course/733804/Results", 29),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/34968/results/Event/622176/Course/956955/Results", 25)))
 
+@Component
 class BelfastProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                          @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BelfastProducer::class.java), MarathonSources.Belfast,
