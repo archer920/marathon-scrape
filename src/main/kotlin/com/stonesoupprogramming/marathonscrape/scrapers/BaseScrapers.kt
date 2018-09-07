@@ -8,6 +8,7 @@ import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.Logger
 import org.springframework.scheduling.annotation.Async
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage, V : AbstractScrapeInfo<T, U>>(private val driverFactory: DriverFactory,
                                                                                                                protected val jsDriver: JsDriver,
@@ -22,6 +23,7 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
         val driver = driverFactory.createDriver()
 
         return try {
+            driver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
             driver.get(scrapeInfo.url)
 
             preWebScrapeEvent?.execute(driver, jsDriver, scrapeInfo)
