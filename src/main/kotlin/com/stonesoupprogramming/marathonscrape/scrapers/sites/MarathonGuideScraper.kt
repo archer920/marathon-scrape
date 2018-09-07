@@ -24,7 +24,7 @@ class MarathonGuidePreWebScrapeEvent(private val category : String) : PreWebScra
             driver.waitUntilClickable(selectCss.toCss())
             driver.selectComboBoxOption(selectCss.toCss(), category)
             driver.click(buttonCss.toCss(), logger)
-            sleepRandom()
+            sleepRandom(0, 2)
 
         } catch (e : Exception){
             logger.error("Pre web scrape event for category=$category failed", e)
@@ -50,12 +50,13 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
         }
         val age = if(ageGender.isNotBlank()){
             val parts = ageGender.split(" ")
-            parts.last()
+            val result = parts.last()
                     .replace("(", "")
                     .replace("M", "")
                     .replace("F", "")
                     .replace(")", "")
                     .trim()
+            result.unavailableIfBlank()
         } else {
             UNAVAILABLE
         }
