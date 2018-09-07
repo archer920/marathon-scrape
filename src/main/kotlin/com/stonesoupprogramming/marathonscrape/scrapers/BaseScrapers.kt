@@ -121,7 +121,7 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
             }
         } catch (e: Exception) {
             if (attempt < giveUp) {
-                driver.navigate().refresh()
+                driver.get(scrapeInfo.url)
                 synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
             } else {
                 logger.error("Unable to synchronize pages", e)
