@@ -12,7 +12,11 @@ fun failResult(): CompletableFuture<String> {
 }
 
 fun sleepRandom(min : Int = 5, max : Int = 60) {
-    val amount = 1000 * ThreadLocalRandom.current().nextInt(min, max)
+    val amount = if(min == 0){
+        1
+    } else {
+        1000 * ThreadLocalRandom.current().nextInt(min, max)
+    }
     try {
         Thread.sleep(amount.toLong())
     } catch (e: Exception) {
