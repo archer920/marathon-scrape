@@ -15,6 +15,7 @@ private const val URL_2016 = "https://www.athlinks.com/event/34448/results/Event
 private const val URL_2017 = "https://www.athlinks.com/event/34448/results/Event/602229/Course/911221/Results"
 
 private val categories = listOf(
+        //2014 has been verified
         CategoryAthLinks(2014, URL_2014, "F 30-34", CategoryAthLinks.selectOption(1), 21),
         CategoryAthLinks(2014, URL_2014, "F 35-39", CategoryAthLinks.selectOption(2), 21),
         CategoryAthLinks(2014, URL_2014, "F 40-44", CategoryAthLinks.selectOption(3), 1),
