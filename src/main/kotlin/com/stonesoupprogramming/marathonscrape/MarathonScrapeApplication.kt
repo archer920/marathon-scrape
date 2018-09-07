@@ -6,6 +6,7 @@ import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.ErieProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.MohawkHudsonRiverProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.SeamTownProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
@@ -55,6 +56,7 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired erieProducer: ErieProducer,
             @Autowired seamTownProducer: SeamTownProducer,
             @Autowired mohawkHudsonRiverProducer: MohawkHudsonRiverProducer,
             @Autowired stLouisProducer: StLouisProducerNumbered,
@@ -74,6 +76,7 @@ class Configuration {
             @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
             
             mapOf(
+                    MarathonSources.Erie to erieProducer,
                     MarathonSources.Seamtown to seamTownProducer,
                     MarathonSources.Mohawk to mohawkHudsonRiverProducer,
                     MarathonSources.StLouis to stLouisProducer,
