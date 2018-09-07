@@ -10,6 +10,8 @@ import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import javax.annotation.PostConstruct
 
+
+
 abstract class AbstractBaseProducer(protected val logger: Logger, protected val marathonSources: MarathonSources) {
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
@@ -30,24 +32,21 @@ abstract class AbstractBaseProducer(protected val logger: Logger, protected val 
     protected abstract fun buildThreads()
 }
 
-abstract class AbstractUrlProducer<T : ResultsPage, U : AbstractColumnPositions>(private val pagedResultsRepository: ResultsRepository<T>,
-                                                                                 logger: Logger,
-                                                                                 marathonSources: MarathonSources) : AbstractBaseProducer(logger, marathonSources) {
+abstract class AbstractResultsPageProducer<T : ResultsPage, U : AbstractColumnPositions>(private val pagedResultsRepository: ResultsRepository<T>,
+                                                                                         logger: Logger,
+                                                                                         marathonSources: MarathonSources) : AbstractBaseProducer(logger, marathonSources) {
 
-    private lateinit var completed: List<ResultsPage>
+    protected lateinit var completed: List<ResultsPage>
 
     @PostConstruct
     private fun init() {
         completed = pagedResultsRepository.findBySource(marathonSources)
     }
-
-    protected fun filterCompleted(inputs: List<AbstractScrapeInfo<U, T>>) =
-            inputs.filter { it -> completed.none { cp -> it.url == cp.url } }
 }
 
-abstract class AbstractResultsPageProducer<T : AbstractColumnPositions>(protected val numberedResultsPageRepository: NumberedResultsPageRepository,
-                                                                        logger: Logger,
-                                                                        marathonSources: MarathonSources) : AbstractBaseProducer(logger, marathonSources) {
+abstract class AbstractNumberedResultsPageProducer(protected val numberedResultsPageRepository: NumberedResultsPageRepository,
+                                                   logger: Logger,
+                                                   marathonSources: MarathonSources) : AbstractBaseProducer(logger, marathonSources) {
     private var lastPageNum2014: Int = 0
     private var lastPageNum2015: Int = 0
     private var lastPageNum2016: Int = 0

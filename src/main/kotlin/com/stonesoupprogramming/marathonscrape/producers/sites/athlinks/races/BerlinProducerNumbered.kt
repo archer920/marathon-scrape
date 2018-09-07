@@ -2,7 +2,7 @@ package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.sites.CategoryAthLinks
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractAthCategoryProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthCategoryProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksMarathonScraper
 import org.slf4j.LoggerFactory
@@ -134,6 +134,6 @@ private val categories = listOf(
 )
 
 @Component
-class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BerlinProducer::class.java), MarathonSources.Berlin, categories)
+class BerlinProducerNumbered(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                             @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BerlinProducerNumbered::class.java), MarathonSources.Berlin, categories)

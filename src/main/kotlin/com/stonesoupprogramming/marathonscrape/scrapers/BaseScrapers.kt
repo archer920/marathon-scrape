@@ -8,6 +8,7 @@ import org.openqa.selenium.remote.RemoteWebDriver
 import org.slf4j.Logger
 import org.springframework.scheduling.annotation.Async
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage, V : AbstractScrapeInfo<T, U>>(private val driverFactory: DriverFactory,
                                                                                                                protected val jsDriver: JsDriver,
@@ -22,6 +23,7 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
         val driver = driverFactory.createDriver()
 
         return try {
+            driver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
             driver.get(scrapeInfo.url)
 
             preWebScrapeEvent?.execute(driver, jsDriver, scrapeInfo)
@@ -44,10 +46,8 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
             throw IllegalStateException("Failed to gather table information")
         }
 
-        if (scrapeInfo.headerRow) {
-            table = table.subList(1, table.size)
-            tableHtml = tableHtml.subList(1, tableHtml.size)
-        }
+        table = table.subList(scrapeInfo.skipRowCount, table.size)
+        tableHtml = tableHtml.subList(scrapeInfo.skipRowCount, tableHtml.size)
 
         val resultSet = table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull()
         markCompleteService.markComplete(clazz, scrapeInfo, resultSet)
@@ -121,7 +121,7 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
             }
         } catch (e: Exception) {
             if (attempt < giveUp) {
-                driver.navigate().refresh()
+                driver.get(scrapeInfo.url)
                 synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo, attempt + 1)
             } else {
                 logger.error("Unable to synchronize pages", e)

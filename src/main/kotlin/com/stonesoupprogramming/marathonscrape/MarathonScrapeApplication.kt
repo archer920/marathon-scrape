@@ -5,8 +5,8 @@ import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.BerlinProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.PhiladelphiaProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -53,10 +53,53 @@ class Configuration {
             "WV", "WI", "WY", "AS", "GU", "MH", "FM", "MP", "PW", "PR", "VI")
 
     @Bean
-    fun producers(@Autowired philadelphiaProducer: PhiladelphiaProducer,
-                  @Autowired berlinProducer: BerlinProducer): Map<MarathonSources, AbstractBaseProducer> =
-            mapOf(MarathonSources.Philadelphia to philadelphiaProducer,
-                    MarathonSources.Berlin to berlinProducer)
+    fun producers(
+            @Autowired chaingMaiProducer: ChaingMaiProducer,
+            @Autowired corkCityProducer: CorkCityProducer,
+            @Autowired utahValleyProducer: UtahValleyProducer,
+            @Autowired missoulaProducer: MissoulaProducer,
+            @Autowired erieProducer: ErieProducer,
+            @Autowired seamTownProducer: SeamTownProducer,
+            @Autowired mohawkHudsonRiverProducer: MohawkHudsonRiverProducer,
+            @Autowired stLouisProducer: StLouisProducerNumbered,
+            @Autowired longBeachProducer: LongBeachProducerNumbered,
+            @Autowired poweradeMonterreyProducer: PoweradeMonterreyProducerNumbered,
+            @Autowired philadelphiaProducer: PhiladelphiaProducer,
+            @Autowired istanbulProducer: IstanbulProducerNumbered,
+            @Autowired pfChangsArizonaProducer: PfChangsArizonaProducerNumbered,
+            @Autowired helsinkiProducer: HelsinkiProducerNumbered,
+            @Autowired berlinProducer: BerlinProducerNumbered,
+            @Autowired maritzburgProducer: MaritzburgProducerNumbered,
+            @Autowired milwaukeeProducer: MilwaukeeProducerNumbered,
+            @Autowired myrtleBeachProducer: MyrtleBeachProducerNumbered,
+            @Autowired belfastProducer: BelfastProducerNumbered,
+            @Autowired nordeaRigaProducer: NordeaRigaProducerNumbered,
+            @Autowired rockRollLasVegasProducer: RockRollLasVegasProducerNumbered,
+            @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
+            
+            mapOf(
+                    MarathonSources.ChiangMai to chaingMaiProducer,
+                    MarathonSources.CorkCity to corkCityProducer,
+                    MarathonSources.UtahValley to utahValleyProducer,
+                    MarathonSources.Missoula to missoulaProducer,
+                    MarathonSources.Erie to erieProducer,
+                    MarathonSources.Seamtown to seamTownProducer,
+                    MarathonSources.Mohawk to mohawkHudsonRiverProducer,
+                    MarathonSources.StLouis to stLouisProducer,
+                    MarathonSources.LongBeach to longBeachProducer,
+                    MarathonSources.PoweradeMonterrery to poweradeMonterreyProducer,
+                    MarathonSources.Philadelphia to philadelphiaProducer,
+                    MarathonSources.Istanbul to istanbulProducer,
+                    MarathonSources.Milwaukee to milwaukeeProducer,
+                    MarathonSources.PfChangsArizona to pfChangsArizonaProducer,
+                    MarathonSources.RockRollLasVegas to rockRollLasVegasProducer,
+                    MarathonSources.NoredaRiga to nordeaRigaProducer,
+                    MarathonSources.Cottonwood to cottonwoodProducer,
+                    MarathonSources.Berlin to berlinProducer,
+                    MarathonSources.Maritzburg to maritzburgProducer,
+                    MarathonSources.Helsinki to helsinkiProducer,
+                    MarathonSources.MyrtleBeach to myrtleBeachProducer,
+                    MarathonSources.Belfast to belfastProducer)
 
 }
 
@@ -79,7 +122,7 @@ class Application(
     override fun run(vararg args: String) {
         args.toMarathonSources().forEach { source ->
             source?.let {
-                statusReporterService.reportStatus(it)
+                statusReporterService.reportStatusAsync(it)
             }
         }
 
@@ -91,6 +134,11 @@ class Application(
 
         logger.info("Exiting...")
 
+        args.toMarathonSources().forEach { source ->
+            source?.let {
+                statusReporterService.reportStatus(it)
+            }
+        }
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
