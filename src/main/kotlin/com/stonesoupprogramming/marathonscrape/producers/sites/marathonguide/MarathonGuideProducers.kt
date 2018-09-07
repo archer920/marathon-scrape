@@ -91,3 +91,18 @@ class UtahValleyProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964150613", 2015, standardColumnPositions.copy(backupAge = 4), 1144),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964160611", 2016, standardColumnPositions.copy(backupAge = 4, nationality = -1), 954),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964170610", 2017, standardColumnPositions.copy(backupAge = 4, splitFunc = utahNationalityFunc), 1175)))
+
+private val corkCityColumnPositions = MergedAgedGenderColumPositions(ageGender = 0, finishTime = 5, place = 2, nationality = -1, backupAge = 4)
+
+@Component
+class CorkCityProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                         @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(CorkCityProducer::class.java),
+        MarathonSources.CorkCity,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=3278140602", 2014, corkCityColumnPositions, 524),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=3278150601", 2015, corkCityColumnPositions, 1115),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=3278160606", 2016, corkCityColumnPositions, 1110),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=3278170605", 2017, corkCityColumnPositions, 1151)))
