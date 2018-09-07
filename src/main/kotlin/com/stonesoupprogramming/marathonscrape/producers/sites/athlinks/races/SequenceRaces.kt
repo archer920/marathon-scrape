@@ -88,4 +88,4 @@ class IstanbulProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
         listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34771/results/Event/328687/Course/477328/Results", 78),
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/34771/results/Event/495768/Course/737457/Results", 56),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/34771/results/Event/599550/Course/906321/Results", 56),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/34771/results/Event/696213/Course/1129944/Results", 35)))
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34771/results/Event/696213/Course/1129944/Results", 34)))
