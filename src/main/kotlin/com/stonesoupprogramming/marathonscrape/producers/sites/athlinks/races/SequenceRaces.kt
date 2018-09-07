@@ -126,3 +126,9 @@ class StLouisProducerNumbered(@Autowired athLinksMarathonScraper: AthLinksMarath
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/4852/results/Event/435476/Course/600133/Results", 28),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/4852/results/Event/506778/Course/753617/Results", 27),
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/4852/results/Event/632942/Course/912154/Results", 24)))
+
+@Component
+class ChaingMaiProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(ChaingMaiProducer::class.java), MarathonSources.ChiangMai,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/51019/results/Event/364480/Course/536039/Results", 17)))
