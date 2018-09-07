@@ -6,25 +6,25 @@ import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.CategoryAthLinks
 import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
-import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
+import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksMarathonScraper
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksPreWebScrapeEvent
 import org.slf4j.Logger
 import javax.annotation.PostConstruct
 
-abstract class AbstractBaseAthProducer(
+abstract class AbstractNumberedBaseAthProducer(
         protected val athLinksMarathonScraper: AthLinksMarathonScraper,
         numberedResultsPageRepository: NumberedResultsPageRepository,
         logger: Logger,
-        marathonSources: MarathonSources) : AbstractResultsPageProducer<AbstractColumnPositions>(numberedResultsPageRepository, logger, marathonSources) {
+        marathonSources: MarathonSources) : AbstractNumberedResultsPageProducer(numberedResultsPageRepository, logger, marathonSources) {
 
     protected val baseScrapeInfo = PagedScrapeInfo<AbstractColumnPositions>(
             url = "",
             marathonSources = marathonSources,
             marathonYear = -1,
             tableBodySelector = "",
-            headerRow = false,
+            skipRowCount = 0,
             columnPositions = AgeGenderColumnPositions(-1, -1, -1, null, -1, -1), //Column positions are irrelevant since the scraping is done by the js
             startPage = -1,
             currentPage = -1,
@@ -36,12 +36,12 @@ abstract class AbstractBaseAthProducer(
             gender = null)
 }
 
-abstract class AbstractAthSequenceProducer(
+abstract class AbstractNumberedAthSequenceProducer(
         athLinksMarathonScraper: AthLinksMarathonScraper,
         numberedResultsPageRepository: NumberedResultsPageRepository,
         logger: Logger,
         marathonSources: MarathonSources,
-        private val sequenceAthLinks: List<SequenceAthLinks>) : AbstractBaseAthProducer(athLinksMarathonScraper, numberedResultsPageRepository, logger, marathonSources) {
+        private val sequenceAthLinks: List<SequenceAthLinks>) : AbstractNumberedBaseAthProducer(athLinksMarathonScraper, numberedResultsPageRepository, logger, marathonSources) {
 
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
         sequenceAthLinks.forEach { it ->
@@ -60,12 +60,12 @@ abstract class AbstractAthSequenceProducer(
     }
 }
 
-abstract class AbstractAthCategoryProducer(
+abstract class AbstractNumberedAthCategoryProducer(
         athLinksMarathonScraper: AthLinksMarathonScraper,
         numberedResultsPageRepository: NumberedResultsPageRepository,
         logger: Logger,
         marathonSources: MarathonSources,
-        private val categoryAthLinks: List<CategoryAthLinks>) : AbstractBaseAthProducer(athLinksMarathonScraper, numberedResultsPageRepository, logger, marathonSources) {
+        private val categoryAthLinks: List<CategoryAthLinks>) : AbstractNumberedBaseAthProducer(athLinksMarathonScraper, numberedResultsPageRepository, logger, marathonSources) {
 
     private val categoryLastPageMap = mutableMapOf<CategoryAthLinks, Int>()
 

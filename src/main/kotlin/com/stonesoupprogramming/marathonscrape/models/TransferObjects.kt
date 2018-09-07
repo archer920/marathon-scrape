@@ -33,7 +33,7 @@ abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val marathonSources: MarathonSources,
         open val marathonYear : Int,
         open val tableBodySelector : String,
-        open val headerRow: Boolean,
+        open val skipRowCount: Int,
         open val columnPositions: T,
         open val category : String?,
         open val gender: Gender?) : EntityTransformer<V> {
@@ -54,17 +54,17 @@ data class StandardScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         override val marathonSources: MarathonSources,
         override val marathonYear : Int,
         override val tableBodySelector : String,
-        override val headerRow: Boolean,
+        override val skipRowCount: Int,
         override val columnPositions: T,
         override val category : String?,
-        override val gender: Gender?) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, headerRow, columnPositions, category, gender)
+        override val gender: Gender?) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender)
 
 data class PagedScrapeInfo<T: AbstractColumnPositions>(
         override val url : String,
         override val marathonSources: MarathonSources,
         override val marathonYear : Int,
         override val tableBodySelector : String,
-        override val headerRow: Boolean,
+        override val skipRowCount: Int,
         override val columnPositions: T,
         val startPage : Int,
         val currentPage : Int,
@@ -73,7 +73,7 @@ data class PagedScrapeInfo<T: AbstractColumnPositions>(
         val clickPreviousSelector : String,
         override val category : String?,
         override val gender : Gender?,
-        val secondaryClickNextSelector: String?) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, headerRow, columnPositions, category, gender) {
+        val secondaryClickNextSelector: String?) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender) {
 
     override fun toEntity(clazz: Class<NumberedResultsPage>): NumberedResultsPage {
         val v = super.toEntity(clazz)

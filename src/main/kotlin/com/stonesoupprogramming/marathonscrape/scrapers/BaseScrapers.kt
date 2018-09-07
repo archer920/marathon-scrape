@@ -44,10 +44,8 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
             throw IllegalStateException("Failed to gather table information")
         }
 
-        if (scrapeInfo.headerRow) {
-            table = table.subList(1, table.size)
-            tableHtml = tableHtml.subList(1, tableHtml.size)
-        }
+        table = table.subList(scrapeInfo.skipRowCount, table.size)
+        tableHtml = tableHtml.subList(scrapeInfo.skipRowCount, tableHtml.size)
 
         val resultSet = table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull()
         markCompleteService.markComplete(clazz, scrapeInfo, resultSet)

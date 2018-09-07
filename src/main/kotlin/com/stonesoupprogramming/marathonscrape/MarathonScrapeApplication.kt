@@ -6,6 +6,7 @@ import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.MohawkHudsonRiverProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -53,23 +54,25 @@ class Configuration {
 
     @Bean
     fun producers(
-            @Autowired stLouisProducer: StLouisProducer,
-            @Autowired longBeachProducer: LongBeachProducer,
-            @Autowired poweradeMonterreyProducer: PoweradeMonterreyProducer,
+            @Autowired mohawkHudsonRiverProducer: MohawkHudsonRiverProducer,
+            @Autowired stLouisProducer: StLouisProducerNumbered,
+            @Autowired longBeachProducer: LongBeachProducerNumbered,
+            @Autowired poweradeMonterreyProducer: PoweradeMonterreyProducerNumbered,
             @Autowired philadelphiaProducer: PhiladelphiaProducer,
-            @Autowired istanbulProducer: IstanbulProducer,
-            @Autowired pfChangsArizonaProducer: PfChangsArizonaProducer,
-            @Autowired helsinkiProducer: HelsinkiProducer,
-            @Autowired berlinProducer: BerlinProducer,
-            @Autowired maritzburgProducer: MaritzburgProducer,
-            @Autowired milwaukeeProducer: MilwaukeeProducer,
-            @Autowired myrtleBeachProducer: MyrtleBeachProducer,
-            @Autowired belfastProducer: BelfastProducer,
-            @Autowired nordeaRigaProducer: NordeaRigaProducer,
-            @Autowired rockRollLasVegasProducer: RockRollLasVegasProducer,
-            @Autowired cottonwoodProducer: CottonwoodProducer): Map<MarathonSources, AbstractBaseProducer> =
+            @Autowired istanbulProducer: IstanbulProducerNumbered,
+            @Autowired pfChangsArizonaProducer: PfChangsArizonaProducerNumbered,
+            @Autowired helsinkiProducer: HelsinkiProducerNumbered,
+            @Autowired berlinProducer: BerlinProducerNumbered,
+            @Autowired maritzburgProducer: MaritzburgProducerNumbered,
+            @Autowired milwaukeeProducer: MilwaukeeProducerNumbered,
+            @Autowired myrtleBeachProducer: MyrtleBeachProducerNumbered,
+            @Autowired belfastProducer: BelfastProducerNumbered,
+            @Autowired nordeaRigaProducer: NordeaRigaProducerNumbered,
+            @Autowired rockRollLasVegasProducer: RockRollLasVegasProducerNumbered,
+            @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
             
             mapOf(
+                    MarathonSources.Mohawk to mohawkHudsonRiverProducer,
                     MarathonSources.StLouis to stLouisProducer,
                     MarathonSources.LongBeach to longBeachProducer,
                     MarathonSources.PoweradeMonterrery to poweradeMonterreyProducer,

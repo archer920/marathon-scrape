@@ -5,8 +5,8 @@ import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPosit
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.CategoryAthLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
-import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractAthCategoryProducer
+import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthCategoryProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.scrapers.philadelphia.PhiladelphiaPreWebScrapeEvent
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksMarathonScraper
@@ -77,14 +77,14 @@ private val categories = listOf(
 
 
 @Component
-class PhiladelphiaAthProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(PhiladelphiaAthProducer::class.java), MarathonSources.Philadelphia, categories)
+class PhiladelphiaAthProducerNumbered(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                                      @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(PhiladelphiaAthProducerNumbered::class.java), MarathonSources.Philadelphia, categories)
 
 @Component
-class PhiladelphiaXacteProducer(@Autowired private val xacteMarathonScraper: XacteMarathonScraper,
-                                @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractResultsPageProducer<MergedAgedGenderColumPositions>(numberedResultsPageRepository, LoggerFactory.getLogger(PhiladelphiaXacteProducer::class.java), MarathonSources.Philadelphia) {
+class PhiladelphiaXacteProducerNumbered(@Autowired private val xacteMarathonScraper: XacteMarathonScraper,
+                                        @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedResultsPageProducer(numberedResultsPageRepository, LoggerFactory.getLogger(PhiladelphiaXacteProducerNumbered::class.java), MarathonSources.Philadelphia) {
 
     private val columnPositions = MergedAgedGenderColumPositions(
             place = 8,
@@ -98,7 +98,7 @@ class PhiladelphiaXacteProducer(@Autowired private val xacteMarathonScraper: Xac
             marathonSources = this.marathonSources,
             marathonYear = -1,
             tableBodySelector = "#xact_results_agegroup_results > tbody:nth-child(3)",
-            headerRow = false,
+            skipRowCount = 0,
             startPage = -1,
             endPage = -1,
             currentPage = -1,
@@ -124,8 +124,8 @@ class PhiladelphiaXacteProducer(@Autowired private val xacteMarathonScraper: Xac
 }
 
 @Component
-class PhiladelphiaProducer(@Autowired private val philadelphiaAthProducer: PhiladelphiaAthProducer,
-                           @Autowired private val philadelphiaXacteProducer: PhiladelphiaXacteProducer) :
+class PhiladelphiaProducer(@Autowired private val philadelphiaAthProducer: PhiladelphiaAthProducerNumbered,
+                           @Autowired private val philadelphiaXacteProducer: PhiladelphiaXacteProducerNumbered) :
         AbstractBaseProducer(LoggerFactory.getLogger(PhiladelphiaProducer::class.java), MarathonSources.Philadelphia) {
 
     override fun buildThreads() {
