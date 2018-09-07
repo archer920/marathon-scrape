@@ -7,6 +7,7 @@ import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.MohawkHudsonRiverProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.SeamTownProducer
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -54,6 +55,7 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired seamTownProducer: SeamTownProducer,
             @Autowired mohawkHudsonRiverProducer: MohawkHudsonRiverProducer,
             @Autowired stLouisProducer: StLouisProducerNumbered,
             @Autowired longBeachProducer: LongBeachProducerNumbered,
@@ -72,6 +74,7 @@ class Configuration {
             @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
             
             mapOf(
+                    MarathonSources.Seamtown to seamTownProducer,
                     MarathonSources.Mohawk to mohawkHudsonRiverProducer,
                     MarathonSources.StLouis to stLouisProducer,
                     MarathonSources.LongBeach to longBeachProducer,
