@@ -7,5 +7,4 @@ data class MarathonGuideInfo(
         val year : Int,
         val columnPositions: MergedAgedGenderColumPositions,
         val numRecords : Int,
-        val categoryIncrement : Int = 100
-)
+        val categoryIncrement : Int = 100)

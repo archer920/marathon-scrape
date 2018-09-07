@@ -6,10 +6,7 @@ import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
-import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.ErieProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.MissoulaProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.MohawkHudsonRiverProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.SeamTownProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -57,6 +54,7 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired utahValleyProducer: UtahValleyProducer,
             @Autowired missoulaProducer: MissoulaProducer,
             @Autowired erieProducer: ErieProducer,
             @Autowired seamTownProducer: SeamTownProducer,
@@ -78,6 +76,7 @@ class Configuration {
             @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
             
             mapOf(
+                    MarathonSources.UtahValley to utahValleyProducer,
                     MarathonSources.Missoula to missoulaProducer,
                     MarathonSources.Erie to erieProducer,
                     MarathonSources.Seamtown to seamTownProducer,

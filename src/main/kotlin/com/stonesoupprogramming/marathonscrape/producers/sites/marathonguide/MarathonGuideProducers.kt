@@ -1,6 +1,8 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.extension.isAllCaps
+import com.stonesoupprogramming.marathonscrape.extension.toNationality
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.sites.MarathonGuideInfo
@@ -9,6 +11,7 @@ import com.stonesoupprogramming.marathonscrape.scrapers.sites.MarathonGuideScrap
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.function.Function
 
 private val standardColumnPositions = MergedAgedGenderColumPositions(nationality = 6, finishTime = 5, place = 2, ageGender = 0)
 
@@ -63,3 +66,28 @@ class MissoulaProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2627150712", 2015, standardColumnPositions, 997),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2627160710", 2016, standardColumnPositions, 982),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2627170709", 2017, standardColumnPositions, 868)))
+
+val utahNationalityFunc = Function<String, String> { it ->
+    var parts = it.split(" ")
+    if(parts.size > 2){
+        parts = parts.subList(parts.size - 2, parts.size)
+    }
+    if(parts.first().isAllCaps()){
+        parts.joinToString(" ").toNationality()
+    } else {
+        parts.last().toNationality()
+    }
+}
+
+@Component
+class UtahValleyProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                       @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(UtahValleyProducer::class.java),
+        MarathonSources.UtahValley,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964140614", 2014, standardColumnPositions.copy(backupAge = 4), 1409),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964150613", 2015, standardColumnPositions.copy(backupAge = 4), 1144),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964160611", 2016, standardColumnPositions.copy(backupAge = 4, nationality = -1), 954),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2964170610", 2017, standardColumnPositions.copy(backupAge = 4, splitFunc = utahNationalityFunc), 1175)))

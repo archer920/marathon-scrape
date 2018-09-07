@@ -2,6 +2,7 @@ package com.stonesoupprogramming.marathonscrape.models
 
 import com.stonesoupprogramming.marathonscrape.enums.Gender
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import java.util.function.Function
 
 interface EntityTransformer<T : ResultsPage> {
     fun toEntity(clazz: Class<T>): T
@@ -26,7 +27,10 @@ data class MergedAgedGenderColumPositions(
         override val finishTime: Int,
         override val place: Int,
         override val halfwayTime: Int? = null,
-        val ageGender : Int) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime)
+        val ageGender : Int,
+        val splitFunc : Function<String, String>? = null,
+        val backupAge : Int? = null,
+        val backupGender: Int? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime)
 
 abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val url : String,
