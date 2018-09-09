@@ -35,7 +35,7 @@ private val categories = listOf(
         CategoryAthLinks(2014, URL_2014, "M 40-49", CategoryAthLinks.selectOption(17), 44),
         CategoryAthLinks(2014, URL_2014, "M 45-49", CategoryAthLinks.selectOption(18), 85),
         CategoryAthLinks(2014, URL_2014, "M 50-54", CategoryAthLinks.selectOption(19), 64),
-        CategoryAthLinks(2014, URL_2014, "M 55-59", CategoryAthLinks.selectOption(10), 33),
+        CategoryAthLinks(2014, URL_2014, "M 55-59", CategoryAthLinks.selectOption(20), 33),
         CategoryAthLinks(2014, URL_2014, "M 60-64", CategoryAthLinks.selectOption(21), 3),
         CategoryAthLinks(2014, URL_2014, "M 60-69", CategoryAthLinks.selectOption(22), 14),
         CategoryAthLinks(2014, URL_2014, "M 65-69", CategoryAthLinks.selectOption(23), 7),

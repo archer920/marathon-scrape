@@ -9,9 +9,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-class AthLinksPreWebScrapeEvent(private val divisionCss: String) : PreWebScrapeEvent<AbstractColumnPositions, NumberedResultsPage> {
+class AthLinksPreWebScrapeEvent(private val cateogry : String, private val divisionCss: String) : PreWebScrapeEvent<AbstractColumnPositions, NumberedResultsPage> {
 
     private val logger = LoggerFactory.getLogger(AthLinksPreWebScrapeEvent::class.java)
+
+    init {
+        logger.debug("Category=$cateogry, divisionCss=$divisionCss")
+    }
 
     override fun execute(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<AbstractColumnPositions, NumberedResultsPage>, attempt: Int, giveUp: Int) {
         try {

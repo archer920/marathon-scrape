@@ -1,7 +1,6 @@
 package com.stonesoupprogramming.marathonscrape.scrapers
 
-import com.stonesoupprogramming.marathonscrape.extension.failResult
-import com.stonesoupprogramming.marathonscrape.extension.successResult
+import com.stonesoupprogramming.marathonscrape.extension.*
 import com.stonesoupprogramming.marathonscrape.models.*
 import com.stonesoupprogramming.marathonscrape.service.MarkCompleteService
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -116,6 +115,23 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
                 currentPage > jsPage -> {
                     scrollPage(driver, scrapeInfo)
                     Thread.sleep(1000)
+
+                    if(jsPage == findCurrentPageNum(driver)){
+                        //Try the next selector
+                        scrapeInfo.secondaryClickNextSelector?.let {
+                            jsDriver.clickElement(driver, it)
+                            Thread.sleep(1000)
+                        }
+                    }
+                    if(jsPage == findCurrentPageNum(driver)){
+                        scrapeInfo.thirdClickNextSelector?.let {
+                            jsDriver.clickElement(driver, it)
+                            Thread.sleep(1000)
+                        }
+                    }
+                    if(jsPage == findCurrentPageNum(driver)){
+                        throw IllegalStateException("Page did not advance")
+                    }
                     synchronizePages(driver, currentPage, findCurrentPageNum(driver), scrapeInfo)
                 }
             }

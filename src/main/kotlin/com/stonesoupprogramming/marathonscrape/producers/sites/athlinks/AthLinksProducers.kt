@@ -32,6 +32,7 @@ abstract class AbstractNumberedBaseAthProducer(
             clickNextSelector = "#pager > div:nth-child(1) > div:nth-child(6) > button:nth-child(1)",
             clickPreviousSelector = "#pager > div:nth-child(1) > div:nth-child(1) > button:nth-child(1)",
             secondaryClickNextSelector = "#pager > div:nth-child(1) > div:nth-child(7) > button:nth-child(1)",
+            thirdClickNextSelector = "#pager > div > div:nth-child(4) > button",
             category = null,
             gender = null)
 }
@@ -84,7 +85,7 @@ abstract class AbstractNumberedAthCategoryProducer(
             threads.add(athLinksMarathonScraper.scrape(
                     baseScrapeInfo.copy(url = it.url, marathonYear = it.year, startPage = page, currentPage = page,
                             endPage = it.endPage, category = it.category),
-                    AthLinksPreWebScrapeEvent(it.divisionCss)))
+                    AthLinksPreWebScrapeEvent(it.category, it.divisionCss)))
         }
     }
 
