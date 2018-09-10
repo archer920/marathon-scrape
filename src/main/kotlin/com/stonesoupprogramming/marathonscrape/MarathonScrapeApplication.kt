@@ -119,11 +119,17 @@ class Configuration {
             @Autowired stGeorgeProducer: StGeorgeProducer,
             @Autowired countryMusicProducer: CountryMusicProducer,
             @Autowired airForceProducer: AirForceProducer,
-            @Autowired desMoinesProducer: DesMoinesProducer
+            @Autowired desMoinesProducer: DesMoinesProducer,
+            @Autowired steamtownProducer: SteamtownProducer,
+            @Autowired ikanoProducer: IkanoProducer,
+            @Autowired yorkshireProducer: YorkshireProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Yorkshire to yorkshireProducer,
+                    MarathonSources.Ikano to ikanoProducer,
+                    MarathonSources.Steamtown to steamtownProducer,
                     MarathonSources.DesMoines to desMoinesProducer,
                     MarathonSources.AirForce to airForceProducer,
                     MarathonSources.Ralaeigh to ralaighProducer,
