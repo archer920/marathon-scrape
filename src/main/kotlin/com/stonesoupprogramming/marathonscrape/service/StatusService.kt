@@ -24,7 +24,7 @@ interface StatusReporterService {
     fun reportBulkStatus(sources: List<MarathonSources>)
 
     @Async
-    fun reportBulkStatusAsync(sources: List<MarathonSources>)
+    fun reportBulkStatusAsync(sources: List<MarathonSources>): CompletableFuture<String>
 }
 
 @Service
@@ -42,8 +42,17 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
         logger.printBlankLines()
     }
 
-    override fun reportBulkStatusAsync(sources: List<MarathonSources>) {
-        reportBulkStatus(sources)
+    override fun reportBulkStatusAsync(sources: List<MarathonSources>): CompletableFuture<String> {
+        return try {
+            while (!shutdown) {
+                reportBulkStatus(sources)
+                Thread.sleep(10000)
+            }
+            successResult()
+        } catch (e: Exception) {
+            logger.error("Error in Status Reporter", e)
+            failResult()
+        }
     }
 
     override fun reportStatus(source: MarathonSources, blankLines: Boolean) {
