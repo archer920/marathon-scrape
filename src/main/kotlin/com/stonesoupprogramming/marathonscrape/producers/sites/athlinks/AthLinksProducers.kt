@@ -46,6 +46,9 @@ abstract class AbstractNumberedAthSequenceProducer(
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
         sequenceAthLinks.forEach { it ->
             if (it.year == year) {
+                if(it.endPage > 100){
+                    logger.warn("End Pages > 100 have been shown to be unstable! $it")
+                }
                 startScrape(baseScrapeInfo.copy(url = it.url,
                         marathonYear = year,
                         startPage = lastPage,
