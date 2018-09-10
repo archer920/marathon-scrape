@@ -54,6 +54,7 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired ralaighProducer: RalaighProducer,
             @Autowired canberraProducer: CanberraProducer,
             @Autowired chesterProducer: ChesterProducer,
             @Autowired snowdoniaProducer: SnowdoniaProducer,
@@ -121,6 +122,7 @@ class Configuration {
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Ralaeigh to ralaighProducer,
                     MarathonSources.CountryMusicFestival to countryMusicProducer,
                     MarathonSources.StGeorge to stGeorgeProducer,
                     MarathonSources.KansasCity to kansasCityProducer,
