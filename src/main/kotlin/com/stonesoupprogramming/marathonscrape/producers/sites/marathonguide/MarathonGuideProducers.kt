@@ -29,6 +29,19 @@ private val standardColumnPositions = MergedAgedGenderColumPositions(nationality
 //                MarathonGuideInfo("", 2017, standardColumnPositions, )))
 
 @Component
+class CanberraProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                 @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(CanberraProducer::class.java),
+        MarathonSources.Canberra,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1388140413", 2014, standardColumnPositions, 1217),
+                MarathonGuideInfo("", 2015, standardColumnPositions, ),
+                MarathonGuideInfo("", 2016, standardColumnPositions, ),
+                MarathonGuideInfo("", 2017, standardColumnPositions, )))
+
+@Component
 class ChesterProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                       @Autowired resultsRepository: ResultsRepository<ResultsPage>)
     : AbstractMarathonGuideProducer(marathonGuideScraper,

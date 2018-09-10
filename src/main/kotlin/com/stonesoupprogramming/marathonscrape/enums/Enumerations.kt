@@ -7,6 +7,8 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    Canberra("--canberra"),
+    //NOTE: Add commandline args above this line
     Chester("--chester"),
     Snowdonia("--snowdonia"),
     California("--california"),
