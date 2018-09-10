@@ -122,11 +122,25 @@ class Configuration {
             @Autowired desMoinesProducer: DesMoinesProducer,
             @Autowired steamtownProducer: SteamtownProducer,
             @Autowired ikanoProducer: IkanoProducer,
-            @Autowired yorkshireProducer: YorkshireProducer
+            @Autowired yorkshireProducer: YorkshireProducer,
+            @Autowired volkswagePragueProducer: VolkswagePragueProducer,
+            @Autowired sydneyProducer: SydneyProducer,
+            @Autowired torontoProducer: TorontoProducer,
+            @Autowired brusselsProducer: BrusselsProducer,
+            @Autowired hannoverProducer: HannoverProducer,
+            @Autowired pisaProducer: PisaProducer,
+            @Autowired tallinnProducer: TallinnProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Tallinn to tallinnProducer,
+                    MarathonSources.Pisa to pisaProducer,
+                    MarathonSources.Hannover to hannoverProducer,
+                    MarathonSources.Brussels to brusselsProducer,
+                    MarathonSources.Toronto to torontoProducer,
+                    MarathonSources.Sydney to sydneyProducer,
+                    MarathonSources.VolkswagenPrague to volkswagePragueProducer,
                     MarathonSources.Yorkshire to yorkshireProducer,
                     MarathonSources.Ikano to ikanoProducer,
                     MarathonSources.Steamtown to steamtownProducer,

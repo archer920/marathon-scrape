@@ -9,6 +9,94 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+//@Component
+//class Producer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+//                               @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+//    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+//        LoggerFactory.getLogger(::class.java),
+//        MarathonSources.,
+//        listOf(SequenceAthLinks(2014, "", ),
+//                SequenceAthLinks(2015, "", ),
+//                SequenceAthLinks(2016, "", ),
+//                SequenceAthLinks(2017, "", )))
+
+@Component
+class TallinnProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                      @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(TallinnProducer::class.java),
+        MarathonSources.Tallinn,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35378/results/Event/355330/Course/520379/Results", 37),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/35378/results/Event/398029/Course/596704/Results", 37),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/35378/results/Event/580745/Course/872147/Results", 36),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/35378/results/Event/690167/Course/1116781/Results", 36)))
+
+@Component
+class PisaProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                   @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(PisaProducer::class.java),
+        MarathonSources.Pisa,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/36137/results/Event/409381/Course/535186/Results", 21),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/36137/results/Event/527548/Course/784510/Results", 26),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/36137/results/Event/608325/Course/922891/Results", 28),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/36137/results/Event/700181/Course/1139089/Results", 26)))
+
+@Component
+class HannoverProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(HannoverProducer::class.java),
+        MarathonSources.Hannover,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34611/results/Event/371269/Course/498083/Results", 35),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/34611/results/Event/437824/Course/656682/Results", 37),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/34611/results/Event/538909/Course/800819/Results", 38),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34611/results/Event/540665/Course/803451/Results", 40)))
+
+@Component
+class BrusselsProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(BrusselsProducer::class.java),
+        MarathonSources.Brussels,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34700/results/Event/345111/Course/503496/Results", 38),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/34700/results/Event/485004/Course/718799/Results", 41),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/34700/results/Event/591042/Course/888853/Results", 29),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34700/results/Event/676077/Course/1103699/Results", 29)))
+
+@Component
+class TorontoProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                      @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(TorontoProducer::class.java),
+        MarathonSources.Toronto,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34502/results/Event/359507/Course/462020/Results", 80),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/34502/results/Event/434296/Course/724826/Results", 75),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/34502/results/Event/491087/Course/730358/Results", 75),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34502/results/Event/598900/Course/1007313/Results", 80)))
+
+@Component
+class SydneyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                     @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(SydneyProducer::class.java),
+        MarathonSources.Sydney,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34455/results/Event/398183/Course/596361/Results", 65),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/34455/results/Event/481510/Course/713155/Results", 66),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/34455/results/Event/553777/Course/825408/Results", 70),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34455/results/Event/553777/Course/825408/Results", 72)))
+
+@Component
+class VolkswagePragueProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(VolkswagePragueProducer::class.java),
+        MarathonSources.VolkswagenPrague,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35394/results/Event/361776/Course/566063/Results", 121),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/35394/results/Event/439488/Course/658689/Results", 118),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/35394/results/Event/541046/Course/804079/Results", 116),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/35394/results/Event/638193/Course/987203/Results", 131)))
+
 @Component
 class HelsinkiProducerNumbered(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                                @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
