@@ -21,6 +21,28 @@ import org.springframework.stereotype.Component
 //                SequenceAthLinks(2017, "", )))
 
 @Component
+class GreaterManchesterProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                                @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(GreaterManchesterProducer::class.java),
+        MarathonSources.GreaterManchester,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35036/results/Event/409266/Course/615374/Results", 119),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/35036/results/Event/410243/Course/616875/Results", 157),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/35036/results/Event/496603/Course/738535/Results", 187),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/35036/results/Event/614024/Course/934861/Results", 174)))
+
+@Component
+class LuxemburgProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                        @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(LuxemburgProducer::class.java),
+        MarathonSources.Luxemburg,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/170017/results/Event/328629/Course/498841/Results", 24),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/170017/results/Event/451794/Course/674608/Results", 23),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/170017/results/Event/546463/Course/812277/Results", 24),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/170017/results/Event/678583/Course/1084220/Results", 23)))
+
+@Component
 class TallinnProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                       @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
