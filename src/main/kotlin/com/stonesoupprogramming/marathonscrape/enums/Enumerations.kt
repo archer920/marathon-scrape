@@ -7,6 +7,14 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    CountryMusicFestival("--country-music-festival"),
+    StGeorge("--st-george"),
+    KansasCity("--kansas-city"),
+    Baltimore("--baltimore"),
+    GrandRapids("--grand-rapids"),
+    RockNRollSavannah("--rock-n-roll-savannah"),
+
+    //NOTE: Add commandline args above this line
     AnthemRichmond("--anthem-richmond"),
     TobaccoRoad("--tobacco-road"),
     RockNRollUSA("--rock-n-roll-usa"),
@@ -17,8 +25,6 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     SantaRose("--santa-rose"),
     Baystate("--baystate"),
     Canberra("--canberra"),
-
-    //NOTE: Add commandline args above this line
     Chester("--chester"),
     Snowdonia("--snowdonia"),
     California("--california"),

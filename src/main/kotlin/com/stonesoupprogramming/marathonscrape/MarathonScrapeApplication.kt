@@ -110,11 +110,23 @@ class Configuration {
             @Autowired madisonProducer: MadisonProducer,
             @Autowired rockNRollUsaProducer: RockNRollUsaProducer,
             @Autowired tobaccoRoadProducer: TobaccoRoadProducer,
-            @Autowired anthemRichmondProducer: AnthemRichmondProducer
+            @Autowired anthemRichmondProducer: AnthemRichmondProducer,
+            @Autowired rockNRollSavannahProducer: RockNRollSavannahProducer,
+            @Autowired grandRapidsProducer: GrandRapidsProducer,
+            @Autowired baltimoreProducer: BaltimoreProducer,
+            @Autowired kansasCityProducer: KansasCityProducer,
+            @Autowired stGeorgeProducer: StGeorgeProducer,
+            @Autowired countryMusicProducer: CountryMusicProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.CountryMusicFestival to countryMusicProducer,
+                    MarathonSources.StGeorge to stGeorgeProducer,
+                    MarathonSources.KansasCity to kansasCityProducer,
+                    MarathonSources.Baltimore to baltimoreProducer,
+                    MarathonSources.GrandRapids to grandRapidsProducer,
+                    MarathonSources.RockNRollSavannah to rockNRollSavannahProducer,
                     MarathonSources.AnthemRichmond to anthemRichmondProducer,
                     MarathonSources.TobaccoRoad to tobaccoRoadProducer,
                     MarathonSources.RockNRollUSA to rockNRollUsaProducer,
