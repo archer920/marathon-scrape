@@ -54,6 +54,7 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired canberraProducer: CanberraProducer,
             @Autowired chesterProducer: ChesterProducer,
             @Autowired snowdoniaProducer: SnowdoniaProducer,
             @Autowired californiaProducer: CaliforniaProducer,
@@ -100,9 +101,30 @@ class Configuration {
             @Autowired belfastProducer: BelfastProducerNumbered,
             @Autowired nordeaRigaProducer: NordeaRigaProducerNumbered,
             @Autowired rockRollLasVegasProducer: RockRollLasVegasProducerNumbered,
-            @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
+            @Autowired cottonwoodProducer: CottonwoodProducerNumbered,
+            @Autowired baystateProducer: BaystateProducer,
+            @Autowired santaRoseProducer: SantaRoseProducer,
+            @Autowired kiawahIslandProducer: KiawahIslandProducer,
+            @Autowired quebecCityProducer: QuebecCityProducer,
+            @Autowired victoriaProducer: VictoriaProducer,
+            @Autowired madisonProducer: MadisonProducer,
+            @Autowired rockNRollUsaProducer: RockNRollUsaProducer,
+            @Autowired tobaccoRoadProducer: TobaccoRoadProducer,
+            @Autowired anthemRichmondProducer: AnthemRichmondProducer
+
+    ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.AnthemRichmond to anthemRichmondProducer,
+                    MarathonSources.TobaccoRoad to tobaccoRoadProducer,
+                    MarathonSources.RockNRollUSA to rockNRollUsaProducer,
+                    MarathonSources.Madison to madisonProducer,
+                    MarathonSources.Victoria to victoriaProducer,
+                    MarathonSources.QuebecCity to quebecCityProducer,
+                    MarathonSources.KiawahIsland to kiawahIslandProducer,
+                    MarathonSources.SantaRose to santaRoseProducer,
+                    MarathonSources.Baystate to baystateProducer,
+                    MarathonSources.Canberra to canberraProducer,
                     MarathonSources.Chester to chesterProducer,
                     MarathonSources.Snowdonia to snowdoniaProducer,
                     MarathonSources.California to californiaProducer,
@@ -210,7 +232,7 @@ class Application(
     private fun writeFile(source: MarathonSources, startYear: Int, endYear: Int) {
         logger.info("Starting file export...")
         for (i in startYear..endYear) {
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/$source-$i.csv")
         }
         logger.info("Finished file export...")
     }
