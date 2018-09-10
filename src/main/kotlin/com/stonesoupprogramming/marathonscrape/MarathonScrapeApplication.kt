@@ -54,6 +54,31 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired chesterProducer: ChesterProducer,
+            @Autowired snowdoniaProducer: SnowdoniaProducer,
+            @Autowired californiaProducer: CaliforniaProducer,
+            @Autowired rocketCityProducer: RocketCityProducer,
+            @Autowired dallasProducer: DallasProducer,
+            @Autowired charlestonProducer: CharlestonProducer,
+            @Autowired carlsbadProducer: CarlsbadProducer,
+            @Autowired newOrleansProducer: NewOrleansProducer,
+            @Autowired woodlandsProducer: WoodlandsProducer,
+            @Autowired phoenixProducer: PhoenixProducer,
+            @Autowired napaValleyProducer: NapaValleyProducer,
+            @Autowired illinoisProducer: IllinoisProducer,
+            @Autowired oklahomaCityProducer: OklahomaCityProducer,
+            @Autowired glassCityProducer: GlassCityProducer,
+            @Autowired rotoruaProducer: RotoruaProducer,
+            @Autowired pittsburgProducer: PittsburgProducer,
+            @Autowired ocProducer: OCProducer,
+            @Autowired seattleProducer: SeattleProducer,
+            @Autowired miamiProducer: MiamiProducer,
+            @Autowired portlandProducer: PortlandProducer,
+            @Autowired lincolnProducer: LincolnProducer,
+            @Autowired coxSportsProducer: CoxSportsProducer,
+            @Autowired miltonKeynesProducer: MiltonKeynesProducer,
+            @Autowired burlingtonProducer: BurlingtonProducer,
+            @Autowired mountainsToBeachProducer: MountainsToBeachProducer,
             @Autowired chaingMaiProducer: ChaingMaiProducer,
             @Autowired corkCityProducer: CorkCityProducer,
             @Autowired utahValleyProducer: UtahValleyProducer,
@@ -76,8 +101,33 @@ class Configuration {
             @Autowired nordeaRigaProducer: NordeaRigaProducerNumbered,
             @Autowired rockRollLasVegasProducer: RockRollLasVegasProducerNumbered,
             @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
-            
+
             mapOf(
+                    MarathonSources.Chester to chesterProducer,
+                    MarathonSources.Snowdonia to snowdoniaProducer,
+                    MarathonSources.California to californiaProducer,
+                    MarathonSources.RocketCity to rocketCityProducer,
+                    MarathonSources.Dallas to dallasProducer,
+                    MarathonSources.Charleston to charlestonProducer,
+                    MarathonSources.Carlsbad to carlsbadProducer,
+                    MarathonSources.NewOrleans to newOrleansProducer,
+                    MarathonSources.Woodlands to woodlandsProducer,
+                    MarathonSources.Phoenix to phoenixProducer,
+                    MarathonSources.NapaValley to napaValleyProducer,
+                    MarathonSources.Illinois to illinoisProducer,
+                    MarathonSources.OklahomaCity to oklahomaCityProducer,
+                    MarathonSources.GlassCity to glassCityProducer,
+                    MarathonSources.Rotorua to rotoruaProducer,
+                    MarathonSources.Pittsburgh to pittsburgProducer,
+                    MarathonSources.OC to ocProducer,
+                    MarathonSources.Seattle to seattleProducer,
+                    MarathonSources.Miami to miamiProducer,
+                    MarathonSources.Portland to portlandProducer,
+                    MarathonSources.Lincoln to lincolnProducer,
+                    MarathonSources.CoxSports to coxSportsProducer,
+                    MarathonSources.MiltonKeynes to miltonKeynesProducer,
+                    MarathonSources.Burlington to burlingtonProducer,
+                    MarathonSources.MountainsToBeach to mountainsToBeachProducer,
                     MarathonSources.ChiangMai to chaingMaiProducer,
                     MarathonSources.CorkCity to corkCityProducer,
                     MarathonSources.UtahValley to utahValleyProducer,
@@ -120,11 +170,7 @@ class Application(
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
-        args.toMarathonSources().forEach { source ->
-            source?.let {
-                statusReporterService.reportStatusAsync(it)
-            }
-        }
+        statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
         process(*args)
 
@@ -134,11 +180,8 @@ class Application(
 
         logger.info("Exiting...")
 
-        args.toMarathonSources().forEach { source ->
-            source?.let {
-                statusReporterService.reportStatus(it)
-            }
-        }
+        statusReporterService.reportBulkStatus(args.toMarathonSources().filterNotNull())
+
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
