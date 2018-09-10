@@ -3,10 +3,12 @@ package com.stonesoupprogramming.marathonscrape
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
+import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
+import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -229,11 +231,16 @@ class Application(
         @Autowired private val applicationContext: ApplicationContext,
         @Autowired private val runnerDataRepository: RunnerDataRepository,
         @Autowired private val statusReporterService: StatusReporterService,
+        @Autowired private val resultsRepository: ResultsRepository<ResultsPage>,
         @Autowired private val producers: Map<MarathonSources, AbstractBaseProducer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
+        if(args.contains("--purge")){
+            doPurge(args.toMarathonSources().filterNotNull())
+        }
+
         statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
         process(*args)
@@ -247,6 +254,25 @@ class Application(
         statusReporterService.reportBulkStatus(args.toMarathonSources().filterNotNull())
 
         SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
+    }
+
+    private fun doPurge(sources: List<MarathonSources>) {
+        println()
+
+        sources.forEach {source ->
+            println("Delete all $source? (y/n)?")
+            val answer = readLine()
+            answer?.let { a->
+                if(a.toLowerCase() == "y"){
+                    resultsRepository.deleteBySource(source)
+                    println("deleted $source")
+                } else {
+                    println("Source has not been deleted")
+                }
+            }
+        }
+
+        println()
     }
 
     private fun process(vararg args: String) {
