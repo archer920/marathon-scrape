@@ -93,7 +93,7 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
     protected abstract fun findCurrentPageNum(driver: RemoteWebDriver): Int
 
     protected open fun synchronizePages(driver: RemoteWebDriver, currentPage: Int, jsPage: Int, scrapeInfo: PagedScrapeInfo<T>, attempt: Int = 0, giveUp: Int = 10) {
-        logger.info("page = $currentPage, ui page = $jsPage, scrapeInfo = $scrapeInfo")
+        logger.info("page = $currentPage, ui page = $jsPage, endPage = ${scrapeInfo.endPage}, year = ${scrapeInfo.marathonYear}, scrapeInfo = $scrapeInfo")
 
         try {
             when {
