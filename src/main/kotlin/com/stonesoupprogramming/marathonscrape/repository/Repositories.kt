@@ -7,6 +7,7 @@ import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
+import javax.transaction.Transactional
 
 interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
@@ -17,6 +18,9 @@ interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
 interface ResultsRepository<T : ResultsPage> : JpaRepository<T, Long> {
     fun findBySource(source: MarathonSources): List<T>
+
+    @Transactional
+    fun deleteBySource(source: MarathonSources)
 }
 
 interface NumberedResultsPageRepository : ResultsRepository<NumberedResultsPage> {

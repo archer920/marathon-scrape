@@ -25,12 +25,13 @@ class MarathonGuidePreWebScrapeEvent(private val category: String) : PreWebScrap
             val buttonCss = "input[name=SubmitButton]"
 
             driver.waitUntilClickable(selectCss.toCss())
+            sleepRandom(0, 2)
             driver.selectComboBoxOption(selectCss.toCss(), category)
             driver.click(buttonCss.toCss(), logger)
             sleepRandom(0, 2)
 
         } catch (e: Exception) {
-            logger.error("Pre web scrape event for category=$category failed", e)
+            logger.error("Pre web scrape event for category=$category failed, ScrapeInfo = $scrapeInfo", e)
             throw e
         }
     }
@@ -47,7 +48,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
     override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumPositions, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         val ageGender = row[columnPositions.ageGender]
         val gender = if (ageGender.isNotBlank()) {
-            ageGender[ageGender.indexOf("(") + 1].toString()
+            ageGender[ageGender.lastIndexOf("(") + 1].toString()
         } else {
             UNAVAILABLE
         }
@@ -68,7 +69,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
                             UNAVAILABLE
                         }
                     } catch (e : Exception){
-                        logger.error("FIXME", e)
+                        logger.debug(row.joinToString(", "), e)
                         UNAVAILABLE
                     }
 

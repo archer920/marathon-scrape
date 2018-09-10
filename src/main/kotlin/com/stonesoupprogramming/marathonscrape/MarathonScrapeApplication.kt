@@ -3,10 +3,12 @@ package com.stonesoupprogramming.marathonscrape
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.toMarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.writeToCsv
+import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
+import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
 import org.slf4j.LoggerFactory
@@ -54,6 +56,33 @@ class Configuration {
 
     @Bean
     fun producers(
+            @Autowired ralaighProducer: RalaighProducer,
+            @Autowired canberraProducer: CanberraProducer,
+            @Autowired chesterProducer: ChesterProducer,
+            @Autowired snowdoniaProducer: SnowdoniaProducer,
+            @Autowired californiaProducer: CaliforniaProducer,
+            @Autowired rocketCityProducer: RocketCityProducer,
+            @Autowired dallasProducer: DallasProducer,
+            @Autowired charlestonProducer: CharlestonProducer,
+            @Autowired carlsbadProducer: CarlsbadProducer,
+            @Autowired newOrleansProducer: NewOrleansProducer,
+            @Autowired woodlandsProducer: WoodlandsProducer,
+            @Autowired phoenixProducer: PhoenixProducer,
+            @Autowired napaValleyProducer: NapaValleyProducer,
+            @Autowired illinoisProducer: IllinoisProducer,
+            @Autowired oklahomaCityProducer: OklahomaCityProducer,
+            @Autowired glassCityProducer: GlassCityProducer,
+            @Autowired rotoruaProducer: RotoruaProducer,
+            @Autowired pittsburgProducer: PittsburgProducer,
+            @Autowired ocProducer: OCProducer,
+            @Autowired seattleProducer: SeattleProducer,
+            @Autowired miamiProducer: MiamiProducer,
+            @Autowired portlandProducer: PortlandProducer,
+            @Autowired lincolnProducer: LincolnProducer,
+            @Autowired coxSportsProducer: CoxSportsProducer,
+            @Autowired miltonKeynesProducer: MiltonKeynesProducer,
+            @Autowired burlingtonProducer: BurlingtonProducer,
+            @Autowired mountainsToBeachProducer: MountainsToBeachProducer,
             @Autowired chaingMaiProducer: ChaingMaiProducer,
             @Autowired corkCityProducer: CorkCityProducer,
             @Autowired utahValleyProducer: UtahValleyProducer,
@@ -75,9 +104,96 @@ class Configuration {
             @Autowired belfastProducer: BelfastProducerNumbered,
             @Autowired nordeaRigaProducer: NordeaRigaProducerNumbered,
             @Autowired rockRollLasVegasProducer: RockRollLasVegasProducerNumbered,
-            @Autowired cottonwoodProducer: CottonwoodProducerNumbered): Map<MarathonSources, AbstractBaseProducer> =
-            
+            @Autowired cottonwoodProducer: CottonwoodProducerNumbered,
+            @Autowired baystateProducer: BaystateProducer,
+            @Autowired santaRoseProducer: SantaRoseProducer,
+            @Autowired kiawahIslandProducer: KiawahIslandProducer,
+            @Autowired quebecCityProducer: QuebecCityProducer,
+            @Autowired victoriaProducer: VictoriaProducer,
+            @Autowired madisonProducer: MadisonProducer,
+            @Autowired rockNRollUsaProducer: RockNRollUsaProducer,
+            @Autowired tobaccoRoadProducer: TobaccoRoadProducer,
+            @Autowired anthemRichmondProducer: AnthemRichmondProducer,
+            @Autowired rockNRollSavannahProducer: RockNRollSavannahProducer,
+            @Autowired grandRapidsProducer: GrandRapidsProducer,
+            @Autowired baltimoreProducer: BaltimoreProducer,
+            @Autowired kansasCityProducer: KansasCityProducer,
+            @Autowired stGeorgeProducer: StGeorgeProducer,
+            @Autowired countryMusicProducer: CountryMusicProducer,
+            @Autowired airForceProducer: AirForceProducer,
+            @Autowired desMoinesProducer: DesMoinesProducer,
+            @Autowired steamtownProducer: SteamtownProducer,
+            @Autowired ikanoProducer: IkanoProducer,
+            @Autowired yorkshireProducer: YorkshireProducer,
+            @Autowired volkswagePragueProducer: VolkswagePragueProducer,
+            @Autowired sydneyProducer: SydneyProducer,
+            @Autowired torontoProducer: TorontoProducer,
+            @Autowired brusselsProducer: BrusselsProducer,
+            @Autowired hannoverProducer: HannoverProducer,
+            @Autowired pisaProducer: PisaProducer,
+            @Autowired tallinnProducer: TallinnProducer,
+            @Autowired luxemburgProducer: LuxemburgProducer,
+            @Autowired greaterManchesterProducer: GreaterManchesterProducer
+
+    ): Map<MarathonSources, AbstractBaseProducer> =
+
             mapOf(
+                    MarathonSources.GreaterManchester to greaterManchesterProducer,
+                    MarathonSources.Luxemburg to luxemburgProducer,
+                    MarathonSources.Tallinn to tallinnProducer,
+                    MarathonSources.Pisa to pisaProducer,
+                    MarathonSources.Hannover to hannoverProducer,
+                    MarathonSources.Brussels to brusselsProducer,
+                    MarathonSources.Toronto to torontoProducer,
+                    MarathonSources.Sydney to sydneyProducer,
+                    MarathonSources.VolkswagenPrague to volkswagePragueProducer,
+                    MarathonSources.Yorkshire to yorkshireProducer,
+                    MarathonSources.Ikano to ikanoProducer,
+                    MarathonSources.Steamtown to steamtownProducer,
+                    MarathonSources.DesMoines to desMoinesProducer,
+                    MarathonSources.AirForce to airForceProducer,
+                    MarathonSources.Ralaeigh to ralaighProducer,
+                    MarathonSources.CountryMusicFestival to countryMusicProducer,
+                    MarathonSources.StGeorge to stGeorgeProducer,
+                    MarathonSources.KansasCity to kansasCityProducer,
+                    MarathonSources.Baltimore to baltimoreProducer,
+                    MarathonSources.GrandRapids to grandRapidsProducer,
+                    MarathonSources.RockNRollSavannah to rockNRollSavannahProducer,
+                    MarathonSources.AnthemRichmond to anthemRichmondProducer,
+                    MarathonSources.TobaccoRoad to tobaccoRoadProducer,
+                    MarathonSources.RockNRollUSA to rockNRollUsaProducer,
+                    MarathonSources.Madison to madisonProducer,
+                    MarathonSources.Victoria to victoriaProducer,
+                    MarathonSources.QuebecCity to quebecCityProducer,
+                    MarathonSources.KiawahIsland to kiawahIslandProducer,
+                    MarathonSources.SantaRose to santaRoseProducer,
+                    MarathonSources.Baystate to baystateProducer,
+                    MarathonSources.Canberra to canberraProducer,
+                    MarathonSources.Chester to chesterProducer,
+                    MarathonSources.Snowdonia to snowdoniaProducer,
+                    MarathonSources.California to californiaProducer,
+                    MarathonSources.RocketCity to rocketCityProducer,
+                    MarathonSources.Dallas to dallasProducer,
+                    MarathonSources.Charleston to charlestonProducer,
+                    MarathonSources.Carlsbad to carlsbadProducer,
+                    MarathonSources.NewOrleans to newOrleansProducer,
+                    MarathonSources.Woodlands to woodlandsProducer,
+                    MarathonSources.Phoenix to phoenixProducer,
+                    MarathonSources.NapaValley to napaValleyProducer,
+                    MarathonSources.Illinois to illinoisProducer,
+                    MarathonSources.OklahomaCity to oklahomaCityProducer,
+                    MarathonSources.GlassCity to glassCityProducer,
+                    MarathonSources.Rotorua to rotoruaProducer,
+                    MarathonSources.Pittsburgh to pittsburgProducer,
+                    MarathonSources.OC to ocProducer,
+                    MarathonSources.Seattle to seattleProducer,
+                    MarathonSources.Miami to miamiProducer,
+                    MarathonSources.Portland to portlandProducer,
+                    MarathonSources.Lincoln to lincolnProducer,
+                    MarathonSources.CoxSports to coxSportsProducer,
+                    MarathonSources.MiltonKeynes to miltonKeynesProducer,
+                    MarathonSources.Burlington to burlingtonProducer,
+                    MarathonSources.MountainsToBeach to mountainsToBeachProducer,
                     MarathonSources.ChiangMai to chaingMaiProducer,
                     MarathonSources.CorkCity to corkCityProducer,
                     MarathonSources.UtahValley to utahValleyProducer,
@@ -115,16 +231,17 @@ class Application(
         @Autowired private val applicationContext: ApplicationContext,
         @Autowired private val runnerDataRepository: RunnerDataRepository,
         @Autowired private val statusReporterService: StatusReporterService,
+        @Autowired private val resultsRepository: ResultsRepository<ResultsPage>,
         @Autowired private val producers: Map<MarathonSources, AbstractBaseProducer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
 
     override fun run(vararg args: String) {
-        args.toMarathonSources().forEach { source ->
-            source?.let {
-                statusReporterService.reportStatusAsync(it)
-            }
+        if(args.contains("--purge")){
+            doPurge(args.toMarathonSources().filterNotNull())
         }
+
+        statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
         process(*args)
 
@@ -134,12 +251,28 @@ class Application(
 
         logger.info("Exiting...")
 
-        args.toMarathonSources().forEach { source ->
-            source?.let {
-                statusReporterService.reportStatus(it)
+        statusReporterService.reportBulkStatus(args.toMarathonSources().filterNotNull())
+
+        SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
+    }
+
+    private fun doPurge(sources: List<MarathonSources>) {
+        println()
+
+        sources.forEach {source ->
+            println("Delete all $source? (y/n)?")
+            val answer = readLine()
+            answer?.let { a->
+                if(a.toLowerCase() == "y"){
+                    resultsRepository.deleteBySource(source)
+                    println("deleted $source")
+                } else {
+                    println("Source has not been deleted")
+                }
             }
         }
-        SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
+
+        println()
     }
 
     private fun process(vararg args: String) {
@@ -167,7 +300,7 @@ class Application(
     private fun writeFile(source: MarathonSources, startYear: Int, endYear: Int) {
         logger.info("Starting file export...")
         for (i in startYear..endYear) {
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("$source-$i.csv")
+            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/$source-$i.csv")
         }
         logger.info("Finished file export...")
     }

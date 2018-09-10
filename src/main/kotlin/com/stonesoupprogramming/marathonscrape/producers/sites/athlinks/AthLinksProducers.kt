@@ -57,6 +57,9 @@ abstract class AbstractNumberedAthSequenceProducer(
     }
 
     private fun startScrape(pagedScrapeInfo: PagedScrapeInfo<AbstractColumnPositions>) {
+        if(pagedScrapeInfo.endPage > 100){
+            logger.warn("End Pages > 100 have been shown to be unstable! Please consider using the category scraper! $marathonSources, $pagedScrapeInfo")
+        }
         threads.add(athLinksMarathonScraper.scrape(pagedScrapeInfo))
     }
 }
