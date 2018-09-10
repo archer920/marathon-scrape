@@ -48,7 +48,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
     override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumPositions, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         val ageGender = row[columnPositions.ageGender]
         val gender = if (ageGender.isNotBlank()) {
-            ageGender[ageGender.indexOf("(") + 1].toString()
+            ageGender[ageGender.lastIndexOf("(") + 1].toString()
         } else {
             UNAVAILABLE
         }
