@@ -25,7 +25,7 @@ abstract class AbstractMarathonGuideProducer(
         val list = mutableListOf<String>()
         with(info) {
             for (i in 1..numRecords step categoryIncrement) {
-                val top = if (i + categoryIncrement < numRecords) {
+                val top = if (i + (categoryIncrement - 1) < numRecords) {
                     i + categoryIncrement - 1
                 } else {
                     numRecords
