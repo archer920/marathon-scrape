@@ -8,6 +8,7 @@ import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
+import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
@@ -232,6 +233,7 @@ class Application(
         @Autowired private val runnerDataRepository: RunnerDataRepository,
         @Autowired private val statusReporterService: StatusReporterService,
         @Autowired private val resultsRepository: ResultsRepository<ResultsPage>,
+        @Autowired private val numberedResultsPageRepository: NumberedResultsPageRepository,
         @Autowired private val producers: Map<MarathonSources, AbstractBaseProducer>) : CommandLineRunner {
 
     private val logger = LoggerFactory.getLogger(Application::class.java)
@@ -265,6 +267,7 @@ class Application(
             answer?.let { a->
                 if(a.toLowerCase() == "y"){
                     resultsRepository.deleteBySource(source)
+                    numberedResultsPageRepository.deleteBySource(source)
                     println("deleted $source")
                 } else {
                     println("Source has not been deleted")
