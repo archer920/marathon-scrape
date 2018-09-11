@@ -35,20 +35,20 @@ data class RunnerData(
         var halfwayTime : String = "",
         var company : String = "",
         @field: Column(nullable=false) @field: Min(2014) @field: Max(2018) var marathonYear : Int = 2014,
-        @field: Column(nullable=false) @field: Min(1) var place : Int = 1) {
+        @field: Column(nullable = false) var place: String = "") {
 
     override fun toString(): String {
         return "RunnerData(place=$place, Year=$marathonYear, id=$id, source='$source', age='$age', gender='$gender', nationality='$nationality', finishTime='$finishTime', halfwayTime='$halfwayTime', company='$company')"
     }
 
     companion object {
-        fun createRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: Int, source: MarathonSources, company: String = "", halfwayTime: String = ""): RunnerData {
+        fun createRunnerData(logger: Logger, age: String, finishTime: String, gender: String, year: Int, nationality: String, place: String, source: MarathonSources, company: String = "", halfwayTime: String = ""): RunnerData {
             check(age.isNotBlank()) { "age cannot be blank. Mark as $UNAVAILABLE if not present" }
             check(finishTime.isNotBlank()) { "finishTime cannot be blank. Mark as $UNAVAILABLE if not present" }
             check(gender.isNotBlank()) { "gender cannot be blank. Mark as $UNAVAILABLE if not present" }
             check(year in 2014..2018) { "The year has to be between 2014-2018" }
             check(nationality.isNotBlank()) { "nationality cannot be blank. Mark as $UNAVAILABLE if not present" }
-            check(place > 0) { "Place can't be negative. Use Int.MAX if it isn't present" }
+            check(place.isNotBlank()) { "place cannot be blank. Mark as $UNAVAILABLE if not present" }
             check(source != MarathonSources.Unassigned) { "source has to be assigned" }
 
             val runnerData = RunnerData(

@@ -1,9 +1,9 @@
 package com.stonesoupprogramming.marathonscrape.scrapers.sites
 
 import com.stonesoupprogramming.marathonscrape.extension.click
-import com.stonesoupprogramming.marathonscrape.extension.safeInt
 import com.stonesoupprogramming.marathonscrape.extension.toCss
 import com.stonesoupprogramming.marathonscrape.extension.toNationality
+import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
 import com.stonesoupprogramming.marathonscrape.models.NumberedResultsPage
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
@@ -36,7 +36,7 @@ class XacteMarathonScraper(@Autowired driverFactory: DriverFactory,
     }
 
     override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumPositions, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumPositions>, rowHtml: List<String>): RunnerData? {
-        val place = row[columnPositions.place].safeInt(logger)
+        val place = row[columnPositions.place].unavailableIfBlank()
         val ageGender = row[columnPositions.ageGender]
         val gender = ageGender[0].toString()
         val age = ageGender.split("/").last().trim()

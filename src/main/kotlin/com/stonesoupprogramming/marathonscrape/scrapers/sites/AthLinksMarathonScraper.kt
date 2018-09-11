@@ -56,7 +56,7 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
 
     override fun processRow(row: List<String>, columnPositions: AbstractColumnPositions, scrapeInfo: PagedScrapeInfo<AbstractColumnPositions>, rowHtml: List<String>): RunnerData? {
         val nationality = row[0].toNationality(usStateCodes, canadaProvinceCodes)
-        val place = row[1].safeInt(logger)
+        val place = row[1].unavailableIfBlank()
         val finishTime = row[4].unavailableIfBlank()
         val age = row[2].unavailableIfBlank()
         val gender = row[3].unavailableIfBlank()

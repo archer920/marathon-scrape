@@ -1,15 +1,12 @@
 package com.stonesoupprogramming.marathonscrape.producers
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.models.AbstractColumnPositions
-import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import org.slf4j.Logger
 import java.util.concurrent.CompletableFuture
 import javax.annotation.PostConstruct
-
 
 
 abstract class AbstractBaseProducer(protected val logger: Logger, protected val marathonSources: MarathonSources) {
@@ -32,9 +29,9 @@ abstract class AbstractBaseProducer(protected val logger: Logger, protected val 
     protected abstract fun buildThreads()
 }
 
-abstract class AbstractResultsPageProducer<T : ResultsPage, U : AbstractColumnPositions>(private val pagedResultsRepository: ResultsRepository<T>,
-                                                                                         logger: Logger,
-                                                                                         marathonSources: MarathonSources) : AbstractBaseProducer(logger, marathonSources) {
+abstract class AbstractResultsPageProducer<T : ResultsPage>(private val pagedResultsRepository: ResultsRepository<T>,
+                                                            logger: Logger,
+                                                            marathonSources: MarathonSources) : AbstractBaseProducer(logger, marathonSources) {
 
     protected lateinit var completed: List<ResultsPage>
 

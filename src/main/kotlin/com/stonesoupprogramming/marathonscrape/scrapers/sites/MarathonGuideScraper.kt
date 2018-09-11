@@ -80,7 +80,7 @@ class MarathonGuideScraper(@Autowired driverFactory: DriverFactory,
         } else {
             UNAVAILABLE
         }
-        val place = row[columnPositions.place].safeInt(logger)
+        val place = row[columnPositions.place].unavailableIfBlank()
         val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
 
         val nationality = scrapeInfo.columnPositions.splitFunc?.apply(row[columnPositions.nationality])

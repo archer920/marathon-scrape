@@ -8,6 +8,7 @@ import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.races.CapetownProducer
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
 import com.stonesoupprogramming.marathonscrape.service.StatusReporterService
@@ -133,11 +134,17 @@ class Configuration {
             @Autowired pisaProducer: PisaProducer,
             @Autowired tallinnProducer: TallinnProducer,
             @Autowired luxemburgProducer: LuxemburgProducer,
-            @Autowired greaterManchesterProducer: GreaterManchesterProducer
+            @Autowired greaterManchesterProducer: GreaterManchesterProducer,
+            @Autowired taipeiProducer: TaipeiProducer,
+            @Autowired edinburghProducer: EdinburghProducer,
+            @Autowired capetownProducer: CapetownProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Capetown to capetownProducer,
+                    MarathonSources.Edinburgh to edinburghProducer,
+                    MarathonSources.Taipei to taipeiProducer,
                     MarathonSources.GreaterManchester to greaterManchesterProducer,
                     MarathonSources.Luxemburg to luxemburgProducer,
                     MarathonSources.Tallinn to tallinnProducer,

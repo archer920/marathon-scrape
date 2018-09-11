@@ -19,7 +19,7 @@ abstract class AbstractMarathonGuideProducer(
         logger: Logger,
         sources: MarathonSources,
         private val marathonGuideInfo: List<MarathonGuideInfo>)
-    : AbstractResultsPageProducer<ResultsPage, MergedAgedGenderColumPositions>(pagedResultsRepository, logger, sources) {
+    : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, logger, sources) {
 
     private fun buildCategories(info: MarathonGuideInfo): List<String> {
         val list = mutableListOf<String>()
