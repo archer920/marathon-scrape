@@ -7,6 +7,8 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    WhiteKnightInternational("--white-knight-international"),
+    Eindhoven("--eindhoven"),
     EdpPorto("--edp-porto"),
     BaxtersLochNess("--baxters-loch-ness"),
     SwissCity("--swiss-city"),

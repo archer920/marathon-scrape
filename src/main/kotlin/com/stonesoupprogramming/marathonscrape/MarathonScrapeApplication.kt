@@ -146,11 +146,15 @@ class Configuration {
             @Autowired odgenProducer: OdgenProducer,
             @Autowired swissCityProducer: SwissCityProducer,
             @Autowired baxtersLochnessProducer: BaxtersLochnessProducer,
-            @Autowired portoEdpProducer: PortoEdpProducer
+            @Autowired portoEdpProducer: PortoEdpProducer,
+            @Autowired eindhovenProducer: EindhovenProducer,
+            @Autowired whiteKnightProducer: WhiteKnightProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.WhiteKnightInternational to whiteKnightProducer,
+                    MarathonSources.Eindhoven to eindhovenProducer,
                     MarathonSources.EdpPorto to portoEdpProducer,
                     MarathonSources.BaxtersLochNess to baxtersLochnessProducer,
                     MarathonSources.SwissCity to swissCityProducer,
