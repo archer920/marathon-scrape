@@ -134,6 +134,6 @@ private val categories = listOf(
 )
 
 @Component
-class BerlinProducerNumbered(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractNumberedAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BerlinProducerNumbered::class.java), MarathonSources.Berlin, categories)
+    : AbstractNumberedAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BerlinProducer::class.java), MarathonSources.Berlin, categories)
