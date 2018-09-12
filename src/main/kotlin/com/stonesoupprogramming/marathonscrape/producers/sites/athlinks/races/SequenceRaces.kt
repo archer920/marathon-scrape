@@ -216,7 +216,7 @@ class SydneyProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper
         listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34455/results/Event/398183/Course/596361/Results", 65),
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/34455/results/Event/481510/Course/713155/Results", 66),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/34455/results/Event/553777/Course/825408/Results", 70),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/34455/results/Event/553777/Course/825408/Results", 72)))
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/34455/results/Event/672820/Course/983302/Results", 72)))
 
 @Component
 class VolkswagePragueProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
