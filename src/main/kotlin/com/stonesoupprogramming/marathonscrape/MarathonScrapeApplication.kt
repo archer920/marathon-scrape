@@ -144,11 +144,13 @@ class Configuration {
             @Autowired frankfurtProducer: FrankfurtProducer,
             @Autowired dubaiProducer: DubaiProducer,
             @Autowired odgenProducer: OdgenProducer,
-            @Autowired swissCityProducer: SwissCityProducer
+            @Autowired swissCityProducer: SwissCityProducer,
+            @Autowired baxtersLochnessProducer: BaxtersLochnessProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.BaxtersLochNess to baxtersLochnessProducer,
                     MarathonSources.SwissCity to swissCityProducer,
                     MarathonSources.Ogden to odgenProducer,
                     MarathonSources.Dubai to dubaiProducer,
