@@ -1,6 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.scrapers
 
-import com.stonesoupprogramming.marathonscrape.extension.*
+import com.stonesoupprogramming.marathonscrape.extension.failResult
+import com.stonesoupprogramming.marathonscrape.extension.successResult
 import com.stonesoupprogramming.marathonscrape.models.*
 import com.stonesoupprogramming.marathonscrape.service.MarkCompleteService
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -22,7 +23,7 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
         val driver = driverFactory.createDriver()
 
         return try {
-            driver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS);
+            driver.manage().timeouts().pageLoadTimeout(60, TimeUnit.SECONDS)
             driver.get(scrapeInfo.url)
 
             preWebScrapeEvent?.execute(driver, jsDriver, scrapeInfo)
@@ -163,3 +164,4 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
         }
     }
 }
+
