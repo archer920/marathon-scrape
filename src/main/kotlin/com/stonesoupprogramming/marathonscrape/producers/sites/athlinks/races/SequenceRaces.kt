@@ -21,6 +21,17 @@ import org.springframework.stereotype.Component
 //                SequenceAthLinks(2017, "", )))
 
 @Component
+class PortoEdpProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                       @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(PortoEdpProducer::class.java),
+        MarathonSources.EdpPorto,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35334/results/Event/334850/Course/487271/Results", 81),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/35334/results/Event/503020/Course/747862/Results", 89),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/35334/results/Event/528809/Course/786136/Results", 95),
+                SequenceAthLinks(2017, "https://www.athlinks.com/event/35334/results/Event/687503/Course/1256267/Results", 91)))
+
+@Component
 class BaxtersLochnessProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                               @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
