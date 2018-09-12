@@ -15,6 +15,7 @@ private const val URL_2016 = "https://www.athlinks.com/event/34448/results/Event
 private const val URL_2017 = "https://www.athlinks.com/event/34448/results/Event/602229/Course/911221/Results"
 
 private val categories = listOf(
+        //2014 has been verified
         CategoryAthLinks(2014, URL_2014, "F 30-34", CategoryAthLinks.selectOption(1), 21),
         CategoryAthLinks(2014, URL_2014, "F 35-39", CategoryAthLinks.selectOption(2), 21),
         CategoryAthLinks(2014, URL_2014, "F 40-44", CategoryAthLinks.selectOption(3), 1),
@@ -34,7 +35,7 @@ private val categories = listOf(
         CategoryAthLinks(2014, URL_2014, "M 40-49", CategoryAthLinks.selectOption(17), 44),
         CategoryAthLinks(2014, URL_2014, "M 45-49", CategoryAthLinks.selectOption(18), 85),
         CategoryAthLinks(2014, URL_2014, "M 50-54", CategoryAthLinks.selectOption(19), 64),
-        CategoryAthLinks(2014, URL_2014, "M 55-59", CategoryAthLinks.selectOption(10), 33),
+        CategoryAthLinks(2014, URL_2014, "M 55-59", CategoryAthLinks.selectOption(20), 33),
         CategoryAthLinks(2014, URL_2014, "M 60-64", CategoryAthLinks.selectOption(21), 3),
         CategoryAthLinks(2014, URL_2014, "M 60-69", CategoryAthLinks.selectOption(22), 14),
         CategoryAthLinks(2014, URL_2014, "M 65-69", CategoryAthLinks.selectOption(23), 7),
@@ -133,6 +134,6 @@ private val categories = listOf(
 )
 
 @Component
-class BerlinProducerNumbered(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+class BerlinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractNumberedAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BerlinProducerNumbered::class.java), MarathonSources.Berlin, categories)
+    : AbstractNumberedAthCategoryProducer(athLinksMarathonScraper, numberedResultsPageRepository, LoggerFactory.getLogger(BerlinProducer::class.java), MarathonSources.Berlin, categories)

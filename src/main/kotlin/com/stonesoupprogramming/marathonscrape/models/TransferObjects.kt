@@ -77,7 +77,8 @@ data class PagedScrapeInfo<T: AbstractColumnPositions>(
         val clickPreviousSelector : String,
         override val category : String?,
         override val gender : Gender?,
-        val secondaryClickNextSelector: String?) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender) {
+        val secondaryClickNextSelector: String?,
+        val thirdClickNextSelector: String? = null) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender) {
 
     override fun toEntity(clazz: Class<NumberedResultsPage>): NumberedResultsPage {
         val v = super.toEntity(clazz)
