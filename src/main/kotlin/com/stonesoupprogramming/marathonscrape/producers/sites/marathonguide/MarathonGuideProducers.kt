@@ -29,6 +29,19 @@ private val standardColumnPositions = MergedAgedGenderColumPositions(nationality
 //                MarathonGuideInfo("", 2017, standardColumnPositions, )))
 
 @Component
+class OdgenProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                    @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(OdgenProducer::class.java),
+        MarathonSources.Ogden,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1600140517", 2014, standardColumnPositions, 2530),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1600150516", 2015, standardColumnPositions, 2144),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1600160521", 2016, standardColumnPositions, 1559),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1600170520", 2017, standardColumnPositions, 1069)))
+
+@Component
 class YorkshireProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                  @Autowired resultsRepository: ResultsRepository<ResultsPage>)
     : AbstractMarathonGuideProducer(marathonGuideScraper,
