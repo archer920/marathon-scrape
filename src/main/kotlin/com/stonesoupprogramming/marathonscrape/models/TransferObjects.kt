@@ -39,8 +39,8 @@ abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val tableBodySelector : String,
         open val skipRowCount: Int,
         open val columnPositions: T,
-        open val category : String?,
-        open val gender: Gender?) : EntityTransformer<V> {
+        open val category : String? = null,
+        open val gender: Gender? = null) : EntityTransformer<V> {
 
     override fun toEntity(clazz: Class<V>): V {
         val v = clazz.getDeclaredConstructor().newInstance()
@@ -60,8 +60,8 @@ data class StandardScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         override val tableBodySelector : String,
         override val skipRowCount: Int,
         override val columnPositions: T,
-        override val category : String?,
-        override val gender: Gender?) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender)
+        override val category : String? = null,
+        override val gender: Gender? = null) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender)
 
 data class PagedScrapeInfo<T: AbstractColumnPositions>(
         override val url : String,
