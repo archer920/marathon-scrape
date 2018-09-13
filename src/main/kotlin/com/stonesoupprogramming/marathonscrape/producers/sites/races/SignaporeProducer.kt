@@ -1,7 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
+import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
@@ -23,13 +23,13 @@ class SignaporeProducer(
     private val urls2017 = Array(389) { it -> "https://www.multisportaustralia.com.au/races/14829/events/3?page=$it" }
 
     override fun buildThreads() {
-        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
+        val scrapeInfo = StandardScrapeInfo<AgeGenderColumnPositions, ResultsPage>(
                 url = "",
                 marathonSources = marathonSources,
                 marathonYear = 0,
                 tableBodySelector = ".table > tbody:nth-child(2)",
                 skipRowCount = 0,
-                columnPositions = MergedAgedGenderColumnPositions(nationality = -1, finishTime = 4, place = 0, ageGender = 6),
+                columnPositions = AgeGenderColumnPositions(nationality = -1, finishTime = 4, place = 0, gender = 6, age = 1),
                 category = null,
                 gender = null)
 
