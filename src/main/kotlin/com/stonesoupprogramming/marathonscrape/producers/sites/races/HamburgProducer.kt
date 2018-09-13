@@ -45,32 +45,36 @@ class HamburgProducer(@Autowired private val mikatimingDeScraper: MikatimingDeSc
                         age = 5,
                         ageFunction = Function { it ->
                             val ages = it.split(" ").last().split("-")
-                            "${ages[0].calcAge(logger, false)} - ${ages[1].calcAge(logger, false)}"
+                            if (ages.size > 1) {
+                                "${ages[1].calcAge(logger, false)} - ${ages[0].calcAge(logger, false)}"
+                            } else {
+                                it
+                            }
                         },
                         gender = -1
                 )
         )
 
-        mens2014.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
-            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2014, gender = Gender.MALE)))
-        }
-        womens2014.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
-            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2014, gender = Gender.FEMALE)))
-        }
+//        mens2014.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
+//            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2014, gender = Gender.MALE)))
+//        }
+//        womens2014.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
+//            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2014, gender = Gender.FEMALE)))
+//        }
+//
+//        mens2015.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
+//            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2015, gender = Gender.MALE)))
+//        }
+//        womens2015.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
+//            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2015, gender = Gender.FEMALE)))
+//        }
 
-        mens2015.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
-            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2015, gender = Gender.MALE)))
-        }
-        womens2015.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
-            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2015, gender = Gender.FEMALE)))
-        }
-
-        mens2016.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
-            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2016, gender = Gender.MALE)))
-        }
-        womens2016.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
-            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2016, gender = Gender.FEMALE)))
-        }
+//        mens2016.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
+//            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2016, gender = Gender.MALE)))
+//        }
+//        womens2016.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
+//            threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2016, gender = Gender.FEMALE)))
+//        }
 
         mens2017.filter { url -> completed.none { cp -> cp.url == url } }.forEach { url ->
             threads.add(mikatimingDeScraper.scrape(scrapeInfo.copy(url = url, marathonYear = 2017, gender = Gender.MALE)))
