@@ -30,7 +30,8 @@ class MikatimingDeScraper(@Autowired driverFactory: DriverFactory,
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         val place = columnPositions.placeFunction?.apply(row[columnPositions.place]) ?: row[columnPositions.place].unavailableIfBlank()
         val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality]) ?: processNationality(row[columnPositions.nationality])
-        val age = columnPositions.ageFunction?.apply(row[columnPositions.age]) ?: row[columnPositions.age]
+        val age = columnPositions.ageFunction?.apply(row[columnPositions.age])
+                ?: row[columnPositions.age].unavailableIfBlank()
         val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime]) ?: row[columnPositions.finishTime]
         val gender = scrapeInfo.gender?.code ?: throw IllegalArgumentException("Gender is required")
 
@@ -45,7 +46,7 @@ class MikatimingDeScraper(@Autowired driverFactory: DriverFactory,
     private fun processNationality(nationalityStr: String): String {
         return try {
             val nationality = nationalityStr.split(" ").last()
-            nationality.replace("(", "".replace(")", ""))
+            nationality.replace("(", "").replace(")", "")
         } catch (e: Exception) {
             logger.error("Unable to parse nationality", e)
             throw e
