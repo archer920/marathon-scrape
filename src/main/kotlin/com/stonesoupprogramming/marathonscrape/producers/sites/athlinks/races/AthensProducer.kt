@@ -1,7 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
@@ -34,13 +34,13 @@ class AthensUrlComponent(@Autowired private val oldMyRaceGrScraper: OldMyRaceGrS
     private val links = Array(524) {it -> "https://old.myrace.gr/results2014/results.asp?p=1091&s=0&a=0&e=0&l=1&x=$it"}
 
     override fun buildThreads() {
-        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>(
+        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
                 url = "",
                 marathonSources = marathonSources,
                 marathonYear = 2014,
                 tableBodySelector = ".raceResults > tbody:nth-child(1)",
                 skipRowCount = 1,
-                columnPositions = MergedAgedGenderColumPositions(
+                columnPositions = MergedAgedGenderColumnPositions(
                         nationality = -1, //It's in the ageGenderColumn
                         finishTime = 11,
                         place = 0,

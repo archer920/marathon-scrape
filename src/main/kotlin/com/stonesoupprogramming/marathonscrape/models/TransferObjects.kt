@@ -12,17 +12,22 @@ abstract class AbstractColumnPositions(
         open val nationality : Int,
         open val finishTime : Int,
         open val place : Int,
-        open val halfwayTime : Int? = null)
+        open val halfwayTime : Int? = null,
+        open val nationalityFunction: Function<String, String>? = null,
+        open val finishTimeFunction: Function<String, String>? = null,
+        open val placeFunction: Function<String, String>? = null,
+        open val halfwayTimeFunction : Function<String, String>? = null)
 
 data class AgeGenderColumnPositions(
         override val nationality: Int,
         override val finishTime: Int,
         override val place: Int,
-        override val halfwayTime: Int? = null,
         val age : Int,
-        val gender : Int) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime)
+        val gender : Int,
+        val ageFunction: Function<String, String>? = null,
+        val genderFunction: Function<String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place)
 
-data class MergedAgedGenderColumPositions(
+data class MergedAgedGenderColumnPositions(
         override val nationality: Int,
         override val finishTime: Int,
         override val place: Int,

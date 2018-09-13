@@ -28,10 +28,10 @@ class MikatimingDeScraper(@Autowired driverFactory: DriverFactory,
         canadaProvinceCodes) {
 
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
-        val place = row[columnPositions.place].unavailableIfBlank()
-        val nationality = processNationality(row[columnPositions.nationality])
-        val age = row[columnPositions.age]
-        val finishTime = row[columnPositions.finishTime]
+        val place = columnPositions.placeFunction?.apply(row[columnPositions.place]) ?: row[columnPositions.place].unavailableIfBlank()
+        val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality]) ?: processNationality(row[columnPositions.nationality])
+        val age = columnPositions.ageFunction?.apply(row[columnPositions.age]) ?: row[columnPositions.age]
+        val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime]) ?: row[columnPositions.finishTime]
         val gender = scrapeInfo.gender?.code ?: throw IllegalArgumentException("Gender is required")
 
         return try {

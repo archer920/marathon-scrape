@@ -3,7 +3,7 @@ package com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.filterCompleteByUrlAndCategory
 import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.MarathonGuideInfo
@@ -45,9 +45,9 @@ abstract class AbstractMarathonGuideProducer(
         }
     }
 
-    private fun buildScrapeInfo(marathonGuideInfo: List<MarathonGuideInfo>): List<AbstractScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>> {
+    private fun buildScrapeInfo(marathonGuideInfo: List<MarathonGuideInfo>): List<AbstractScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>> {
         return marathonGuideInfo.map { info ->
-            val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>(
+            val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
                     url = info.url,
                     marathonSources = this.marathonSources,
                     marathonYear = info.year,

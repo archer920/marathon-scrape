@@ -3,7 +3,7 @@ package com.stonesoupprogramming.marathonscrape.scrapers.sites
 import com.stonesoupprogramming.marathonscrape.extension.calcAge
 import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
 import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.scrapers.AbstractBaseScraper
@@ -17,10 +17,10 @@ import org.springframework.stereotype.Component
 @Component
 class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
                          @Autowired jsDriver: JsDriver,
-                         @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumPositions, ResultsPage>,
+                         @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumnPositions, ResultsPage>,
                          @Autowired usStateCodes : List<String>,
                          @Autowired canadaProvinceCodes : List<String>)
-    : AbstractBaseScraper<MergedAgedGenderColumPositions, ResultsPage, AbstractScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>>(driverFactory,
+    : AbstractBaseScraper<MergedAgedGenderColumnPositions, ResultsPage, AbstractScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>>(driverFactory,
         jsDriver,
         markedCompleteService,
         ResultsPage::class.java,
@@ -28,7 +28,7 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
         usStateCodes,
         canadaProvinceCodes) {
 
-    override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumPositions, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
+    override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         val place = row[columnPositions.place].unavailableIfBlank()
         val age = parseAge(row[columnPositions.ageGender])
         val gender = parseGender(row[columnPositions.ageGender])

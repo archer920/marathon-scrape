@@ -1,7 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.CategoryAthLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
@@ -86,7 +86,7 @@ class PhiladelphiaXacteProducerNumbered(@Autowired private val xacteMarathonScra
                                         @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedResultsPageProducer(numberedResultsPageRepository, LoggerFactory.getLogger(PhiladelphiaXacteProducerNumbered::class.java), MarathonSources.Philadelphia) {
 
-    private val columnPositions = MergedAgedGenderColumPositions(
+    private val columnPositions = MergedAgedGenderColumnPositions(
             place = 8,
             nationality = 3,
             finishTime = 5,

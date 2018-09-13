@@ -1,7 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
@@ -36,13 +36,13 @@ class CapetownUrlComponent(
     private val urls = Array(227) { i -> "https://www.multisportaustralia.com.au/races/14730/events/1?page=$i" }.toList()
 
     override fun buildThreads() {
-        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumPositions, ResultsPage>(
+        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
                 url = "",
                 marathonSources = marathonSources,
                 marathonYear = 2017,
                 tableBodySelector = ".table > tbody:nth-child(2)",
                 skipRowCount = 0,
-                columnPositions = MergedAgedGenderColumPositions(nationality = -1, finishTime = 4, place = 0, ageGender = 6),
+                columnPositions = MergedAgedGenderColumnPositions(nationality = -1, finishTime = 4, place = 0, ageGender = 6),
                 category = null,
                 gender = null)
         urls.filter { completed.none { cp -> cp.url == it } }.forEach { url ->

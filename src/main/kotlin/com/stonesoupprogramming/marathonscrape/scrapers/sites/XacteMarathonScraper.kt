@@ -4,7 +4,7 @@ import com.stonesoupprogramming.marathonscrape.extension.click
 import com.stonesoupprogramming.marathonscrape.extension.toCss
 import com.stonesoupprogramming.marathonscrape.extension.toNationality
 import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.NumberedResultsPage
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
@@ -20,11 +20,11 @@ import org.springframework.stereotype.Component
 @Component
 class XacteMarathonScraper(@Autowired driverFactory: DriverFactory,
                            @Autowired jsDriver: JsDriver,
-                           @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumPositions, NumberedResultsPage>,
+                           @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumnPositions, NumberedResultsPage>,
                            @Autowired usStateCodes: List<String>,
                            @Autowired canadaProvinceCodes: List<String>)
 
-    : AbstractPagedResultsScraper<MergedAgedGenderColumPositions>(driverFactory, jsDriver, markedCompleteService, NumberedResultsPage::class.java, LoggerFactory.getLogger(XacteMarathonScraper::class.java), usStateCodes, canadaProvinceCodes) {
+    : AbstractPagedResultsScraper<MergedAgedGenderColumnPositions>(driverFactory, jsDriver, markedCompleteService, NumberedResultsPage::class.java, LoggerFactory.getLogger(XacteMarathonScraper::class.java), usStateCodes, canadaProvinceCodes) {
 
     override fun findCurrentPageNum(driver: RemoteWebDriver): Int {
         return try {
@@ -35,7 +35,7 @@ class XacteMarathonScraper(@Autowired driverFactory: DriverFactory,
         }
     }
 
-    override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumPositions, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumPositions>, rowHtml: List<String>): RunnerData? {
+    override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumnPositions, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumnPositions>, rowHtml: List<String>): RunnerData? {
         val place = row[columnPositions.place].unavailableIfBlank()
         val ageGender = row[columnPositions.ageGender]
         val gender = ageGender[0].toString()
@@ -51,7 +51,7 @@ class XacteMarathonScraper(@Autowired driverFactory: DriverFactory,
         }
     }
 
-    override fun scrollPage(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumPositions>, forward: Boolean) {
+    override fun scrollPage(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumnPositions>, forward: Boolean) {
         if (forward) {
             driver.click(scrapeInfo.clickNextSelector.toCss(), logger)
         } else {
