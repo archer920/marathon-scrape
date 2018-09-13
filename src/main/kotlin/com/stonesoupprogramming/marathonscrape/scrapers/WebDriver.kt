@@ -12,8 +12,14 @@ import java.util.concurrent.Semaphore
 @Component
 class DriverFactory {
 
+    private val numPermits = when {
+        System.getenv().containsKey("DEBUG_MODE") -> 1
+        Runtime.getRuntime().availableProcessors() > 4 -> Runtime.getRuntime().availableProcessors()
+        else -> 4
+    }
+
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
-    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
+    private val semaphore = Semaphore(numPermits)
 
     fun createDriver(): RemoteWebDriver {
         val headless = System.getenv().containsKey("GO_HEADLESS")

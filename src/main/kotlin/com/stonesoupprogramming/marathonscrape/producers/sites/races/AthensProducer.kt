@@ -1,4 +1,4 @@
-package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races
+package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
@@ -56,7 +56,7 @@ class AthensProducer(@Autowired private val athensAthComponent: AthensAthCompone
                      @Autowired private val athensUrlComponent: AthensUrlComponent) : AbstractBaseProducer(LoggerFactory.getLogger(AthensProducer::class.java), MarathonSources.Athens){
 
     override fun buildThreads() {
-        threads.addAll(athensAthComponent.process())
+        //threads.addAll(athensAthComponent.process())
         threads.addAll(athensUrlComponent.process())
     }
 }
