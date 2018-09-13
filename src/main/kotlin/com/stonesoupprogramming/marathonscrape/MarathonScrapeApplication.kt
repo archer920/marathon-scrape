@@ -10,6 +10,7 @@ import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.races.AntwerpProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.races.CapetownProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.races.HamburgProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.races.SignaporeProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
@@ -153,11 +154,13 @@ class Configuration {
             @Autowired whiteKnightProducer: WhiteKnightProducer,
             @Autowired aucklandProducer: AucklandProducer,
             @Autowired singaporeProducer: SignaporeProducer,
-            @Autowired antwerpProducer: AntwerpProducer
+            @Autowired antwerpProducer: AntwerpProducer,
+            @Autowired hamburgProducer: HamburgProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Hamburg to hamburgProducer,
                     MarathonSources.Antwerp to antwerpProducer,
                     MarathonSources.Singapore to singaporeProducer,
                     MarathonSources.Auckland to aucklandProducer,
