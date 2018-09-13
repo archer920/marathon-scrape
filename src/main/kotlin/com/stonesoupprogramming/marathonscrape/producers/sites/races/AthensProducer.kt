@@ -42,7 +42,7 @@ class AthensUrlComponent(@Autowired private val oldMyRaceGrScraper: OldMyRaceGrS
                 skipRowCount = 1,
                 columnPositions = MergedAgedGenderColumnPositions(
                         nationality = -1, //It's in the ageGenderColumn
-                        finishTime = 11,
+                        finishTime = 3,
                         place = 0,
                         ageGender = 2))
         links.filter { link -> completed.none { cp -> cp.url == link } }.forEach { link ->

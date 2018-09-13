@@ -12,8 +12,10 @@ import java.util.concurrent.Semaphore
 @Component
 class DriverFactory {
 
+    private val debugMode = System.getenv().containsKey("DEBUG_MODE")
+
     private val numPermits = when {
-        System.getenv().containsKey("DEBUG_MODE") -> 1
+        debugMode -> 1
         Runtime.getRuntime().availableProcessors() > 4 -> Runtime.getRuntime().availableProcessors()
         else -> 4
     }
@@ -28,7 +30,10 @@ class DriverFactory {
             semaphore.acquire()
             logger.info("Permit Acquired")
 
-            sleepRandom()
+            if (!debugMode) {
+                sleepRandom()
+            }
+
             if(headless){
                 val options = ChromeOptions()
                 options.setHeadless(true)
