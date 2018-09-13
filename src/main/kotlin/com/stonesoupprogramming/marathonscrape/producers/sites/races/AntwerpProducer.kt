@@ -16,6 +16,7 @@ class AntwerpProducer(
         @Autowired private val chronoRaceScraper: ChronoRaceScraper,
         @Autowired pagedResultsRepository: ResultsRepository<ResultsPage>) : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(AntwerpProducer::class.java), MarathonSources.Antwerp) {
 
+    //NOTE: These URLS are 0 based
     private val urls2014 = Array(4) { it -> "http://prod.chronorace.be/Classements/classement.aspx?eventId=243129508691975&redirect=0&mode=large&IdClassement=10335&srch=&scope=All&page=$it" }
     private val urls2015 = Array(5) { it -> "http://www.chronorace.be/Classements/classement.aspx?eventId=1138162038541123&lng=EN&mode=large&IdClassement=11108&srch=&scope=All&page=$it" }
     private val urls2016 = Array(5) { it -> "http://www.chronorace.be/Classements/classement.aspx?eventId=1186385931281826&lng=EN&mode=large&IdClassement=13045&srch=&scope=All&page=$it" }
@@ -27,7 +28,8 @@ class AntwerpProducer(
                 marathonSources = marathonSources,
                 marathonYear = 0,
                 tableBodySelector = "#classements > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(1) > table:nth-child(4) > tbody:nth-child(1)",
-                skipRowCount = 3,
+                skipRowCount = 4,
+                clipRows = 1,
                 columnPositions =  AgeGenderColumnPositions(
                         nationality = 6,
                         finishTime = 8,
@@ -46,19 +48,19 @@ class AntwerpProducer(
         )
 
         urls2014.filter { url -> completed.none { cp -> cp.url == url } }.forEach {
-            chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2014))
+            threads.add(chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2014)))
         }
 
         urls2015.filter { url -> completed.none { cp -> cp.url == url } }.forEach {
-            chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2015, columnPositions = columnPositions))
+            threads.add(chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2015, columnPositions = columnPositions)))
         }
 
         urls2016.filter { url -> completed.none { cp -> cp.url == url } }.forEach {
-            chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2016, columnPositions = columnPositions))
+            threads.add(chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2016, columnPositions = columnPositions)))
         }
 
         urls2017.filter { url -> completed.none { cp -> cp.url == url } }.forEach {
-            chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2017, columnPositions = columnPositions))
+            threads.add(chronoRaceScraper.scrape(scrapeInfo.copy(url = it, marathonYear = 2017, columnPositions = columnPositions)))
         }
     }
 }

@@ -29,20 +29,25 @@ class ChronoRaceScraper(@Autowired driverFactory: DriverFactory,
         canadaProvinceCodes) {
 
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
-        val place = row[columnPositions.place].unavailableIfBlank()
-        val age = row[columnPositions.age]
-        val gender = if (row[columnPositions.gender].isBlank()) {
-            Gender.MALE.code
-        } else {
-            Gender.FEMALE.code
-        }
-        val nationality = row[columnPositions.nationality]
-        val finishTime = row[columnPositions.finishTime]
-
         return try {
-            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            val place = row[columnPositions.place].replace(".", "").unavailableIfBlank()
+            val age = row[columnPositions.age].unavailableIfBlank()
+            val gender = if (row[columnPositions.gender].isBlank()) {
+                Gender.MALE.code
+            } else {
+                Gender.FEMALE.code
+            }
+            val nationality = row[columnPositions.nationality].unavailableIfBlank()
+            val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
+
+            try {
+                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            } catch (e: Exception) {
+                logger.error("Unable to create runner data", e)
+                throw e
+            }
         } catch (e: Exception) {
-            logger.error("Unable to create runner data", e)
+            logger.error("Unable to process this row", e)
             throw e
         }
     }
