@@ -10,6 +10,8 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Hamburg("--hamburg"),
     Antwerp("--antwerp"),
     Singapore("--singapore"),
+    Athens("--athens"),
+    Dubai("--dubai"),
 
     //NOTE: Add above this line
     Auckland("--auckland"),
@@ -19,9 +21,7 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     BaxtersLochNess("--baxters-loch-ness"),
     SwissCity("--swiss-city"),
     Ogden("--ogden"),
-    Dubai("--dubai"),
     Frankfurt("--frankfurt"),
-    Athens("--athens"),
     Rotterdam("--rotterdam"),
     Capetown("--capetown", startYear = 2015),
     Edinburgh("--edinburgh"),
