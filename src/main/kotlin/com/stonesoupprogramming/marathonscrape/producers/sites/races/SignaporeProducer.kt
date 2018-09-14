@@ -1,6 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
@@ -11,11 +12,12 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+//TODO: FIXME
 @Component
 class SignaporeProducer(
         @Autowired private val multisportAustraliaScraper: MultisportAustraliaScraper,
         @Autowired pagedResultsRepository: ResultsRepository<ResultsPage>)
-    : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(CapetownUrlComponent::class.java), MarathonSources.Singapore) {
+    : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(SignaporeProducer::class.java), MarathonSources.Singapore) {
 
     private val urls2014 = Array(515) { it -> "https://www.multisportaustralia.com.au/races/6184/events/1?page=$it" }
     private val urls2015 = Array(459) { it -> "https://www.multisportaustralia.com.au/races/10714/events/1?page=$it" }
@@ -23,13 +25,13 @@ class SignaporeProducer(
     private val urls2017 = Array(389) { it -> "https://www.multisportaustralia.com.au/races/14829/events/3?page=$it" }
 
     override fun buildThreads() {
-        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
+        val scrapeInfo = StandardScrapeInfo<AgeGenderColumnPositions, ResultsPage>(
                 url = "",
                 marathonSources = marathonSources,
                 marathonYear = 0,
                 tableBodySelector = ".table > tbody:nth-child(2)",
                 skipRowCount = 0,
-                columnPositions = MergedAgedGenderColumnPositions(nationality = -1, finishTime = 4, place = 0, ageGender = 6),
+                columnPositions = AgeGenderColumnPositions(nationality = -1, finishTime = 4, place = 0, age = 6, gender=7),
                 category = null,
                 gender = null)
 

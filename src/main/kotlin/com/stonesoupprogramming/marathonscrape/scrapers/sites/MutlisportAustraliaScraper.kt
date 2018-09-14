@@ -2,10 +2,7 @@ package com.stonesoupprogramming.marathonscrape.scrapers.sites
 
 import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
-import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
-import com.stonesoupprogramming.marathonscrape.models.ResultsPage
-import com.stonesoupprogramming.marathonscrape.models.RunnerData
+import com.stonesoupprogramming.marathonscrape.models.*
 import com.stonesoupprogramming.marathonscrape.scrapers.AbstractBaseScraper
 import com.stonesoupprogramming.marathonscrape.scrapers.DriverFactory
 import com.stonesoupprogramming.marathonscrape.scrapers.JsDriver
@@ -17,10 +14,10 @@ import org.springframework.stereotype.Component
 @Component
 class MultisportAustraliaScraper(@Autowired driverFactory: DriverFactory,
                                  @Autowired jsDriver: JsDriver,
-                                 @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumnPositions, ResultsPage>,
+                                 @Autowired markedCompleteService: MarkCompleteService<AgeGenderColumnPositions, ResultsPage>,
                                  @Autowired usStateCodes: List<String>,
                                  @Autowired canadaProvinceCodes: List<String>)
-    : AbstractBaseScraper<MergedAgedGenderColumnPositions, ResultsPage, AbstractScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>>(driverFactory,
+    : AbstractBaseScraper<AgeGenderColumnPositions, ResultsPage, AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>>(driverFactory,
         jsDriver,
         markedCompleteService,
         ResultsPage::class.java,
@@ -28,12 +25,11 @@ class MultisportAustraliaScraper(@Autowired driverFactory: DriverFactory,
         usStateCodes,
         canadaProvinceCodes) {
 
-    override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
+    override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         val pos = row[columnPositions.place].unavailableIfBlank()
         val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
-        val ageGender = row[columnPositions.ageGender]
-        val age = ageGender.split(" ")[1].replace("(", "").replace(")", "")
-        val gender = ageGender.split(" ")[0]
+        val age = row[columnPositions.age]
+        val gender = row[columnPositions.gender]
 
         return try {
             RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, UNAVAILABLE, pos, scrapeInfo.marathonSources)

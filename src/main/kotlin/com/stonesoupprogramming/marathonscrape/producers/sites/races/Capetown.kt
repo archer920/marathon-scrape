@@ -26,6 +26,7 @@ class CapetownAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/35337/results/Event/481613/Course/716466/Results", 86),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/35337/results/Event/591130/Course/889079/Results", 124)))
 
+//TODO: FIXME
 @Component
 class CapetownUrlComponent(
         @Autowired private val multisportAustraliaScraper: MultisportAustraliaScraper,
@@ -46,7 +47,7 @@ class CapetownUrlComponent(
                 category = null,
                 gender = null)
         urls.filter { completed.none { cp -> cp.url == it } }.forEach { url ->
-            multisportAustraliaScraper.scrape(scrapeInfo.copy(url = url))
+            //multisportAustraliaScraper.scrape(scrapeInfo.copy(url = url))
         }
     }
 }
