@@ -172,6 +172,7 @@ class JsDriverImpl : JsDriver {
 
     override fun readHtml(driver: RemoteWebDriver, elem: String): String {
         return try {
+            injectJq(driver)
             driver.executeScript(readHtmlJs.replace(selector, elem)) as String
         } catch (e: Exception) {
             logger.error("Unable to return html", e)

@@ -12,8 +12,16 @@ import java.util.concurrent.Semaphore
 @Component
 class DriverFactory {
 
+    private val debugMode = System.getenv().containsKey("DEBUG_MODE")
+
+    private val numPermits = when {
+        debugMode -> 1
+        Runtime.getRuntime().availableProcessors() > 4 -> Runtime.getRuntime().availableProcessors()
+        else -> 4
+    }
+
     private val logger = LoggerFactory.getLogger(DriverFactory::class.java)
-    private val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
+    private val semaphore = Semaphore(numPermits)
 
     fun createDriver(): RemoteWebDriver {
         val headless = System.getenv().containsKey("GO_HEADLESS")
@@ -22,7 +30,10 @@ class DriverFactory {
             semaphore.acquire()
             logger.info("Permit Acquired")
 
-            sleepRandom()
+            if (!debugMode) {
+                sleepRandom()
+            }
+
             if(headless){
                 val options = ChromeOptions()
                 options.setHeadless(true)

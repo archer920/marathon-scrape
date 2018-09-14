@@ -8,10 +8,7 @@ import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
-import com.stonesoupprogramming.marathonscrape.producers.sites.races.AntwerpProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.races.CapetownProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.races.HamburgProducer
-import com.stonesoupprogramming.marathonscrape.producers.sites.races.SignaporeProducer
+import com.stonesoupprogramming.marathonscrape.producers.sites.races.*
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
@@ -42,7 +39,13 @@ class Configuration {
     @Bean
     fun asyncExecute(): ThreadPoolTaskExecutor {
         with(ThreadPoolTaskExecutor()) {
-            corePoolSize = Runtime.getRuntime().availableProcessors()
+
+            corePoolSize = if (Runtime.getRuntime().availableProcessors() > 4) {
+                Runtime.getRuntime().availableProcessors()
+            } else {
+                4
+            }
+
             setQueueCapacity(1000)
             setThreadNamePrefix("Marathon-Scraper-")
             initialize()
@@ -155,11 +158,15 @@ class Configuration {
             @Autowired aucklandProducer: AucklandProducer,
             @Autowired singaporeProducer: SignaporeProducer,
             @Autowired antwerpProducer: AntwerpProducer,
-            @Autowired hamburgProducer: HamburgProducer
+            @Autowired hamburgProducer: HamburgProducer,
+            @Autowired jungfrauProducer: JungfrauProducer,
+            @Autowired alexanderTheGreatProducer: AlexanderTheGreatProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Axexander to alexanderTheGreatProducer,
+                    MarathonSources.Jungfrau to jungfrauProducer,
                     MarathonSources.Hamburg to hamburgProducer,
                     MarathonSources.Antwerp to antwerpProducer,
                     MarathonSources.Singapore to singaporeProducer,

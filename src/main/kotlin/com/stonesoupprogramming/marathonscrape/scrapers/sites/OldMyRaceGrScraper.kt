@@ -29,16 +29,25 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
         canadaProvinceCodes) {
 
     override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
-        val place = row[columnPositions.place].unavailableIfBlank()
-        val age = parseAge(row[columnPositions.ageGender])
-        val gender = parseGender(row[columnPositions.ageGender])
-        val finishTime = row[columnPositions.finishTime]
-        val nationality = parseNationality(row[columnPositions.ageGender])
+        if (row.size == 1) {
+            return null
+        }
 
         return try {
-            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
-        } catch (e : Exception){
-            logger.error("Unable to create runner data", e)
+            val place = row[columnPositions.place].unavailableIfBlank()
+            val age = parseAge(row[columnPositions.ageGender])
+            val gender = parseGender(row[columnPositions.ageGender])
+            val finishTime = parseFinishTime(row[columnPositions.finishTime])
+            val nationality = parseNationality(row[columnPositions.ageGender])
+
+            try {
+                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            } catch (e: Exception) {
+                logger.error("Unable to create runner data", e)
+                throw e
+            }
+        } catch (e: java.lang.Exception) {
+            logger.error("Failed to parse results page", e)
             throw e
         }
     }
@@ -56,7 +65,7 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
     private fun parseGender(input : String) : String {
         return try {
             val parts = input.split(" - ")
-            parts[0].split(" ").last()
+            parts[0].split("\n")[1].replace("\t", "")
         } catch (e : Exception){
             logger.error("Failed to extract gender form $input", e)
             throw e
@@ -68,6 +77,16 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             input.split(" - ")[2]
         } catch (e : Exception){
             logger.error("Failed to extract nationality form $input", e)
+            throw e
+        }
+    }
+
+    private fun parseFinishTime(input: String): String {
+        return try {
+            val parts = input.replace("\t", "").split("\n")
+            parts[parts.size - 2].trim()
+        } catch (e: Exception) {
+            logger.error("Failed to find finish time", e)
             throw e
         }
     }

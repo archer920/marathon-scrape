@@ -1,7 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
-import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
+import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
@@ -26,7 +26,6 @@ class CapetownAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
                 SequenceAthLinks(2015, "https://www.athlinks.com/event/35337/results/Event/481613/Course/716466/Results", 86),
                 SequenceAthLinks(2016, "https://www.athlinks.com/event/35337/results/Event/591130/Course/889079/Results", 124)))
 
-//TODO: FIXME
 @Component
 class CapetownUrlComponent(
         @Autowired private val multisportAustraliaScraper: MultisportAustraliaScraper,
@@ -34,20 +33,20 @@ class CapetownUrlComponent(
     : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(CapetownUrlComponent::class.java), MarathonSources.Capetown) {
 
     //NOTE: 227 is the last page with results, 440 is the last page for 2017
-    private val urls = Array(227) { i -> "https://www.multisportaustralia.com.au/races/14730/events/1?page=$i" }.toList()
+    private val urls = Array(440) { i -> "https://www.multisportaustralia.com.au/races/14730/events/1?page=${i + 1}" }.toList()
 
     override fun buildThreads() {
-        val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
+        val scrapeInfo = StandardScrapeInfo<AgeGenderColumnPositions, ResultsPage>(
                 url = "",
                 marathonSources = marathonSources,
                 marathonYear = 2017,
                 tableBodySelector = ".table > tbody:nth-child(2)",
                 skipRowCount = 0,
-                columnPositions = MergedAgedGenderColumnPositions(nationality = -1, finishTime = 4, place = 0, ageGender = 6),
+                columnPositions = AgeGenderColumnPositions(nationality = 5, finishTime = 4, place = 0, age = 1, gender = 7),
                 category = null,
                 gender = null)
         urls.filter { completed.none { cp -> cp.url == it } }.forEach { url ->
-            //multisportAustraliaScraper.scrape(scrapeInfo.copy(url = url))
+            threads.add(multisportAustraliaScraper.scrape(scrapeInfo.copy(url = url)))
         }
     }
 }

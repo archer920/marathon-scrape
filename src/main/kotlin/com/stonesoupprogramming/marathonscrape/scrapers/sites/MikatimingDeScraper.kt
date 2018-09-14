@@ -28,16 +28,25 @@ class MikatimingDeScraper(@Autowired driverFactory: DriverFactory,
         canadaProvinceCodes) {
 
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
-        val place = columnPositions.placeFunction?.apply(row[columnPositions.place]) ?: row[columnPositions.place].unavailableIfBlank()
-        val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality]) ?: processNationality(row[columnPositions.nationality])
-        val age = columnPositions.ageFunction?.apply(row[columnPositions.age]) ?: row[columnPositions.age]
-        val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime]) ?: row[columnPositions.finishTime]
-        val gender = scrapeInfo.gender?.code ?: throw IllegalArgumentException("Gender is required")
-
         return try {
-            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            val place = columnPositions.placeFunction?.apply(row[columnPositions.place], rowHtml[columnPositions.place])
+                    ?: row[columnPositions.place].unavailableIfBlank()
+            val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality], rowHtml[columnPositions.nationality])?.unavailableIfBlank()
+                    ?: processNationality(row[columnPositions.nationality])
+            val age = columnPositions.ageFunction?.apply(row[columnPositions.age], rowHtml[columnPositions.age])?.unavailableIfBlank()
+                    ?: row[columnPositions.age].unavailableIfBlank()
+            val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime], rowHtml[columnPositions.finishTime])?.unavailableIfBlank()
+                    ?: row[columnPositions.finishTime].unavailableIfBlank()
+            val gender = scrapeInfo.gender?.code ?: throw IllegalArgumentException("Gender is required")
+
+            try {
+                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            } catch (e: Exception) {
+                logger.error("Unable to create runner data", e)
+                throw e
+            }
         } catch (e: Exception) {
-            logger.error("Unable to create runner data", e)
+            logger.error("Unable to process row", e)
             throw e
         }
     }
@@ -45,7 +54,7 @@ class MikatimingDeScraper(@Autowired driverFactory: DriverFactory,
     private fun processNationality(nationalityStr: String): String {
         return try {
             val nationality = nationalityStr.split(" ").last()
-            nationality.replace("(", "".replace(")", ""))
+            nationality.replace("(", "").replace(")", "")
         } catch (e: Exception) {
             logger.error("Unable to parse nationality", e)
             throw e

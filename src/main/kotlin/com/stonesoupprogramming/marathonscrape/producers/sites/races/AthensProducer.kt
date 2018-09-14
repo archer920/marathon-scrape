@@ -1,4 +1,4 @@
-package com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races
+package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
@@ -42,7 +42,7 @@ class AthensUrlComponent(@Autowired private val oldMyRaceGrScraper: OldMyRaceGrS
                 skipRowCount = 1,
                 columnPositions = MergedAgedGenderColumnPositions(
                         nationality = -1, //It's in the ageGenderColumn
-                        finishTime = 11,
+                        finishTime = 3,
                         place = 0,
                         ageGender = 2))
         links.filter { link -> completed.none { cp -> cp.url == link } }.forEach { link ->

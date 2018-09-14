@@ -43,7 +43,7 @@ class DubaiMiktaimingComponent(@Autowired private val mikatimingDeScraper: Mikat
                 tableBodySelector = ".list-table > tbody:nth-child(2)",
                 columnPositions = AgeGenderColumnPositions(
                         nationality = 3,
-                        finishTime = 6,
+                        finishTime = 7,
                         place = 0,
                         gender = -1,
                         age = 6),
