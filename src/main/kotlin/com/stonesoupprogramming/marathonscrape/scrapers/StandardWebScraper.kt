@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape.scrapers
 
+import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
 import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
@@ -24,15 +25,15 @@ class StandardWebScraperAgeGender(@Autowired driverFactory: DriverFactory,
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         return try {
             val place = columnPositions.placeFunction?.apply(row[columnPositions.place], rowHtml[columnPositions.place])
-                    ?: row[columnPositions.place]
+                    ?: row[columnPositions.place].unavailableIfBlank()
             val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality], rowHtml[columnPositions.nationality])
-                    ?: row[columnPositions.nationality]
+                    ?: row[columnPositions.nationality].unavailableIfBlank()
             val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime], rowHtml[columnPositions.finishTime])
-                    ?: row[columnPositions.finishTime]
+                    ?: row[columnPositions.finishTime].unavailableIfBlank()
             val age = columnPositions.ageFunction?.apply(row[columnPositions.age], rowHtml[columnPositions.age])
-                    ?: row[columnPositions.age]
+                    ?: row[columnPositions.age].unavailableIfBlank()
             val gender = columnPositions.genderFunction?.apply(row[columnPositions.gender], rowHtml[columnPositions.gender])
-                    ?: row[columnPositions.gender]
+                    ?: row[columnPositions.gender].unavailableIfBlank()
 
             try {
                 RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
