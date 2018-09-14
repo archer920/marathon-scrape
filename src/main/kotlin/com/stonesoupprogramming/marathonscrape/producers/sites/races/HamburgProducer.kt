@@ -12,7 +12,7 @@ import com.stonesoupprogramming.marathonscrape.scrapers.sites.MikatimingDeScrape
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.function.Function
+import java.util.function.BiFunction
 
 @Component
 class HamburgProducer(@Autowired private val mikatimingDeScraper: MikatimingDeScraper,
@@ -43,14 +43,14 @@ class HamburgProducer(@Autowired private val mikatimingDeScraper: MikatimingDeSc
                         finishTime = 7,
                         place = 0,
                         age = 5,
-                        ageFunction = Function { it ->
-                            val ageParts = it.split(" ")
+                        ageFunction = BiFunction { text, _ ->
+                            val ageParts = text.split(" ")
                             val ages = ageParts.find { part -> part.contains("-") }
                             ages?.let { age ->
                                 val parts = age.split("-")
                                 "${parts[1].calcAge(logger, false)} - ${parts[0].calcAge(logger, false)}"
                             }
-                                    ?: it
+                                    ?: text
                         },
                         gender = -1
                 )

@@ -29,19 +29,35 @@ class MultisportAustraliaScraper(@Autowired driverFactory: DriverFactory,
         canadaProvinceCodes) {
 
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
-        val pos = row[columnPositions.place].unavailableIfBlank()
-        val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
-        val age = row[columnPositions.age].unavailableIfBlank()
-        val gender = row[columnPositions.gender].split("\n")[0].trim().unavailableIfBlank()
-        var nationality = row[columnPositions.nationality].split("\n")[0].trim()
-        if (nationality == "|") {
-            nationality = UNAVAILABLE
-        }
-
         return try {
-            RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, pos, scrapeInfo.marathonSources)
+            val pos = columnPositions.placeFunction?.apply(row[columnPositions.place], rowHtml[columnPositions.place])
+                    ?: row[columnPositions.place].unavailableIfBlank()
+            val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime], rowHtml[columnPositions.finishTime])
+                    ?: row[columnPositions.finishTime].unavailableIfBlank()
+            val age = columnPositions.ageFunction?.apply(row[columnPositions.age], rowHtml[columnPositions.age])
+                    ?: row[columnPositions.age].unavailableIfBlank()
+            val gender = columnPositions.genderFunction?.apply(row[columnPositions.gender], rowHtml[columnPositions.gender])
+                    ?: row[columnPositions.gender].split("\n")[0].trim().unavailableIfBlank()
+
+            fun nationalityFunc(): String {
+                var nationality = row[columnPositions.nationality].split("\n")[0].trim()
+                if (nationality == "|") {
+                    nationality = UNAVAILABLE
+                }
+                return nationality
+            }
+
+            val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality], rowHtml[columnPositions.nationality])
+                    ?: nationalityFunc()
+
+            try {
+                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, pos, scrapeInfo.marathonSources)
+            } catch (e: Exception) {
+                logger.error("Unable to create runner data", e)
+                throw e
+            }
         } catch (e: Exception) {
-            logger.error("Unable to create runner data", e)
+            logger.error("Unable to process row", e)
             throw e
         }
     }

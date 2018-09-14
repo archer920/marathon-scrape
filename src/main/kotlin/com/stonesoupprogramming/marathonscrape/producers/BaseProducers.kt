@@ -19,6 +19,10 @@ abstract class AbstractBaseProducer(protected val logger: Logger, protected val 
 
             buildThreads()
 
+            if (threads.isEmpty()) {
+                throw IllegalStateException("Threads is empty! Check that asynchronous scrape calls have been added to threads list")
+            }
+
             threads.toList()
         } catch (e: Exception) {
             logger.error("Failed to start $marathonSources", e)

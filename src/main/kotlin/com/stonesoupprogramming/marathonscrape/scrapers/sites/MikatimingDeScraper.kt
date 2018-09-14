@@ -29,13 +29,13 @@ class MikatimingDeScraper(@Autowired driverFactory: DriverFactory,
 
     override fun processRow(row: List<String>, columnPositions: AgeGenderColumnPositions, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowHtml: List<String>): RunnerData? {
         return try {
-            val place = columnPositions.placeFunction?.apply(row[columnPositions.place])
+            val place = columnPositions.placeFunction?.apply(row[columnPositions.place], rowHtml[columnPositions.place])
                     ?: row[columnPositions.place].unavailableIfBlank()
-            val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality])?.unavailableIfBlank()
+            val nationality = columnPositions.nationalityFunction?.apply(row[columnPositions.nationality], rowHtml[columnPositions.nationality])?.unavailableIfBlank()
                     ?: processNationality(row[columnPositions.nationality])
-            val age = columnPositions.ageFunction?.apply(row[columnPositions.age])?.unavailableIfBlank()
+            val age = columnPositions.ageFunction?.apply(row[columnPositions.age], rowHtml[columnPositions.age])?.unavailableIfBlank()
                     ?: row[columnPositions.age].unavailableIfBlank()
-            val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime])?.unavailableIfBlank()
+            val finishTime = columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime], rowHtml[columnPositions.finishTime])?.unavailableIfBlank()
                     ?: row[columnPositions.finishTime].unavailableIfBlank()
             val gender = scrapeInfo.gender?.code ?: throw IllegalArgumentException("Gender is required")
 

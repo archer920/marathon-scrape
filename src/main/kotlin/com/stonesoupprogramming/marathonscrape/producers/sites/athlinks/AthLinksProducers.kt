@@ -25,7 +25,7 @@ abstract class AbstractNumberedBaseAthProducer(
             marathonYear = -1,
             tableBodySelector = "",
             skipRowCount = 0,
-            columnPositions = AgeGenderColumnPositions(-1, -1, -1, -1, -1, null), //Column positions are irrelevant since the scraping is done by the js
+            columnPositions = AgeGenderColumnPositions(nationality = -1, finishTime = -1, place = -1, age = -1, gender = -1), //Column positions are irrelevant since the scraping is done by the js
             startPage = -1,
             currentPage = -1,
             endPage = -1,

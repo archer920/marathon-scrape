@@ -2,6 +2,7 @@ package com.stonesoupprogramming.marathonscrape.models
 
 import com.stonesoupprogramming.marathonscrape.enums.Gender
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
+import java.util.function.BiFunction
 import java.util.function.Function
 
 interface EntityTransformer<T : ResultsPage> {
@@ -13,19 +14,24 @@ abstract class AbstractColumnPositions(
         open val finishTime : Int,
         open val place : Int,
         open val halfwayTime : Int? = null,
-        open val nationalityFunction: Function<String, String>? = null,
-        open val finishTimeFunction: Function<String, String>? = null,
-        open val placeFunction: Function<String, String>? = null,
-        open val halfwayTimeFunction : Function<String, String>? = null)
+        open val nationalityFunction: BiFunction<String, String, String>? = null,
+        open val finishTimeFunction: BiFunction<String, String, String>? = null,
+        open val placeFunction: BiFunction<String, String, String>? = null,
+        open val halfwayTimeFunction: BiFunction<String, String, String>? = null)
 
 data class AgeGenderColumnPositions(
         override val nationality: Int,
         override val finishTime: Int,
         override val place: Int,
+        override val halfwayTime: Int? = null,
+        override val nationalityFunction: BiFunction<String, String, String>? = null,
+        override val finishTimeFunction: BiFunction<String, String, String>? = null,
+        override val placeFunction: BiFunction<String, String, String>? = null,
+        override val halfwayTimeFunction: BiFunction<String, String, String>? = null,
         val age : Int,
         val gender : Int,
-        val ageFunction: Function<String, String>? = null,
-        val genderFunction: Function<String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place)
+        val ageFunction: BiFunction<String, String, String>? = null,
+        val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction)
 
 data class MergedAgedGenderColumnPositions(
         override val nationality: Int,
