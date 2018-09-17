@@ -315,15 +315,15 @@ class Application(
                     val numberedPages = numberedResultsPageRepository.findBySource(source)
                     numberedResultsPageRepository.deleteAll(numberedPages)
                     println("deleted $source")
+
+                    //We have to exit since all of the producer beans configure themselves on startup and their data
+                    //is now invalid
+                    System.exit(0) //FIXME: Exit normally
                 } else {
                     println("Source has not been deleted")
                 }
             }
         }
-
-        //We have to exit since all of the producer beans configure themselves on startup and their data
-        //is now invalid
-        SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
     private fun process(vararg args: String) {
