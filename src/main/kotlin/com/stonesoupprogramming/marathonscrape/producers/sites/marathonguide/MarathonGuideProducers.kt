@@ -94,19 +94,6 @@ class DesMoinesProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1750171015", 2017, standardColumnPositions.copy(nationality = -1, finishTime = 1), 1130)))
 
 @Component
-class AirForceProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
-                 @Autowired resultsRepository: ResultsRepository<ResultsPage>)
-    : AbstractMarathonGuideProducer(marathonGuideScraper,
-        resultsRepository,
-        LoggerFactory.getLogger(AirForceProducer::class.java),
-        MarathonSources.AirForce,
-        listOf(
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=37140920", 2014, standardColumnPositions, 2912),
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=37150919", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 2156),
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=37160917", 2016, standardColumnPositions.copy(nationality = 5, finishTime = 1), 2042),
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=37030920", 2017, standardColumnPositions.copy(nationality = -1, finishTime = 1, backupAge = null), 1265)))
-
-@Component
 class RalaighProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                       @Autowired resultsRepository: ResultsRepository<ResultsPage>)
     : AbstractMarathonGuideProducer(marathonGuideScraper,
