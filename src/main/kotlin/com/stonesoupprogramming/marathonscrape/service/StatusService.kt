@@ -69,7 +69,7 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
             MarathonSources.BaxtersLochNess -> logger.printProgress(source, blankLines, 2480, 2408, 2478, 2617)
             MarathonSources.SwissCity -> logger.printProgress(source, blankLines, 1465, 1339, 1413, 1328)
             MarathonSources.Ogden -> logger.printProgress(source, blankLines, 2530, 2144, 1559, 1069)
-            MarathonSources.Dubai -> logger.printProgress(source, blankLines, 2158, 1970, 2030, 2424)
+            MarathonSources.Dubai -> logger.printProgress(source, blankLines, 2158, 1970, 2030, (1476 + 438))
             MarathonSources.Frankfurt -> logger.printProgress(source, blankLines, 11124, 11176, 11883, 11140)
             MarathonSources.Athens -> logger.printProgress(source, blankLines, 10480, 11881, 13779, 14740)
             MarathonSources.Rotterdam -> logger.printProgress(source, blankLines, 10677, 11882, 12814, 13061)

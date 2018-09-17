@@ -64,6 +64,6 @@ class DubaiProducer(@Autowired private val dubaiAthComponent: DubaiAthComponent,
 
     override fun buildThreads() {
         threads.addAll(dubaiAthComponent.process())
-        threads.addAll(dubaiMiktaimingComponent.process())
+        //threads.addAll(dubaiMiktaimingComponent.process())
     }
 }
