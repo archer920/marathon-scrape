@@ -45,8 +45,6 @@ class Configuration {
             } else {
                 4
             }
-
-            setQueueCapacity(1000)
             setThreadNamePrefix("Marathon-Scraper-")
             initialize()
             return this
