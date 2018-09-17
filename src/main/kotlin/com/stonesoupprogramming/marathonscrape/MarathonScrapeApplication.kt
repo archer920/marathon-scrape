@@ -321,7 +321,9 @@ class Application(
             }
         }
 
-        println()
+        //We have to exit since all of the producer beans configure themselves on startup and their data
+        //is now invalid
+        SpringApplication.exit(applicationContext, ExitCodeGenerator { 0 })
     }
 
     private fun process(vararg args: String) {
