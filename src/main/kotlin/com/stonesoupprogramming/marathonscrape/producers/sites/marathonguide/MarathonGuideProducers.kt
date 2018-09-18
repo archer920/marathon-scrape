@@ -428,7 +428,7 @@ class WoodlandsProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
         listOf(
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022140301", 2014, standardColumnPositions.copy(nationality = -1, finishTime = 4, backupAge = null), 1230),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022150228", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 894),
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022160305", 2016, standardColumnPositions, 874),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022160305", 2016, standardColumnPositions.copy(finishTime = 1, nationality = 6), 874),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022170304", 2017, standardColumnPositions, 935)))
 
 @Component
