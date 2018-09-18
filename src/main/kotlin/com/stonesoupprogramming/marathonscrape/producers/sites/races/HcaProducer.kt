@@ -30,6 +30,7 @@ class HcaProducer(@Autowired private val standardWebScraperMergedAgeGender: Stan
             marathonYear = -1,
             tableBodySelector = ".table-striped > tbody:nth-child(1)",
             skipRowCount = 1,
+            tableRowFilter = java.util.function.Function { it -> it.filter { sub -> sub.size == 9 } },
             columnPositions = MergedAgedGenderColumnPositions(
                     nationality = 7,
                     nationalityFunction = BiFunction { _, html ->
@@ -69,16 +70,16 @@ class HcaProducer(@Autowired private val standardWebScraperMergedAgeGender: Stan
     override fun buildThreads() {
         val predicate = Predicate<String> { it -> completed.none { cp -> cp.url == it } }
         urls2014.filter(predicate::test).forEach { link ->
-            standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2014))
+            threads.add(standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2014)))
         }
         urls2015.filter(predicate::test).forEach { link ->
-            standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2015))
+            threads.add(standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2015)))
         }
         urls2016.filter(predicate::test).forEach { link ->
-            standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2016))
+            threads.add(standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2016)))
         }
         urls2017.filter(predicate::test).forEach { link ->
-            standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2017))
+            threads.add(standardWebScraperMergedAgeGender.scrape(scrapeInfo.copy(url = link, marathonYear = 2017)))
         }
     }
 }

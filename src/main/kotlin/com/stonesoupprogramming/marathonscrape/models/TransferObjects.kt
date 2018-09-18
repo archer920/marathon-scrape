@@ -61,7 +61,8 @@ abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val columnPositions: T,
         open val category : String? = null,
         open val gender: Gender? = null,
-        open val clipRows: Int = 0) : EntityTransformer<V> {
+        open val clipRows: Int = 0,
+        open val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null) : EntityTransformer<V> {
 
     override fun toEntity(clazz: Class<V>): V {
         val v = clazz.getDeclaredConstructor().newInstance()
@@ -83,7 +84,8 @@ data class StandardScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         override val columnPositions: T,
         override val category : String? = null,
         override val gender: Gender? = null,
-        override val clipRows: Int = 0) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, clipRows)
+        override val clipRows: Int = 0,
+        override val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, clipRows, tableRowFilter)
 
 data class PagedScrapeInfo<T: AbstractColumnPositions>(
         override val url : String,
@@ -100,7 +102,8 @@ data class PagedScrapeInfo<T: AbstractColumnPositions>(
         override val category: String? = null,
         override val gender: Gender? = null,
         val secondaryClickNextSelector: String? = null,
-        val thirdClickNextSelector: String? = null) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender) {
+        val thirdClickNextSelector: String? = null,
+        override val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, tableRowFilter = tableRowFilter) {
 
     override fun toEntity(clazz: Class<NumberedResultsPage>): NumberedResultsPage {
         val v = super.toEntity(clazz)

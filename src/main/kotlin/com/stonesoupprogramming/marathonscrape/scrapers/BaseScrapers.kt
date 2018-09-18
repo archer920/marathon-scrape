@@ -47,9 +47,12 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
         }
 
         table = table.subList(scrapeInfo.skipRowCount, table.size - scrapeInfo.clipRows)
-        tableHtml = tableHtml.subList(scrapeInfo.skipRowCount, tableHtml.size - scrapeInfo.clipRows)
+        table = scrapeInfo.tableRowFilter?.apply(table) ?: table
 
-        val resultSet = table.mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull()
+        tableHtml = tableHtml.subList(scrapeInfo.skipRowCount, tableHtml.size - scrapeInfo.clipRows)
+        tableHtml = scrapeInfo.tableRowFilter?.apply(tableHtml) ?: tableHtml
+
+        val resultSet = table.asSequence().mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull().toList()
         markCompleteService.markComplete(clazz, scrapeInfo, resultSet)
     }
 

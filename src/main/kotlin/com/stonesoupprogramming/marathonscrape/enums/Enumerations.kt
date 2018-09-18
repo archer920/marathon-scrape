@@ -12,11 +12,10 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     SanSebastian("--san-sebastian", endYear = 2016),
     Freiburg("--freiburg"),
     Milano("--milano"),
+
     Hca("--hca"),
     Dresden("--dresden"),
     Woodlands("--woodlands"),
-
-    //NOTE: Add above this line
     Axexander("--alexander-the-great"),
     Jungfrau("--junfrau"),
     Hamburg("--hamburg"),
