@@ -17,7 +17,9 @@ abstract class AbstractColumnPositions(
         open val nationalityFunction: BiFunction<String, String, String>? = null,
         open val finishTimeFunction: BiFunction<String, String, String>? = null,
         open val placeFunction: BiFunction<String, String, String>? = null,
-        open val halfwayTimeFunction: BiFunction<String, String, String>? = null)
+        open val halfwayTimeFunction: BiFunction<String, String, String>? = null,
+        open val ageFunction: BiFunction<String, String, String>? = null,
+        open val genderFunction: BiFunction<String, String, String>? = null)
 
 data class AgeGenderColumnPositions(
         override val nationality: Int,
@@ -30,8 +32,8 @@ data class AgeGenderColumnPositions(
         override val halfwayTimeFunction: BiFunction<String, String, String>? = null,
         val age : Int,
         val gender : Int,
-        val ageFunction: BiFunction<String, String, String>? = null,
-        val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction)
+        override val ageFunction: BiFunction<String, String, String>? = null,
+        override val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction, ageFunction)
 
 data class MergedAgedGenderColumnPositions(
         override val nationality: Int,
@@ -39,9 +41,16 @@ data class MergedAgedGenderColumnPositions(
         override val place: Int,
         override val halfwayTime: Int? = null,
         val ageGender : Int,
+        @Deprecated("Use the ageFunction and genderFunction")
         val splitFunc : Function<String, String>? = null,
         val backupAge : Int? = null,
-        val backupGender: Int? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime)
+        val backupGender: Int? = null,
+        override val nationalityFunction: BiFunction<String, String, String>? = null,
+        override val finishTimeFunction: BiFunction<String, String, String>? = null,
+        override val placeFunction: BiFunction<String, String, String>? = null,
+        override val halfwayTimeFunction: BiFunction<String, String, String>? = null,
+        override val ageFunction: BiFunction<String, String, String>? = null,
+        override val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction, ageFunction, genderFunction)
 
 abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val url : String,
