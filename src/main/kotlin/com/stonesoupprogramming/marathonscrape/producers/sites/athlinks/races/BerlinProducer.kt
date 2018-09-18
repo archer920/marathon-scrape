@@ -133,6 +133,7 @@ private const val URL_2017 = "https://www.athlinks.com/event/34448/results/Event
 //        CategoryAthLinks(2017, URL_2017, "M Open", CategoryAthLinks.selectOption(28), 47)
 //)
 
+//NOTE: The selectOption numbers have been verified to be correct
 private val categories = listOf(
         CategoryAthLinks(2014, URL_2014, "Female", CategoryAthLinks.selectOption(13), 136),
         CategoryAthLinks(2014, URL_2014, "Male", CategoryAthLinks.selectOption(29), 444),
