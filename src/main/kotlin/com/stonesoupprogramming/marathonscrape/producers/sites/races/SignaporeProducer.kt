@@ -33,7 +33,12 @@ class SignaporeProducer(
                         alt?.replace(" title", "")?.replace("\"", "") ?: UNAVAILABLE
                     }
                     else -> {
-                        text.split("\n")[0].trim()
+                        val nationality = text.split("\n")[0].trim()
+                        if(nationality == "|"){
+                            UNAVAILABLE
+                        } else{
+                            nationality
+                        }
                     }
                 }
             } catch (e: Exception) {
