@@ -21,6 +21,16 @@ import org.springframework.stereotype.Component
 //                SequenceAthLinks(2017, "", )))
 
 @Component
+class SanSebastianProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                           @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(SanSebastianProducer::class.java),
+        MarathonSources.SanSebastian,
+        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35432/results/Event/362430/Course/532679/Results", 59),
+                SequenceAthLinks(2015, "https://www.athlinks.com/event/35432/results/Event/499877/Course/743435/Results", 60),
+                SequenceAthLinks(2016, "https://www.athlinks.com/event/35432/results/Event/604448/Course/915740/Results", 51)))
+
+@Component
 class FreiburgProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                        @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
