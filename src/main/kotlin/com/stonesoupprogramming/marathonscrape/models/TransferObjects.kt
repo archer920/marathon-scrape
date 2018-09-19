@@ -103,7 +103,8 @@ data class PagedScrapeInfo<T: AbstractColumnPositions>(
         override val gender: Gender? = null,
         val secondaryClickNextSelector: String? = null,
         val thirdClickNextSelector: String? = null,
-        override val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, tableRowFilter = tableRowFilter) {
+        override val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null,
+        override val clipRows: Int = 0) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, tableRowFilter = tableRowFilter, clipRows = clipRows) {
 
     override fun toEntity(clazz: Class<NumberedResultsPage>): NumberedResultsPage {
         val v = super.toEntity(clazz)

@@ -1,5 +1,7 @@
 package com.stonesoupprogramming.marathonscrape.scrapers.sites
 
+import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
+import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.NumberedResultsPage
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
@@ -22,12 +24,12 @@ class CracoviaScraper(@Autowired driverFactory: DriverFactory,
 
     override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumnPositions, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumnPositions>, rowHtml: List<String>): RunnerData? {
         return try {
-            val place = row[columnPositions.place]
-            val finishTime = row[columnPositions.finishTime]
-            val nationality = parseNationality(rowHtml[columnPositions.nationality])
-            val ageGender = row[columnPositions.ageGender]
-            val age = parseAge(ageGender)
-            val gender = parseGender(ageGender)
+            val place = row[columnPositions.place].unavailableIfBlank()
+            val finishTime = row[columnPositions.finishTime].unavailableIfBlank()
+            val nationality = row[columnPositions.nationality].unavailableIfBlank()
+            val ageGender = row[columnPositions.ageGender].unavailableIfBlank()
+            val age = parseAge(ageGender).unavailableIfBlank()
+            val gender = parseGender(ageGender).unavailableIfBlank()
 
             try {
                 RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
@@ -60,19 +62,9 @@ class CracoviaScraper(@Autowired driverFactory: DriverFactory,
         }
     }
 
-    private fun parseNationality(html: String): String {
-        return try {
-            val parts = html.split(" ")
-            parts[2].replace("alt=", "").replace("\"", "")
-        } catch (e: Exception) {
-            logger.error("Unable to parse the nationality", e)
-            throw e
-        }
-    }
-
     override fun findCurrentPageNum(driver: RemoteWebDriver): Int {
         return try {
-            jsDriver.readText(driver, "#table2 > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(28) > tbody:nth-child(1) > tr:nth-child(12) > td:nth-child(2) > center:nth-child(1) > big:nth-child(1) > big:nth-child(1)").split(" ").first().toInt() / 10
+            jsDriver.readText(driver, "#table2 > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(28) > tbody:nth-child(1) > tr:nth-child(12) > td:nth-child(2) > center:nth-child(1) > big:nth-child(1) > big:nth-child(1)").split(" ").first().toInt() / 10 + 1
         } catch (e: Exception) {
             logger.error("Unable to read page number", e)
             throw e

@@ -19,7 +19,7 @@ fun String.safeInt(logger: Logger): Int {
         this.toInt()
     } catch (e: Exception) {
         logger.error("Unable to parse int from value $this", e)
-        Int.MAX_VALUE
+        throw e
     }
 }
 

@@ -28,12 +28,13 @@ class CracoviaAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
 class CracoviaPagedComponent(@Autowired private val cracoviaScraper: CracoviaScraper,
                              @Autowired numberedResultsPageRepository: NumberedResultsPageRepository) : AbstractNumberedResultsPageProducer(numberedResultsPageRepository, LoggerFactory.getLogger(CracoviaPagedComponent::class.java), MarathonSources.Cracovia) {
 
-    private val scrapeInfo = PagedScrapeInfo<MergedAgedGenderColumnPositions>(
+    private val scrapeInfo = PagedScrapeInfo(
             url = "https://online.datasport.pl/results1432/index.php",
             marathonSources = marathonSources,
             marathonYear = 2015,
             tableBodySelector = "#table2 > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(28) > tbody:nth-child(1)",
             skipRowCount = 1,
+            clipRows = 2,
             columnPositions = MergedAgedGenderColumnPositions(
                     nationality = 2,
                     place = 0,
@@ -42,12 +43,14 @@ class CracoviaPagedComponent(@Autowired private val cracoviaScraper: CracoviaScr
             startPage = 0,
             currentPage = 0,
             endPage = 458,
-            clickNextSelector = "#table2 > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(28) > tbody:nth-child(1) > tr:nth-child(9) > td:nth-child(3) > button:nth-child(3)",
-            clickPreviousSelector = "#table2 > tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(1) > table:nth-child(28) > tbody:nth-child(1) > tr:nth-child(9) > td:nth-child(1) > button:nth-child(3)"
+            clickNextSelector = "#table2 > tbody > tr > td:nth-child(1) > table > tbody > tr:nth-child(12) > td:nth-child(3) > button:nth-child(3)",
+            clickPreviousSelector = "#table2 > tbody > tr > td:nth-child(1) > table > tbody > tr:nth-child(12) > td:nth-child(1) > button:nth-child(3)"
     )
 
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
-        cracoviaScraper.scrape(scrapeInfo.copy(startPage = lastPage))
+        if(year == scrapeInfo.marathonYear){
+            threads.add(cracoviaScraper.scrape(scrapeInfo.copy(startPage = lastPage)))
+        }
     }
 }
 

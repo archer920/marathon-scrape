@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape.scrapers.sites
 
+import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 import com.stonesoupprogramming.marathonscrape.extension.calcAge
 import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
 import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
@@ -38,7 +39,7 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             val age = parseAge(row[columnPositions.ageGender])
             val gender = parseGender(row[columnPositions.ageGender])
             val finishTime = parseFinishTime(row[columnPositions.finishTime])
-            val nationality = parseNationality(row[columnPositions.ageGender])
+            val nationality = parseNationality(row[columnPositions.ageGender]).unavailableIfBlank()
 
             try {
                 RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
@@ -55,7 +56,9 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
     private fun parseAge(input : String) : String{
         return try {
             val parts = input.split(" - ")
-            parts[1].split(" ").first().calcAge(logger, false)
+            val ageParts = parts.find { it -> it.contains("19") }
+            val age = ageParts?.split(" ")?.first()?.calcAge(logger, false) ?: UNAVAILABLE
+            age
         } catch (e : Exception){
             logger.error("Failed to extract age form $input", e)
             throw e
@@ -63,21 +66,35 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
     }
 
     private fun parseGender(input : String) : String {
+        val parts = input.split(" - ")
         return try {
-            val parts = input.split(" - ")
             parts[0].split("\n")[1].replace("\t", "")
         } catch (e : Exception){
-            logger.error("Failed to extract gender form $input", e)
-            throw e
+            try {
+                parts[1].split("\n")[1].replace("\t", "")
+            } catch (e : Exception){
+                logger.error("Failed to extract gender form $input", e)
+                throw e
+            }
         }
     }
 
     private fun parseNationality(input : String) : String {
+        val parts = input.split(" - ")
         return try {
-            input.split(" - ")[2]
+            val nationality = parts[2]
+            if(nationality.startsWith("19")){
+                parts[3]
+            } else {
+                nationality
+            }
         } catch (e : Exception){
-            logger.error("Failed to extract nationality form $input", e)
-            throw e
+            if(parts.size == 2){
+                UNAVAILABLE
+            } else {
+                logger.error("Failed to extract nationality form $input", e)
+                throw e
+            }
         }
     }
 
