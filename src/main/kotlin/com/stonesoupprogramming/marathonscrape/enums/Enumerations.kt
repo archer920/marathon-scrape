@@ -10,7 +10,6 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Ottawa("--ottawa"),
     Kaiser("--kaiser"),
     Snowdonia("--snowdonia"),
-
     Cracovia("--cracovia"),
     Columbus("--columbus"),
     SanSebastian("--san-sebastian", endYear = 2016),
