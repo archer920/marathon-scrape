@@ -335,7 +335,7 @@ class SnowdoniaProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
         LoggerFactory.getLogger(SnowdoniaProducer::class.java),
         MarathonSources.Snowdonia,
         listOf(
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444141025", 2014, standardColumnPositions.copy(nationality = 5, finishTime = 1), 1719),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444141025", 2014, standardColumnPositions.copy(nationality = -1, finishTime = 1), 1719),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444151024", 2015, standardColumnPositions.copy(nationality = -1, finishTime = 5), 1846),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444161029", 2016, standardColumnPositions.copy(nationality = -1, finishTime = 5), 2066),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444171028", 2017, standardColumnPositions.copy(nationality = -1, finishTime = 5), 2220)))

@@ -7,8 +7,10 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
-    Cracovia("--cracovia"),
+    Kaiser("--kaiser"),
+    Snowdonia("--snowdonia"),
 
+    Cracovia("--cracovia"),
     Columbus("--columbus"),
     SanSebastian("--san-sebastian", endYear = 2016),
     Freiburg("--freiburg"),
@@ -67,7 +69,6 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Baystate("--baystate"),
     Canberra("--canberra"),
     Chester("--chester"),
-    Snowdonia("--snowdonia"),
     California("--california"),
     RocketCity("--rocket-city"),
     Dallas("--dallas"),
