@@ -39,7 +39,7 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             val age = parseAge(row[columnPositions.ageGender])
             val gender = parseGender(row[columnPositions.ageGender])
             val finishTime = parseFinishTime(row[columnPositions.finishTime])
-            val nationality = parseNationality(row[columnPositions.ageGender])
+            val nationality = parseNationality(row[columnPositions.ageGender]).unavailableIfBlank()
 
             try {
                 RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
@@ -56,7 +56,9 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
     private fun parseAge(input : String) : String{
         return try {
             val parts = input.split(" - ")
-            parts[1].split(" ").first().calcAge(logger, false)
+            val ageParts = parts.find { it -> it.contains("19") }
+            val age = ageParts?.split(" ")?.first()?.calcAge(logger, false) ?: UNAVAILABLE
+            age
         } catch (e : Exception){
             try {
                 val parts = input.split(" - ")
@@ -69,8 +71,8 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
     }
 
     private fun parseGender(input : String) : String {
+        val parts = input.split(" - ")
         return try {
-            val parts = input.split(" - ")
             parts[0].split("\n")[1].replace("\t", "")
         } catch (e : Exception){
             try {
@@ -84,12 +86,18 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
     }
 
     private fun parseNationality(input : String) : String {
+        val parts = input.split(" - ")
         return try {
-            input.split(" - ")[2].unavailableIfBlank()
+            val nationality = parts[2]
+            if(nationality.startsWith("19")){
+                parts[3]
+            } else {
+                nationality
+            }
         } catch (e : Exception){
-            if(input.contains("\n"))
+            if(parts.size == 2){
                 UNAVAILABLE
-            else{
+            } else {
                 logger.error("Failed to extract nationality from $input", e)
                 throw e
             }

@@ -335,7 +335,7 @@ class SnowdoniaProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
         LoggerFactory.getLogger(SnowdoniaProducer::class.java),
         MarathonSources.Snowdonia,
         listOf(
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444141025", 2014, standardColumnPositions.copy(nationality = 5, finishTime = 1), 1719),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444141025", 2014, standardColumnPositions.copy(nationality = -1, finishTime = 1), 1719),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444151024", 2015, standardColumnPositions.copy(nationality = -1, finishTime = 5), 1846),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444161029", 2016, standardColumnPositions.copy(nationality = -1, finishTime = 5), 2066),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1444171028", 2017, standardColumnPositions.copy(nationality = -1, finishTime = 5), 2220)))
@@ -428,7 +428,7 @@ class WoodlandsProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
         listOf(
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022140301", 2014, standardColumnPositions.copy(nationality = -1, finishTime = 4, backupAge = null), 1230),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022150228", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 894),
-                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022160305", 2016, standardColumnPositions, 874),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022160305", 2016, standardColumnPositions.copy(finishTime = 1, nationality = 6), 874),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=4022170304", 2017, standardColumnPositions, 935)))
 
 @Component

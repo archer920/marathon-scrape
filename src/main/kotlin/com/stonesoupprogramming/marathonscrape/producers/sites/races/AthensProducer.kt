@@ -56,7 +56,7 @@ class AthensProducer(@Autowired private val athensAthComponent: AthensAthCompone
                      @Autowired private val athensUrlComponent: AthensUrlComponent) : AbstractBaseProducer(LoggerFactory.getLogger(AthensProducer::class.java), MarathonSources.Athens){
 
     override fun buildThreads() {
-        threads.addAll(athensAthComponent.process())
+        //threads.addAll(athensAthComponent.process())
         threads.addAll(athensUrlComponent.process())
     }
 }

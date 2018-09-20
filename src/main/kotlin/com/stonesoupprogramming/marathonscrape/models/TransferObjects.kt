@@ -17,7 +17,9 @@ abstract class AbstractColumnPositions(
         open val nationalityFunction: BiFunction<String, String, String>? = null,
         open val finishTimeFunction: BiFunction<String, String, String>? = null,
         open val placeFunction: BiFunction<String, String, String>? = null,
-        open val halfwayTimeFunction: BiFunction<String, String, String>? = null)
+        open val halfwayTimeFunction: BiFunction<String, String, String>? = null,
+        open val ageFunction: BiFunction<String, String, String>? = null,
+        open val genderFunction: BiFunction<String, String, String>? = null)
 
 data class AgeGenderColumnPositions(
         override val nationality: Int,
@@ -30,8 +32,8 @@ data class AgeGenderColumnPositions(
         override val halfwayTimeFunction: BiFunction<String, String, String>? = null,
         val age : Int,
         val gender : Int,
-        val ageFunction: BiFunction<String, String, String>? = null,
-        val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction)
+        override val ageFunction: BiFunction<String, String, String>? = null,
+        override val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction, ageFunction)
 
 data class MergedAgedGenderColumnPositions(
         override val nationality: Int,
@@ -39,9 +41,16 @@ data class MergedAgedGenderColumnPositions(
         override val place: Int,
         override val halfwayTime: Int? = null,
         val ageGender : Int,
+        @Deprecated("Use the ageFunction and genderFunction")
         val splitFunc : Function<String, String>? = null,
         val backupAge : Int? = null,
-        val backupGender: Int? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime)
+        val backupGender: Int? = null,
+        override val nationalityFunction: BiFunction<String, String, String>? = null,
+        override val finishTimeFunction: BiFunction<String, String, String>? = null,
+        override val placeFunction: BiFunction<String, String, String>? = null,
+        override val halfwayTimeFunction: BiFunction<String, String, String>? = null,
+        override val ageFunction: BiFunction<String, String, String>? = null,
+        override val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction, ageFunction, genderFunction)
 
 abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val url : String,
@@ -52,7 +61,8 @@ abstract class AbstractScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         open val columnPositions: T,
         open val category : String? = null,
         open val gender: Gender? = null,
-        open val clipRows: Int = 0) : EntityTransformer<V> {
+        open val clipRows: Int = 0,
+        open val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null) : EntityTransformer<V> {
 
     override fun toEntity(clazz: Class<V>): V {
         val v = clazz.getDeclaredConstructor().newInstance()
@@ -74,7 +84,8 @@ data class StandardScrapeInfo<T : AbstractColumnPositions, V : ResultsPage>(
         override val columnPositions: T,
         override val category : String? = null,
         override val gender: Gender? = null,
-        override val clipRows: Int = 0) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, clipRows)
+        override val clipRows: Int = 0,
+        override val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null) : AbstractScrapeInfo<T, V>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, clipRows, tableRowFilter)
 
 data class PagedScrapeInfo<T: AbstractColumnPositions>(
         override val url : String,
@@ -88,10 +99,12 @@ data class PagedScrapeInfo<T: AbstractColumnPositions>(
         val endPage : Int,
         val clickNextSelector : String,
         val clickPreviousSelector : String,
-        override val category : String?,
-        override val gender : Gender?,
-        val secondaryClickNextSelector: String?,
-        val thirdClickNextSelector: String? = null) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender) {
+        override val category: String? = null,
+        override val gender: Gender? = null,
+        val secondaryClickNextSelector: String? = null,
+        val thirdClickNextSelector: String? = null,
+        override val tableRowFilter : Function<List<List<String>>, List<List<String>>>? = null,
+        override val clipRows: Int = 0) : AbstractScrapeInfo<T, NumberedResultsPage>(url, marathonSources, marathonYear, tableBodySelector, skipRowCount, columnPositions, category, gender, tableRowFilter = tableRowFilter, clipRows = clipRows) {
 
     override fun toEntity(clazz: Class<NumberedResultsPage>): NumberedResultsPage {
         val v = super.toEntity(clazz)

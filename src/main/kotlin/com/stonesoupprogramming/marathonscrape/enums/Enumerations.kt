@@ -1,12 +1,35 @@
 package com.stonesoupprogramming.marathonscrape.enums
 
+import java.lang.IllegalArgumentException
+
 enum class Gender(val code : String){
     MALE("M"),
     FEMALE("W"),
-    UNASSIGNED("U")
+    UNASSIGNED("U");
+
+    object Lookup {
+        fun fromCode(code : String) : Gender{
+            return when(code) {
+                "女" -> FEMALE
+                "男" -> MALE
+                else -> throw IllegalArgumentException("No gender associated with $code")
+            }
+        }
+    }
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    Ottawa("--ottawa"),
+    Kaiser("--kaiser"),
+    Snowdonia("--snowdonia"),
+    Cracovia("--cracovia"),
+    Columbus("--columbus"),
+    SanSebastian("--san-sebastian", endYear = 2016),
+    Freiburg("--freiburg"),
+    Milano("--milano"),
+    Hca("--hca"),
+    Dresden("--dresden"),
+    Woodlands("--woodlands"),
     Axexander("--alexander-the-great"),
     Jungfrau("--junfrau"),
     Hamburg("--hamburg"),
@@ -58,14 +81,12 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Baystate("--baystate"),
     Canberra("--canberra"),
     Chester("--chester"),
-    Snowdonia("--snowdonia"),
     California("--california"),
     RocketCity("--rocket-city"),
     Dallas("--dallas"),
     Charleston("--charleston"),
     Carlsbad("--carlsbad"),
     NewOrleans("--new-orleans"),
-    Woodlands("--woodlands"),
     Phoenix("--phoenix"),
     NapaValley("--napa-valley"),
     Illinois("--illinois"),

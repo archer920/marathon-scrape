@@ -19,7 +19,7 @@ fun String.safeInt(logger: Logger): Int {
         this.toInt()
     } catch (e: Exception) {
         logger.error("Unable to parse int from value $this", e)
-        Int.MAX_VALUE
+        throw e
     }
 }
 
@@ -80,3 +80,15 @@ fun String.toNationality(): String {
 }
 
 fun String.isAllCaps() : Boolean = this.all { it-> it.isUpperCase() }
+
+fun String.toLatin(): String {
+    return when {
+        this == "國際選手" -> "International Male Player"
+        this == "男視障選手" -> "Male Visually Impaired Player"
+        this == "視障選手" -> "Visually Impaired Player"
+        endsWith("歲") -> this.removeSuffix("歲")
+        endsWith("+") -> this.removeSuffix("歲+")
+        endsWith("歲-") -> this.removeSuffix("歲-")
+        else -> this
+    }
+}
