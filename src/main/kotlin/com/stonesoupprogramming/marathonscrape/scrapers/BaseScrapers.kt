@@ -151,7 +151,7 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
 
     }
 
-    private fun pickSelector(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<T>): String {
+    protected fun pickSelector(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<T>): String {
         return if (findCurrentPageNum(driver) <= 1) {
             scrapeInfo.clickNextSelector
         } else {

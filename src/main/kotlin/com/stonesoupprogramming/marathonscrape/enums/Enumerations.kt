@@ -1,9 +1,21 @@
 package com.stonesoupprogramming.marathonscrape.enums
 
+import java.lang.IllegalArgumentException
+
 enum class Gender(val code : String){
     MALE("M"),
     FEMALE("W"),
-    UNASSIGNED("U")
+    UNASSIGNED("U");
+
+    object Lookup {
+        fun fromCode(code : String) : Gender{
+            return when(code) {
+                "女" -> FEMALE
+                "男" -> MALE
+                else -> throw IllegalArgumentException("No gender associated with $code")
+            }
+        }
+    }
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){

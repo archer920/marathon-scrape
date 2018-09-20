@@ -174,17 +174,6 @@ class EdinburghProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScra
                 SequenceAthLinks(2017, "https://www.athlinks.com/event/34514/results/Event/644023/Course/1016123/Results", 123)))
 
 @Component
-class TaipeiProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                     @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
-        LoggerFactory.getLogger(TaipeiProducer::class.java),
-        MarathonSources.Taipei,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 107),
-                SequenceAthLinks(2015, "https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 94),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/34450/results/Event/704200/Course/1147895/Results", 112),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 120)))
-
-@Component
 class GreaterManchesterProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                                 @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
