@@ -1,5 +1,6 @@
 package com.stonesoupprogramming.marathonscrape.scrapers.sites
 
+import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 import com.stonesoupprogramming.marathonscrape.extension.calcAge
 import com.stonesoupprogramming.marathonscrape.extension.unavailableIfBlank
 import com.stonesoupprogramming.marathonscrape.models.AbstractScrapeInfo
@@ -57,8 +58,13 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             val parts = input.split(" - ")
             parts[1].split(" ").first().calcAge(logger, false)
         } catch (e : Exception){
-            logger.error("Failed to extract age form $input", e)
-            throw e
+            try {
+                val parts = input.split(" - ")
+                parts[2].split(" ").first().calcAge(logger, false)
+            } catch (e : Exception){
+                logger.error("Failed to extract age form $input", e)
+                throw e
+            }
         }
     }
 
@@ -67,17 +73,26 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             val parts = input.split(" - ")
             parts[0].split("\n")[1].replace("\t", "")
         } catch (e : Exception){
-            logger.error("Failed to extract gender form $input", e)
-            throw e
+            try {
+                val parts = input.split(" - ")
+                parts[1].split("\n").last().replace("\t", "")
+            } catch (e : Exception){
+                logger.error("Failed to extract gender form $input", e)
+                throw e
+            }
         }
     }
 
     private fun parseNationality(input : String) : String {
         return try {
-            input.split(" - ")[2]
+            input.split(" - ")[2].unavailableIfBlank()
         } catch (e : Exception){
-            logger.error("Failed to extract nationality form $input", e)
-            throw e
+            if(input.contains("\n"))
+                UNAVAILABLE
+            else{
+                logger.error("Failed to extract nationality from $input", e)
+                throw e
+            }
         }
     }
 
