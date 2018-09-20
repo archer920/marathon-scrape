@@ -167,11 +167,13 @@ class Configuration {
             @Autowired columbusProducer: ColumbusProducer,
             @Autowired cracoviaProducer: CracoviaProducer,
             @Autowired kaiserProducer: KaiserProducer,
-            @Autowired ottawaProducer: OttawaProducer
+            @Autowired ottawaProducer: OttawaProducer,
+            @Autowired barcelonaProducer: BarcelonaProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Barcelona to baltimoreProducer,
                     MarathonSources.Ottawa to ottawaProducer,
                     MarathonSources.Kaiser to kaiserProducer,
                     MarathonSources.Cracovia to cracoviaProducer,
