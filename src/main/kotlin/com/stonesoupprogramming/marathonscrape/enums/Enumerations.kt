@@ -20,6 +20,9 @@ enum class Gender(val code : String){
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
     Barcelona("--barcelona"),
+    Taipei("--taipei"),
+    Berlin("--berlin"),
+
     Ottawa("--ottawa"),
     Kaiser("--kaiser"),
     Snowdonia("--snowdonia"),
@@ -49,7 +52,6 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Frankfurt("--frankfurt"),
     Rotterdam("--rotterdam"),
     Edinburgh("--edinburgh"),
-    Taipei("--taipei"),
     GreaterManchester("--greater-manchester"),
     Luxemburg("--luxemburg"),
     Tallinn("--tallinn"),
@@ -119,7 +121,6 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Istanbul("--istanbul"),
     Philadelphia("--philadelphia"),
     Belfast("--belfast"),
-    Berlin("--berlin"),
     MyrtleBeach("--myrtle-beach"),
     Maritzburg("--maritzburg"),
     Cottonwood("--cottonwood"),
