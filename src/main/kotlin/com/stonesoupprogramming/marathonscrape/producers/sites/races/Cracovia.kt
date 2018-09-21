@@ -3,7 +3,7 @@ package com.stonesoupprogramming.marathonscrape.producers.sites.races
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
@@ -20,9 +20,9 @@ class CracoviaAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(CracoviaAthComponent::class.java),
         MarathonSources.Cracovia,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35465/results/Event/409660/Course/615995/Results", 108),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/35465/results/Event/544957/Course/809981/Results", 112),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/35465/results/Event/641783/Course/997566/Results", 113)))
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/35465/results/Event/409660/Course/615995/Results", 108, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/35465/results/Event/544957/Course/809981/Results", 112, false),
+                SequenceLinks(2017, "https://www.athlinks.com/event/35465/results/Event/641783/Course/997566/Results", 113, false)))
 
 @Component
 class CracoviaPagedComponent(@Autowired private val cracoviaScraper: CracoviaScraper,

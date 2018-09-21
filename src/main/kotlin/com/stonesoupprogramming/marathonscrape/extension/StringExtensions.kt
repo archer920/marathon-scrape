@@ -81,6 +81,8 @@ fun String.toNationality(): String {
 
 fun String.isAllCaps() : Boolean = this.all { it-> it.isUpperCase() }
 
+fun String.isNumeric() : Boolean = this.all { it -> it.isDigit() }
+
 fun String.toLatin(): String {
     return when {
         this == "國際選手" -> "International Male Player"

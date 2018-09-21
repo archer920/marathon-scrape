@@ -5,7 +5,7 @@ import com.stonesoupprogramming.marathonscrape.models.AbstractColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.CategoryAthLinks
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksMarathonScraper
@@ -42,10 +42,10 @@ abstract class AbstractNumberedAthSequenceProducer(
         numberedResultsPageRepository: NumberedResultsPageRepository,
         logger: Logger,
         marathonSources: MarathonSources,
-        private val sequenceAthLinks: List<SequenceAthLinks>) : AbstractNumberedBaseAthProducer(athLinksMarathonScraper, numberedResultsPageRepository, logger, marathonSources) {
+        private val sequenceLinks: List<SequenceLinks>) : AbstractNumberedBaseAthProducer(athLinksMarathonScraper, numberedResultsPageRepository, logger, marathonSources) {
 
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
-        sequenceAthLinks.forEach { it ->
+        sequenceLinks.forEach { it ->
             if (it.year == year) {
                 startScrape(baseScrapeInfo.copy(url = it.url,
                         marathonYear = year,

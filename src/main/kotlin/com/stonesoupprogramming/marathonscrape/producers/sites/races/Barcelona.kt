@@ -5,7 +5,7 @@ import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
@@ -23,9 +23,9 @@ class BarcelonaAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathon
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(BarcelonaAthComponent::class.java),
         MarathonSources.Barcelona,
-        listOf(SequenceAthLinks(2015, "https://www.athlinks.com/event/34535/results/Event/430781/Course/641229/Results", 308),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/34535/results/Event/527324/Course/784158/Results", 331),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/34535/results/Event/623704/Course/901798/Results", 324)))
+        listOf(SequenceLinks(2015, "https://www.athlinks.com/event/34535/results/Event/430781/Course/641229/Results", 308, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34535/results/Event/527324/Course/784158/Results", 331, false),
+                SequenceLinks(2017, "https://www.athlinks.com/event/34535/results/Event/623704/Course/901798/Results", 324, false)))
 
 @Component
 class BarcelonaProducer(@Autowired pagedResultsRepository: ResultsRepository<ResultsPage>,

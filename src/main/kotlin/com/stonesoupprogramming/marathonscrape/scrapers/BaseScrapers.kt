@@ -19,7 +19,7 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
                                                                                                                protected val canadaProvinceCodes: List<String>) {
 
     @Async
-    open fun scrape(scrapeInfo: V, preWebScrapeEvent: PreWebScrapeEvent<T, U>? = null): CompletableFuture<String> {
+    open fun scrape(scrapeInfo: V, preWebScrapeEvent: PreWebScrapeEvent<T, U>? = null, rowProcessor: RowProcessor<T, U, V>? = null): CompletableFuture<String> {
         val driver = driverFactory.createDriver()
 
         return try {
@@ -27,7 +27,7 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
             driver.get(scrapeInfo.url)
 
             preWebScrapeEvent?.execute(driver, jsDriver, scrapeInfo)
-            webscrape(driver, scrapeInfo)
+            webscrape(driver, scrapeInfo, rowProcessor)
 
             successResult()
         } catch (e: Exception) {
@@ -38,7 +38,7 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
         }
     }
 
-    protected open fun processPage(driver: RemoteWebDriver, scrapeInfo: V) {
+    protected open fun processPage(driver: RemoteWebDriver, scrapeInfo: V, rowProcessor: RowProcessor<T, U, V>?) {
         var table = jsDriver.readTableRows(driver, scrapeInfo.tableBodySelector)
         var tableHtml = jsDriver.readTableRows(driver, scrapeInfo.tableBodySelector, rawHtml = true)
 
@@ -52,14 +52,17 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
         tableHtml = tableHtml.subList(scrapeInfo.skipRowCount, tableHtml.size - scrapeInfo.clipRows)
         tableHtml = scrapeInfo.tableRowFilter?.apply(tableHtml) ?: tableHtml
 
-        val resultSet = table.asSequence().mapIndexed { index, row -> processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull().toList()
+        val resultSet = table.asSequence().mapIndexed { index, row ->
+            rowProcessor?.processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index])
+                    ?: processRow(row, scrapeInfo.columnPositions, scrapeInfo, tableHtml[index]) }.filterNotNull().toList()
         markCompleteService.markComplete(clazz, scrapeInfo, resultSet)
     }
 
+    @Deprecated("Use Row Processor Instead")
     abstract fun processRow(row: List<String>, columnPositions: T, scrapeInfo: V, rowHtml: List<String>): RunnerData?
 
-    protected open fun webscrape(driver: RemoteWebDriver, scrapeInfo: V) {
-        processPage(driver, scrapeInfo)
+    protected open fun webscrape(driver: RemoteWebDriver, scrapeInfo: V, rowProcessor: RowProcessor<T, U, V>?) {
+        processPage(driver, scrapeInfo, rowProcessor)
     }
 }
 
@@ -73,7 +76,7 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
         canadaProvinceCodes: List<String>)
     : AbstractBaseScraper<T, NumberedResultsPage, PagedScrapeInfo<T>>(driverFactory, jsDriver, markedCompleteService, clazz, logger, usStateCodes, canadaProvinceCodes) {
 
-    override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<T>) {
+    override fun webscrape(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<T>, rowProcessor: RowProcessor<T, NumberedResultsPage, PagedScrapeInfo<T>>?) {
         if (scrapeInfo.startPage > scrapeInfo.endPage) {
             throw IllegalStateException("Start page can't be after end page: start=${scrapeInfo.startPage}, end=${scrapeInfo.endPage}")
         }
@@ -89,7 +92,7 @@ abstract class AbstractPagedResultsScraper<T : AbstractColumnPositions>(
         for (page in scrapeInfo.startPage..scrapeInfo.endPage) {
             synchronizePages(driver, page, findCurrentPageNum(driver), currentScrapeInfo)
             currentScrapeInfo = currentScrapeInfo.copy(currentPage = page)
-            processPage(driver, currentScrapeInfo)
+            processPage(driver, currentScrapeInfo, rowProcessor)
         }
     }
 

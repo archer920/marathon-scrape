@@ -4,7 +4,7 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
@@ -22,9 +22,9 @@ class AthensAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(AthensAthComponent::class.java),
         MarathonSources.Athens,
-        listOf(SequenceAthLinks(2015, "https://www.athlinks.com/event/34504/results/Event/470893/Course/701290/Results", 238),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/34504/results/Event/597971/Course/903287/Results", 276),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/34504/results/Event/604206/Course/1119762/Results", 295)))
+        listOf(SequenceLinks(2015, "https://www.athlinks.com/event/34504/results/Event/470893/Course/701290/Results", 238, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34504/results/Event/597971/Course/903287/Results", 276, false),
+                SequenceLinks(2017, "https://www.athlinks.com/event/34504/results/Event/604206/Course/1119762/Results", 295, false)))
 
 @Component
 class AthensUrlComponent(@Autowired private val oldMyRaceGrScraper: OldMyRaceGrScraper,

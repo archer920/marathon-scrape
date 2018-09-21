@@ -5,7 +5,7 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
@@ -23,8 +23,8 @@ class DresdenAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonSc
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(DresdenAthComponent::class.java),
         MarathonSources.Dresden,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34752/results/Event/360266/Course/529172/Results", 29),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/34752/results/Event/527370/Course/784221/Results", 24)))
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/34752/results/Event/360266/Course/529172/Results", 29, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34752/results/Event/527370/Course/784221/Results", 24, false)))
 
 @Component
 class DredenMikatimingComponent(@Autowired private val mikatimingDeScraper: MikatimingDeScraper,

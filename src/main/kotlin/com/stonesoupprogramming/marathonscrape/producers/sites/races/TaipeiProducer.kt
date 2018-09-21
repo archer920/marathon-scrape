@@ -3,7 +3,7 @@ package com.stonesoupprogramming.marathonscrape.producers.sites.races
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
@@ -20,9 +20,9 @@ class TaipeiAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonScr
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(TaipeiAthComponent::class.java),
         MarathonSources.Taipei,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 107),
-                SequenceAthLinks(2015, "https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 94),
-                SequenceAthLinks(2017, "https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 120)))
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/34450/results/Event/410756/Course/617603/Results", 107, false),
+                SequenceLinks(2015, "https://www.athlinks.com/event/34450/results/Event/512311/Course/669211/Results", 94, false),
+                SequenceLinks(2017, "https://www.athlinks.com/event/34450/results/Event/701640/Course/1142522/Results", 120, false)))
 
 @Component
 class TaipeiRunToPixComponent(@Autowired private val runToPixScraper: RunToPixScraper,
