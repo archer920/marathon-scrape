@@ -5,10 +5,12 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 import com.stonesoupprogramming.marathonscrape.extension.isNumeric
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
+import com.stonesoupprogramming.marathonscrape.models.NumberedResultsPage
 import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
+import com.stonesoupprogramming.marathonscrape.scrapers.PreWebScrapeEvent
 import com.stonesoupprogramming.marathonscrape.scrapers.StandardMergedAgeGenderRowProcessor
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.EnduNetPreWebScrapeEvent
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.EnduNetScraper
@@ -19,7 +21,11 @@ abstract class AbstractEnduNetProducer(private val enduNetScraper: EnduNetScrape
                               numberedPagedResultsRepository: NumberedResultsPageRepository,
                               logger : Logger,
                               marathonSources: MarathonSources,
-                              private val sequenceLinks : List<SequenceLinks>) : AbstractNumberedResultsPageProducer(numberedPagedResultsRepository, logger, marathonSources) {
+                              private val sequenceLinks : List<SequenceLinks>,
+                                       private val preWebScrapeEvents : Map<Int, PreWebScrapeEvent<MergedAgedGenderColumnPositions, NumberedResultsPage>> = mapOf(2014 to EnduNetPreWebScrapeEvent(),
+                                               2015 to EnduNetPreWebScrapeEvent(),
+                                               2016 to EnduNetPreWebScrapeEvent(),
+                                               2017 to EnduNetPreWebScrapeEvent())) : AbstractNumberedResultsPageProducer(numberedPagedResultsRepository, logger, marathonSources) {
 
     private val scrapeInfo = PagedScrapeInfo(
             url = "",
@@ -105,7 +111,7 @@ abstract class AbstractEnduNetProducer(private val enduNetScraper: EnduNetScrape
         sequenceLinks.find { sl -> sl.year == year }?.let { sl ->
             threads.add(enduNetScraper.scrape(
                     scrapeInfo.copy(url = sl.url, marathonYear = sl.year, startPage = lastPage, endPage = sl.endPage),
-                    EnduNetPreWebScrapeEvent(sl.reloadHack),
+                    preWebScrapeEvents[sl.year],
                     StandardMergedAgeGenderRowProcessor()))
         }
     }

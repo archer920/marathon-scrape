@@ -13,7 +13,7 @@ abstract class AbstractBaseProducer(protected val logger: Logger, protected val 
 
     protected val threads = mutableListOf<CompletableFuture<String>>()
 
-    fun process(): List<CompletableFuture<String>> {
+    open fun process(): List<CompletableFuture<String>> {
         return try {
             logger.info("Starting $marathonSources")
 

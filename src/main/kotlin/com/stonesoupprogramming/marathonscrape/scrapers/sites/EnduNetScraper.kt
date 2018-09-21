@@ -15,7 +15,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
-class EnduNetPreWebScrapeEvent(private val reloadHack : Boolean = false): PreWebScrapeEvent<MergedAgedGenderColumnPositions, NumberedResultsPage>{
+class EnduNetPreWebScrapeEvent(private var reloadHack : Boolean = false,
+                               private val yearMap : Map<Int, String> = mapOf(2014 to "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(4) > td:nth-child(1)",
+                                       2015 to "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(3) > td:nth-child(1)",
+                                       2016 to "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(2) > td:nth-child(1)",
+                                       2017 to "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(1) > td:nth-child(1)"),
+                               private val yearView : String = "#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(1) > div > div > a > span",
+                               private val resultsView : String = "#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > button"): PreWebScrapeEvent<MergedAgedGenderColumnPositions, NumberedResultsPage>{
 
     private val logger = LoggerFactory.getLogger(EnduNetPreWebScrapeEvent::class.java)
 
@@ -30,11 +36,12 @@ class EnduNetPreWebScrapeEvent(private val reloadHack : Boolean = false): PreWeb
     private fun pickResultsSize(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumnPositions, NumberedResultsPage>, attempt: Int, giveUp: Int) {
         logger.info("Picking Results Size")
         try {
-            driver.scrollIntoView(".fixed-table-pagination".toCss(), logger)
+            driver.scrollIntoView(resultsView.toCss(), logger, top = false)
             if(reloadHack){
                 reloadHack(driver, jsDriver, scrapeInfo, attempt, giveUp)
             }
             sleepRandom(1, 10)
+                        //#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > button
             driver.click("#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > button".toCss(), logger)
             driver.click("#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > ul > li:nth-child(4) > a".toCss(), logger)
         } catch (e : Exception){
@@ -58,16 +65,14 @@ class EnduNetPreWebScrapeEvent(private val reloadHack : Boolean = false): PreWeb
     private fun pickYear(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumnPositions, NumberedResultsPage>, attempt: Int, giveUp: Int) {
         logger.info("Selecting year = ${scrapeInfo.marathonYear}")
         try {
+            driver.scrollIntoView(yearView.toCss(), logger)
+            sleepRandom(min = 2, max = 5)
+            driver.scrollIntoView(yearView.toCss(), logger)
+
             driver.click("#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(1) > div > div > a > span".toCss(), logger)
-            val yearCssSelector = when(scrapeInfo.marathonYear){
-                2014 -> "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(4) > td:nth-child(1)"
-                2015 -> "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(3) > td:nth-child(1)"
-                2016 -> "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(2) > td:nth-child(1)"
-                2017 -> "body > div.modal.ng-scope.center.am-fade-and-scale > div > div > form > div.modal-body.settings.settings-modal.mobileModal > div > table > tbody > tr:nth-child(1) > td:nth-child(1)"
-                else -> throw IllegalArgumentException("Pick a year between 2014-2017")
-            }.toCss()
+            val yearCssSelector = yearMap[scrapeInfo.marathonYear] ?: throw IllegalArgumentException("Acceptable years are ${yearMap.keys}")
             sleepRandom(1, 10)
-            driver.click(yearCssSelector, logger)
+            driver.click(yearCssSelector.toCss(), logger)
         } catch (e : Exception){
             if(attempt < giveUp){
                 driver.navigate().refresh()
@@ -79,9 +84,8 @@ class EnduNetPreWebScrapeEvent(private val reloadHack : Boolean = false): PreWeb
         }
     }
 }
-
 @Component
-class EnduNetScraper(@Autowired driverFactory: DriverFactory,
+open class EnduNetScraper(@Autowired driverFactory: DriverFactory,
                      @Autowired jsDriver: JsDriver,
                      @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumnPositions, NumberedResultsPage>,
                      @Autowired usStateCodes: List<String>,
@@ -122,7 +126,7 @@ class EnduNetScraper(@Autowired driverFactory: DriverFactory,
         super.synchronizePages(driver, currentPage, jsPage, scrapeInfo, attempt, giveUp)
     }
 
-    private fun readLastPage(driver: RemoteWebDriver, attemptNum : Int = 0, giveUp: Int = 10) : Int {
+    protected open fun readLastPage(driver: RemoteWebDriver, attemptNum : Int = 0, giveUp: Int = 10) : Int {
         return try {
             jsDriver.readText(driver, ".pagination > .page-last > a").toInt()
         } catch (e : Exception){
@@ -140,12 +144,32 @@ class EnduNetScraper(@Autowired driverFactory: DriverFactory,
         }
     }
 
-    private fun readMarathonYear(driver: RemoteWebDriver) : Int {
+    protected open fun readMarathonYear(driver: RemoteWebDriver) : Int {
         return try {
             jsDriver.readText(driver, "#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(1) > div > div > strong").toInt()
         } catch (e : Exception){
             logger.error("Unable to read marathon year", e)
             throw e
         }
+    }
+}
+
+@Component
+class PadovaScraper(@Autowired driverFactory: DriverFactory,
+                    @Autowired jsDriver: JsDriver,
+                    @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumnPositions, NumberedResultsPage>,
+                    @Autowired usStateCodes: List<String>,
+                    @Autowired canadaProvinceCodes: List<String>) : EnduNetScraper(driverFactory, jsDriver, markedCompleteService, usStateCodes, canadaProvinceCodes){
+
+    override fun scrollPage(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumnPositions>, forward: Boolean) {
+        val selector = if(forward){
+            scrapeInfo.clickNextSelector
+        } else {
+            scrapeInfo.clickPreviousSelector
+        }
+        driver.scrollIntoView("div.intero:nth-child(20) > div:nth-child(1) > div:nth-child(11) > div:nth-child(2) > a:nth-child(1) > div:nth-child(1)".toCss(), logger, top = false)
+        sleepRandom(min = 1, max = 2)
+        driver.click(selector.toCss(), logger)
+        sleepRandom(min = 1, max = 10)
     }
 }
