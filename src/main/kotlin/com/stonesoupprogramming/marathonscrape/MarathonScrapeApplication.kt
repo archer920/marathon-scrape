@@ -10,6 +10,7 @@ import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.endunet.TurinProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.races.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.tdslive.RomeProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
 import com.stonesoupprogramming.marathonscrape.repository.RunnerDataRepository
@@ -175,11 +176,13 @@ class Configuration {
             @Autowired padovaProducer: PadovaProducer,
             @Autowired dublinProducer: DublinProducer,
             @Autowired ljubljanskiProducer: LjubljanskiProducer,
-            @Autowired osloProducer: OsloProducer
+            @Autowired osloProducer: OsloProducer,
+            @Autowired romeProducer: RomeProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Rome to romeProducer,
                     MarathonSources.Oslo to osloProducer,
                     MarathonSources.Ljubljanski to ljubljanskiProducer,
                     MarathonSources.Dublin to dublinProducer,

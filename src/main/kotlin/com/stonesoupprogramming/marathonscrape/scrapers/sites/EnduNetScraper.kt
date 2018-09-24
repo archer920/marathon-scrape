@@ -84,8 +84,9 @@ class EnduNetPreWebScrapeEvent(private var reloadHack : Boolean = false,
         }
     }
 }
+
 @Component
-open class EnduNetScraper(@Autowired driverFactory: DriverFactory,
+class EnduNetScraper(@Autowired driverFactory: DriverFactory,
                      @Autowired jsDriver: JsDriver,
                      @Autowired markedCompleteService: MarkCompleteService<MergedAgedGenderColumnPositions, NumberedResultsPage>,
                      @Autowired usStateCodes: List<String>,
