@@ -21,6 +21,17 @@ import org.springframework.stereotype.Component
 //                SequenceLinks(2017, "", )))
 
 @Component
+class LjubljanskiProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
+                               @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
+    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
+        LoggerFactory.getLogger(LjubljanskiProducer::class.java),
+        MarathonSources.Ljubljanski,
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/34558/results/Event/360389/Course/529334/Results", 28),
+                SequenceLinks(2015, "https://www.athlinks.com/event/34558/results/Event/493003/Course/732890/Results", 38),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34558/results/Event/596832/Course/900831/Results", 39),
+                SequenceLinks(2017, "https://www.athlinks.com/event/34558/results/Event/677618/Course/1294826/Results", 38)))
+
+@Component
 class DublinProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                                @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
