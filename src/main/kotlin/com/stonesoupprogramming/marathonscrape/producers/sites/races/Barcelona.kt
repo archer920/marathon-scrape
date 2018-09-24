@@ -50,7 +50,7 @@ class BarcelonaProducer(@Autowired pagedResultsRepository: ResultsRepository<Res
     )
 
     override fun buildThreads() {
-        threads.addAll(barcelonaAthComponent.process())
+        //threads.addAll(barcelonaAthComponent.process())
         urls.filter { url -> completed.none { cp -> cp.url == url } }.forEach {it ->
             threads.add(standardWebScraperAgeGender.scrape(scrapeInfo.copy(url = it)))
         }

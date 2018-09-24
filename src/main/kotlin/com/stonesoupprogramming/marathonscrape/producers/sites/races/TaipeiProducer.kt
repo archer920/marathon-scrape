@@ -31,7 +31,7 @@ class TaipeiRunToPixComponent(@Autowired private val runToPixScraper: RunToPixSc
     private val scrapeInfo = PagedScrapeInfo(
             url = "https://www.run2pix.com/report/report_w.php?EventCode=20161218&Race=MA&sn=136",
             marathonSources = marathonSources,
-            marathonYear = 2015,
+            marathonYear = 2016,
             tableBodySelector = "body > table:nth-child(4) > tbody:nth-child(1)",
             skipRowCount = 8,
             clipRows = 5,
@@ -50,7 +50,7 @@ class TaipeiRunToPixComponent(@Autowired private val runToPixScraper: RunToPixSc
     )
 
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
-        if(year == 2015){
+        if(year == 2016){
             threads.add(runToPixScraper.scrape(scrapeInfo.copy(startPage = lastPage)))
         }
     }

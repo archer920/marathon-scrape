@@ -20,6 +20,7 @@ enum class Gender(val code : String){
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
     Padova("--padova"),
+    London("--london"),
     Turin("--turin"),
     Barcelona("--barcelona"),
     Taipei("--taipei"),
