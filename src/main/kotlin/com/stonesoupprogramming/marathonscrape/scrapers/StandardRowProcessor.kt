@@ -89,3 +89,63 @@ class StandardMergedAgeGenderRowProcessor<U : ResultsPage, V : AbstractScrapeInf
         }
     }
 }
+
+class TdsLiveRowProcessor : RowProcessor<MergedAgedGenderColumnPositions, NumberedResultsPage, PagedScrapeInfo<MergedAgedGenderColumnPositions>> {
+
+    private val logger = LoggerFactory.getLogger(StandardMergedAgeGenderRowProcessor::class.java)
+
+    override fun processRow(row: List<String>, columnPositions: MergedAgedGenderColumnPositions, scrapeInfo: PagedScrapeInfo<MergedAgedGenderColumnPositions>, rowHtml: List<String>): RunnerData? {
+        return try {
+            val place = if(columnPositions.place != -1){
+                columnPositions.placeFunction?.apply(row[columnPositions.place], rowHtml[columnPositions.place])
+                        ?: row[columnPositions.place].unavailableIfBlank()
+            } else {
+                UNAVAILABLE
+            }
+            val nationality = if(columnPositions.nationality != -1){
+                columnPositions.nationalityFunction?.apply(row[columnPositions.nationality], rowHtml[columnPositions.nationality])
+                        ?: row[columnPositions.nationality].unavailableIfBlank()
+            } else {
+                UNAVAILABLE
+            }
+            var finishTime = if(columnPositions.finishTime != -1) {
+                columnPositions.finishTimeFunction?.apply(row[columnPositions.finishTime], rowHtml[columnPositions.finishTime])
+                        ?: row[columnPositions.finishTime].unavailableIfBlank()
+            } else {
+                UNAVAILABLE
+            }
+
+            val age: String
+            val gender: String
+
+            if(!finishTime.contains(":")){
+                finishTime = row[8]
+                age = columnPositions.ageFunction?.apply(row[7], rowHtml[7]) ?: UNAVAILABLE
+                gender = columnPositions.genderFunction?.apply(row[7], rowHtml[7]) ?: UNAVAILABLE
+            } else {
+                age = if(columnPositions.ageGender != -1){
+                    columnPositions.ageFunction?.apply(row[columnPositions.ageGender], rowHtml[columnPositions.ageGender])
+                            ?: throw IllegalArgumentException("${StandardWebScraperMergedAgeGender::class.java} requires age function")
+                } else {
+                    UNAVAILABLE
+                }
+                gender = if(columnPositions.ageGender != -1){
+                    columnPositions.genderFunction?.apply(row[columnPositions.ageGender], rowHtml[columnPositions.ageGender])
+                            ?: throw IllegalArgumentException("${StandardWebScraperMergedAgeGender::class.java} requires gender function")
+                } else {
+                    scrapeInfo.gender?.code ?: UNAVAILABLE
+                }
+            }
+
+            try {
+                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+            } catch (e: Exception) {
+                logger.error("Unable to create runner data", e)
+                throw e
+            }
+        } catch (e: Exception) {
+            logger.error("Unable to process row", e)
+            throw e
+        }
+    }
+}

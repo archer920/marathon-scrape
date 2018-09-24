@@ -6,4 +6,8 @@ import com.stonesoupprogramming.marathonscrape.scrapers.sites.TdsLivePreWebScrap
 
 data class TdsScrapeInfo(val gender: Gender,
                          val preWebScrapeEvent: TdsLivePreWebScrapeEvent?,
-                         val sequenceLinks: SequenceLinks)
+                         val sequenceLinks: SequenceLinks,
+                         val place : Int = 0,
+                         val nationality : Int = 6,
+                         val ageGender : Int = -1,
+                         val finishTime : Int = 7)

@@ -8,7 +8,7 @@ import com.stonesoupprogramming.marathonscrape.models.PagedScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.sites.TdsScrapeInfo
 import com.stonesoupprogramming.marathonscrape.producers.AbstractNumberedResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
-import com.stonesoupprogramming.marathonscrape.scrapers.StandardMergedAgeGenderRowProcessor
+import com.stonesoupprogramming.marathonscrape.scrapers.TdsLiveRowProcessor
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.TdsLiveScraper
 import org.slf4j.Logger
 import java.util.function.BiFunction
@@ -91,12 +91,11 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
 
         tdsScrapeInfoList.find { tds -> tds.sequenceLinks.year == year }?.let { tds ->
+            val columnPositions = scrapeInfo.columnPositions.copy(ageGender = tds.ageGender, nationality = tds.nationality, finishTime = tds.finishTime, place = tds.place)
             if(tds.preWebScrapeEvent != null){
-                val columnPositions = scrapeInfo.columnPositions.copy(ageGender = -1)
-                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions, gender = tds.gender), preWebScrapeEvent = tds.preWebScrapeEvent, rowProcessor = StandardMergedAgeGenderRowProcessor()))
+                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions, gender = tds.gender), preWebScrapeEvent = tds.preWebScrapeEvent, rowProcessor = TdsLiveRowProcessor()))
             } else {
-                val columnPositions = scrapeInfo.columnPositions.copy(finishTime = 8)
-                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions), rowProcessor = StandardMergedAgeGenderRowProcessor()))
+                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions), rowProcessor = TdsLiveRowProcessor()))
             }
         }
     }
