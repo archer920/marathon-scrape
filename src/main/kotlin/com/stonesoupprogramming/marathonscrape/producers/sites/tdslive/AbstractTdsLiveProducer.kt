@@ -49,8 +49,8 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                                 UNAVAILABLE
                             } else {
                                 when {
-                                    text.endsWith("M") -> Gender.MALE.code
-                                    text.endsWith("F") -> Gender.FEMALE.code
+                                    text.contains("M") -> Gender.MALE.code
+                                    text.contains("F") -> Gender.FEMALE.code
                                     else -> UNAVAILABLE
                                 }
                             }
