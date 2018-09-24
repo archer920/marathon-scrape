@@ -59,7 +59,9 @@ abstract class AbstractBaseScraper<T : AbstractColumnPositions, U : ResultsPage,
     }
 
     @Deprecated("Use Row Processor Instead")
-    abstract fun processRow(row: List<String>, columnPositions: T, scrapeInfo: V, rowHtml: List<String>): RunnerData?
+    open fun processRow(row: List<String>, columnPositions: T, scrapeInfo: V, rowHtml: List<String>): RunnerData? {
+        throw UnsupportedOperationException("This function has been deprecated. Use Row Process Instead")
+    }
 
     protected open fun webscrape(driver: RemoteWebDriver, scrapeInfo: V, rowProcessor: RowProcessor<T, U, V>?) {
         processPage(driver, scrapeInfo, rowProcessor)
