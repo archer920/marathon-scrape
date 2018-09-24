@@ -62,7 +62,7 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                     },
                     ageFunction = BiFunction { text, _ ->
                         try {
-                            if(text == "N/D"){
+                            if(text == "N/D" || text.isBlank()){
                                 UNAVAILABLE
                             } else {
                                 text.replace("OVER", "").replace("M", "").replace("F", "")
@@ -86,11 +86,10 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
     override fun buildYearlyThreads(year: Int, lastPage: Int) {
 
         tdsScrapeInfoList.find { tds -> tds.sequenceLinks.year == year }?.let { tds ->
+            val columnPositions = scrapeInfo.columnPositions.copy(ageGender = tds.ageGender, nationality = tds.nationality, finishTime = tds.finishTime, place = tds.place)
             if(tds.preWebScrapeEvent != null){
-                val columnPositions = scrapeInfo.columnPositions.copy(ageGender = -1)
                 threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions, gender = tds.gender), preWebScrapeEvent = tds.preWebScrapeEvent, rowProcessor = StandardMergedAgeGenderRowProcessor()))
             } else {
-                val columnPositions = scrapeInfo.columnPositions.copy(finishTime = 8)
                 threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions), rowProcessor = StandardMergedAgeGenderRowProcessor()))
             }
         }
