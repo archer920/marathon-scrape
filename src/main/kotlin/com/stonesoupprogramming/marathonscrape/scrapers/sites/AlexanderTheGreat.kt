@@ -6,6 +6,7 @@ import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.scrapers.DriverFactory
 import com.stonesoupprogramming.marathonscrape.scrapers.JsDriver
+import com.stonesoupprogramming.marathonscrape.scrapers.RowProcessor
 import com.stonesoupprogramming.marathonscrape.scrapers.StandardWebScraperAgeGender
 import com.stonesoupprogramming.marathonscrape.service.MarkCompleteService
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -23,7 +24,7 @@ class AlexanderTheGreatScraper(
         @Autowired canadaProvinceCodes: List<String>)
     : StandardWebScraperAgeGender(driverFactory, jsDriver, markedCompleteService, usStateCodes, canadaProvinceCodes, LoggerFactory.getLogger(AlexanderTheGreatScraper::class.java)) {
 
-    override fun processPage(driver: RemoteWebDriver, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>) {
+    override fun processPage(driver: RemoteWebDriver, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowProcessor: RowProcessor<AgeGenderColumnPositions, ResultsPage, AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>>?) {
         val body = jsDriver.readText(driver, scrapeInfo.tableBodySelector)
         val lines = when (scrapeInfo.marathonYear) {
             2014 -> readBody(body, "\n ", 1, 1, Function { it -> it.length == 2 }, 1, 6, 7, 8, 11, scrapeInfo)

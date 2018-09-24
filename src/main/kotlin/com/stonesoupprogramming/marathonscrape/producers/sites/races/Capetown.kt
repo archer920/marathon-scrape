@@ -4,7 +4,7 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
@@ -22,9 +22,9 @@ class CapetownAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(CapetownAthComponent::class.java),
         MarathonSources.Capetown,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/35337/results/Event/358090/Course/472610/Results", 68),
-                SequenceAthLinks(2015, "https://www.athlinks.com/event/35337/results/Event/481613/Course/716466/Results", 86),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/35337/results/Event/591130/Course/889079/Results", 124)))
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/35337/results/Event/358090/Course/472610/Results", 68, false),
+                SequenceLinks(2015, "https://www.athlinks.com/event/35337/results/Event/481613/Course/716466/Results", 86, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/35337/results/Event/591130/Course/889079/Results", 124, false)))
 
 @Component
 class CapetownUrlComponent(

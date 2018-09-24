@@ -7,6 +7,7 @@ import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.scrapers.DriverFactory
 import com.stonesoupprogramming.marathonscrape.scrapers.JsDriver
+import com.stonesoupprogramming.marathonscrape.scrapers.RowProcessor
 import com.stonesoupprogramming.marathonscrape.scrapers.StandardWebScraperAgeGender
 import com.stonesoupprogramming.marathonscrape.service.MarkCompleteService
 import org.openqa.selenium.remote.RemoteWebDriver
@@ -21,7 +22,7 @@ class DataSportScraper(@Autowired driverFactory: DriverFactory,
                        @Autowired usStateCodes: List<String>,
                        @Autowired canadaProvinceCodes: List<String>) : StandardWebScraperAgeGender(driverFactory, jsDriver, markedCompleteService, usStateCodes, canadaProvinceCodes, LoggerFactory.getLogger(DataSportScraper::class.java)) {
 
-    override fun processPage(driver: RemoteWebDriver, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>) {
+    override fun processPage(driver: RemoteWebDriver, scrapeInfo: AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>, rowProcessor: RowProcessor<AgeGenderColumnPositions, ResultsPage, AbstractScrapeInfo<AgeGenderColumnPositions, ResultsPage>>?) {
         val body = jsDriver.readText(driver, ".m-rich-text > pre:nth-child(8)")
         val lines = readBody(body)
 

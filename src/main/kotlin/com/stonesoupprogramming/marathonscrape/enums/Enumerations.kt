@@ -1,11 +1,11 @@
 package com.stonesoupprogramming.marathonscrape.enums
 
-import java.lang.IllegalArgumentException
+import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
 
 enum class Gender(val code : String){
     MALE("M"),
     FEMALE("W"),
-    UNASSIGNED("U");
+    UNASSIGNED(UNAVAILABLE);
 
     object Lookup {
         fun fromCode(code : String) : Gender{
@@ -19,10 +19,13 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    Dublin("--dublin"),
+    Padova("--padova"),
+    London("--london"),
+    Turin("--turin"),
     Barcelona("--barcelona"),
     Taipei("--taipei"),
     Berlin("--berlin"),
-
     Ottawa("--ottawa"),
     Kaiser("--kaiser"),
     Snowdonia("--snowdonia"),

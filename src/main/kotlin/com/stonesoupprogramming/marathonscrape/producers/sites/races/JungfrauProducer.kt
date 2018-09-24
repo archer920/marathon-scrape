@@ -4,7 +4,7 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
@@ -21,9 +21,9 @@ class JungfrauAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(JungfrauAthComponent::class.java),
         MarathonSources.Jungfrau,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34875/results/Event/357512/Course/524308/Results", 80),
-                SequenceAthLinks(2015, "https://www.athlinks.com/event/34875/results/Event/478357/Course/711990/Results", 82),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/34875/results/Event/584543/Course/877498/Results", 73)))
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/34875/results/Event/357512/Course/524308/Results", 80, false),
+                SequenceLinks(2015, "https://www.athlinks.com/event/34875/results/Event/478357/Course/711990/Results", 82, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34875/results/Event/584543/Course/877498/Results", 73, false)))
 
 @Component
 class JungfrauProducer(@Autowired resultsRepository: ResultsRepository<ResultsPage>,

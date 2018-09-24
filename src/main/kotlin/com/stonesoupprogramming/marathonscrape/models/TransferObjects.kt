@@ -112,3 +112,9 @@ data class PagedScrapeInfo<T: AbstractColumnPositions>(
         return v
     }
 }
+
+data class SequenceLinks(
+        val year: Int,
+        val url: String,
+        val endPage: Int,
+        val reloadHack: Boolean = false)

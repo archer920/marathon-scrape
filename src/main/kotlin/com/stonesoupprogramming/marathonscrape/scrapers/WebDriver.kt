@@ -25,6 +25,7 @@ class DriverFactory {
 
     fun createDriver(): RemoteWebDriver {
         val headless = System.getenv().containsKey("GO_HEADLESS")
+        val useFF = System.getenv().containsKey("GECKO_HOME")
         return try {
             logger.info("Waiting on Permit")
             semaphore.acquire()
@@ -34,12 +35,17 @@ class DriverFactory {
                 sleepRandom()
             }
 
-            if(headless){
-                val options = ChromeOptions()
-                options.setHeadless(true)
-                ChromeDriver(options)
+            if(useFF){
+                System.setProperty("webdriver.gecko.driver", System.getenv()["GECKO_HOME"])
+                FirefoxDriver()
             } else {
-                ChromeDriver()
+                if(headless){
+                    val options = ChromeOptions()
+                    options.setHeadless(true)
+                    ChromeDriver(options)
+                } else {
+                    ChromeDriver()
+                }
             }
         } catch (e: Exception) {
             when (e) {

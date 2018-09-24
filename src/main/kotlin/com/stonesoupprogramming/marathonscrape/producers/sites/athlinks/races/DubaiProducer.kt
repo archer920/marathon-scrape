@@ -5,7 +5,7 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
@@ -23,9 +23,9 @@ class DubaiAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonScra
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(DubaiAthComponent::class.java),
         MarathonSources.Dubai,
-        listOf(SequenceAthLinks(2014, "https://www.athlinks.com/event/34575/results/Event/325046/Course/470682/Results", 44),
-                SequenceAthLinks(2015, "https://www.athlinks.com/event/34575/results/Event/401502/Course/602453/Results", 40),
-                SequenceAthLinks(2016, "https://www.athlinks.com/event/34575/results/Event/513994/Course/764191/Results", 41)))
+        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/34575/results/Event/325046/Course/470682/Results", 44, false),
+                SequenceLinks(2015, "https://www.athlinks.com/event/34575/results/Event/401502/Course/602453/Results", 40, false),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34575/results/Event/513994/Course/764191/Results", 41, false)))
 
 @Component
 class DubaiMiktaimingComponent(@Autowired private val mikatimingDeScraper: MikatimingDeScraper,

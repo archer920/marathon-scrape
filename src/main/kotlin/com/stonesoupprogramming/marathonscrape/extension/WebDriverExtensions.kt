@@ -52,10 +52,10 @@ fun RemoteWebDriver.click(element: By, logger: Logger) {
     }
 }
 
-fun RemoteWebDriver.scrollIntoView(selector: By, logger: Logger, attemptNum: Int = 0, giveUp: Int = 10) {
+fun RemoteWebDriver.scrollIntoView(selector: By, logger: Logger, attemptNum: Int = 0, giveUp: Int = 10, top : Boolean = true) {
     try {
         val elem = this.findElement(selector)
-        this.executeScript("arguments[0].scrollIntoView(true);", elem)
+        this.executeScript("arguments[0].scrollIntoView($top);", elem)
         this.waitUntilVisible(selector)
     } catch (e : Exception){
         if(attemptNum < giveUp){

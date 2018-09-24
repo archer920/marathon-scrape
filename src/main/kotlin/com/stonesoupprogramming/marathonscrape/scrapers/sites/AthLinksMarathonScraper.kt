@@ -45,7 +45,7 @@ class AthLinksMarathonScraper(@Autowired driverFactory: DriverFactory,
                               @Autowired canadaProvinceCodes: List<String>)
     : AbstractPagedResultsScraper<AbstractColumnPositions>(driverFactory, athJsDriver, markedCompleteService, NumberedResultsPage::class.java, LoggerFactory.getLogger(AthLinksMarathonScraper::class.java), usStateCodes, canadaProvinceCodes) {
 
-    override fun processPage(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<AbstractColumnPositions>) {
+    override fun processPage(driver: RemoteWebDriver, scrapeInfo: PagedScrapeInfo<AbstractColumnPositions>, rowProcessor: RowProcessor<AbstractColumnPositions, NumberedResultsPage, PagedScrapeInfo<AbstractColumnPositions>>?) {
         sleepRandom(1, 3)
 
         val tableData = athJsDriver.readPage(driver)

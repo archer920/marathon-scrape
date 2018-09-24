@@ -7,6 +7,7 @@ import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.RunnerData
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.endunet.TurinProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.races.*
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
@@ -168,12 +169,20 @@ class Configuration {
             @Autowired cracoviaProducer: CracoviaProducer,
             @Autowired kaiserProducer: KaiserProducer,
             @Autowired ottawaProducer: OttawaProducer,
-            @Autowired barcelonaProducer: BarcelonaProducer
+            @Autowired barcelonaProducer: BarcelonaProducer,
+            @Autowired turinProducer: TurinProducer,
+            @Autowired londonProducer: LondonProducer,
+            @Autowired padovaProducer: PadovaProducer,
+            @Autowired dublinProducer: DublinProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
-                    MarathonSources.Barcelona to baltimoreProducer,
+                    MarathonSources.Dublin to dublinProducer,
+                    MarathonSources.Padova to padovaProducer,
+                    MarathonSources.Turin to turinProducer,
+                    MarathonSources.London to londonProducer,
+                    MarathonSources.Barcelona to barcelonaProducer,
                     MarathonSources.Ottawa to ottawaProducer,
                     MarathonSources.Kaiser to kaiserProducer,
                     MarathonSources.Cracovia to cracoviaProducer,

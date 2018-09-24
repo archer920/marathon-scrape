@@ -4,7 +4,7 @@ import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
 import com.stonesoupprogramming.marathonscrape.models.sites.MarathonGuideInfo
-import com.stonesoupprogramming.marathonscrape.models.sites.SequenceAthLinks
+import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
 import com.stonesoupprogramming.marathonscrape.producers.AbstractBaseProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.AbstractMarathonGuideProducer
@@ -36,7 +36,7 @@ class AirForceAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathonS
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
         LoggerFactory.getLogger(AirForceAthComponent::class.java),
         MarathonSources.AirForce,
-        listOf(SequenceAthLinks(2017, "https://www.athlinks.com/event/20370/results/Event/602585/Course/911911/Results", 30)))
+        listOf(SequenceLinks(2017, "https://www.athlinks.com/event/20370/results/Event/602585/Course/911911/Results", 30, false)))
 
 @Component
 class AirForceProducer(@Autowired private val airForceMarathonGuideComponent: AirForceMarathonGuideComponent,
