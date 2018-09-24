@@ -62,10 +62,15 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                     },
                     ageFunction = BiFunction { text, _ ->
                         try {
-                            if(text == "N/D"){
+                            if(text == "N/D" || text.isBlank()){
                                 UNAVAILABLE
                             } else {
-                                text.replace("OVER", "").replace("M", "").replace("F", "")
+                                val age = text.replace("OVER", "").replace("M", "").replace("F", "").replace("S", "")
+                                if(age.isBlank()){
+                                    UNAVAILABLE
+                                } else {
+                                    age
+                                }
                             }
                         } catch (e : Exception){
                             logger.error("Failed to parse age", e)
