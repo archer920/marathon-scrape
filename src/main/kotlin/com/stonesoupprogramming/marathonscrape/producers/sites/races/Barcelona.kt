@@ -1,16 +1,17 @@
 package com.stonesoupprogramming.marathonscrape.producers.sites.races
 
+import com.stonesoupprogramming.marathonscrape.enums.Gender
 import com.stonesoupprogramming.marathonscrape.enums.MarathonSources
 import com.stonesoupprogramming.marathonscrape.extension.UNAVAILABLE
-import com.stonesoupprogramming.marathonscrape.models.AgeGenderColumnPositions
+import com.stonesoupprogramming.marathonscrape.models.MergedAgedGenderColumnPositions
 import com.stonesoupprogramming.marathonscrape.models.ResultsPage
-import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.models.SequenceLinks
+import com.stonesoupprogramming.marathonscrape.models.StandardScrapeInfo
 import com.stonesoupprogramming.marathonscrape.producers.AbstractResultsPageProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.AbstractNumberedAthSequenceProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
-import com.stonesoupprogramming.marathonscrape.scrapers.StandardWebScraperAgeGender
+import com.stonesoupprogramming.marathonscrape.scrapers.StandardWebScraperMergedAgeGender
 import com.stonesoupprogramming.marathonscrape.scrapers.sites.AthLinksMarathonScraper
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -30,29 +31,57 @@ class BarcelonaAthComponent(@Autowired athLinksMarathonScraper: AthLinksMarathon
 @Component
 class BarcelonaProducer(@Autowired pagedResultsRepository: ResultsRepository<ResultsPage>,
                         @Autowired private val barcelonaAthComponent: BarcelonaAthComponent,
-                        @Autowired private val standardWebScraperAgeGender: StandardWebScraperAgeGender) : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(BarcelonaProducer::class.java), MarathonSources.Barcelona) {
+                        @Autowired private val standardWebScraperAgeGender: StandardWebScraperMergedAgeGender) : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(BarcelonaProducer::class.java), MarathonSources.Barcelona) {
 
-    private val urls = Array(3) {it -> "https://www.runbritainrankings.com/results/results.aspx?meetingid=94897&pagenum=${it + 1}" }
-    private val scrapeInfo = StandardScrapeInfo<AgeGenderColumnPositions, ResultsPage>(
-            url = "",
+    private val scrapeInfo = StandardScrapeInfo<MergedAgedGenderColumnPositions, ResultsPage>(
+            url = "https://www.planete-marathon.fr/Resultats_course.php?epreuve=BARC&edition=BARC2014",
             marathonSources = marathonSources,
             marathonYear = 2014,
-            tableBodySelector = "#cphBody_gvP > tbody:nth-child(1)",
-            skipRowCount = 3,
-            columnPositions = AgeGenderColumnPositions(
-                    nationality = 1,
-                    nationalityFunction = BiFunction { _, _ -> UNAVAILABLE },
-                    place = 1,
-                    finishTime = 2,
-                    age = 9,
-                    gender = 10
+            tableBodySelector = "#corps > table:nth-child(4) > tbody:nth-child(2)",
+            skipRowCount = 0,
+            columnPositions = MergedAgedGenderColumnPositions(
+                    nationality = 2,
+                    nationalityFunction = BiFunction { txt, _ ->
+                        try {
+                            val last = txt.split(" ").last()
+                            last.replace("(", "").replace(")", "")
+                        } catch (e: Exception) {
+                            logger.error("Unable to parse nationality", e)
+                            throw e
+                        }
+                    },
+                    place = 0,
+                    finishTime = 1,
+                    ageGender = 4,
+                    ageFunction = BiFunction { txt, _ ->
+                        try {
+                            val age = txt.filter { c: Char -> c.isDigit() }.toList().joinToString(separator = "")
+                            if (age.isNotBlank()) {
+                                age
+                            } else {
+                                UNAVAILABLE
+                            }
+                        } catch (e: Exception) {
+                            logger.error("Unable to find age", e)
+                            throw e
+                        }
+                    },
+                    genderFunction = BiFunction { txt, _ ->
+                        try {
+                            when {
+                                txt.contains("M") -> Gender.MALE.code
+                                txt.contains("F") -> Gender.FEMALE.code
+                                else -> UNAVAILABLE
+                            }
+                        } catch (e: Exception) {
+                            logger.error("Unable to determine gender", e)
+                            throw e
+                        }
+                    }
             )
     )
 
     override fun buildThreads() {
-        //threads.addAll(barcelonaAthComponent.process())
-        urls.filter { url -> completed.none { cp -> cp.url == url } }.forEach {it ->
-            threads.add(standardWebScraperAgeGender.scrape(scrapeInfo.copy(url = it)))
-        }
+        threads.add(standardWebScraperAgeGender.scrape(scrapeInfo))
     }
 }

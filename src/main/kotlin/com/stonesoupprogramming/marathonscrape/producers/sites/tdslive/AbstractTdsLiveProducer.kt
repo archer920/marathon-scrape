@@ -49,8 +49,8 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                                 UNAVAILABLE
                             } else {
                                 when {
-                                    text.endsWith("M") -> Gender.MALE.code
-                                    text.endsWith("F") -> Gender.FEMALE.code
+                                    text.contains("M") -> Gender.MALE.code
+                                    text.contains("F") -> Gender.FEMALE.code
                                     else -> UNAVAILABLE
                                 }
                             }
@@ -65,7 +65,12 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                             if(text == "N/D" || text.isBlank()){
                                 UNAVAILABLE
                             } else {
-                                text.replace("OVER", "").replace("M", "").replace("F", "")
+                                val age = text.replace("OVER", "").replace("M", "").replace("F", "").replace("S", "")
+                                if(age.isBlank()){
+                                    UNAVAILABLE
+                                } else {
+                                    age
+                                }
                             }
                         } catch (e : Exception){
                             logger.error("Failed to parse age", e)

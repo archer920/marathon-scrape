@@ -28,7 +28,7 @@ class OsloProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
         MarathonSources.Oslo,
         listOf(SequenceLinks(2014, "https://www.athlinks.com/event/34547/results/Event/396904/Course/474209/Results",46),
                 SequenceLinks(2015, "https://www.athlinks.com/event/34547/results/Event/479285/Course/701950/Results", 48),
-                SequenceLinks(2016, "https://www.athlinks.com/event/34547/results/Event/479285/Course/701950/Results", 49),
+                SequenceLinks(2016, "https://www.athlinks.com/event/34547/results/Event/586480/Course/881113/Results", 49),
                 SequenceLinks(2017, "https://www.athlinks.com/event/34547/results/Event/770279/Course/1320504/Results", 45)))
 
 @Component

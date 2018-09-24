@@ -41,7 +41,6 @@ class EnduNetPreWebScrapeEvent(private var reloadHack : Boolean = false,
                 reloadHack(driver, jsDriver, scrapeInfo, attempt, giveUp)
             }
             sleepRandom(1, 10)
-                        //#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > button
             driver.click("#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > button".toCss(), logger)
             driver.click("#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(9) > div.bootstrap-table > div.fixed-table-container.table-no-bordered > div.fixed-table-pagination > div.pull-left.pagination-detail > span.page-list > span > ul > li:nth-child(4) > a".toCss(), logger)
         } catch (e : Exception){
@@ -65,9 +64,7 @@ class EnduNetPreWebScrapeEvent(private var reloadHack : Boolean = false,
     private fun pickYear(driver: RemoteWebDriver, jsDriver: JsDriver, scrapeInfo: AbstractScrapeInfo<MergedAgedGenderColumnPositions, NumberedResultsPage>, attempt: Int, giveUp: Int) {
         logger.info("Selecting year = ${scrapeInfo.marathonYear}")
         try {
-            driver.scrollIntoView(yearView.toCss(), logger)
-            sleepRandom(min = 2, max = 5)
-            driver.scrollIntoView(yearView.toCss(), logger)
+            driver.scrollIntoView("body".toCss(), logger)
 
             driver.click("#contenitore > div.view.ng-scope > div.intero.eventoris.bgwhite.ng-scope > div.ng-scope > div:nth-child(1) > div > div > a > span".toCss(), logger)
             val yearCssSelector = yearMap[scrapeInfo.marathonYear] ?: throw IllegalArgumentException("Acceptable years are ${yearMap.keys}")
