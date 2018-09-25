@@ -65,7 +65,7 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                             if(text == "N/D" || text.isBlank()){
                                 UNAVAILABLE
                             } else {
-                                val age = text.replace("OVER", "").replace("M", "").replace("F", "").replace("S", "")
+                                val age = text.filter { c : Char -> c.isDigit() }.toList().joinToString(separator = "")
                                 if(age.isBlank()){
                                     UNAVAILABLE
                                 } else {

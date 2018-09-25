@@ -10,6 +10,7 @@ import com.stonesoupprogramming.marathonscrape.producers.sites.athlinks.races.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.endunet.TurinProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.marathonguide.*
 import com.stonesoupprogramming.marathonscrape.producers.sites.races.*
+import com.stonesoupprogramming.marathonscrape.producers.sites.tdslive.FlorenceProducer
 import com.stonesoupprogramming.marathonscrape.producers.sites.tdslive.RomeProducer
 import com.stonesoupprogramming.marathonscrape.repository.NumberedResultsPageRepository
 import com.stonesoupprogramming.marathonscrape.repository.ResultsRepository
@@ -182,6 +183,7 @@ class Configuration {
             @Autowired romeProducer: RomeProducer,
             @Autowired trevisoProducer: TrevisoProducer,
             @Autowired pkoProducer: PkoProducer,
+            @Autowired florenceProducer: FlorenceProducer,
             @Autowired ergebnisProducer: ErgebnisProducer,
             @Autowired taipeiStandardCharteredProducer: TaipeiStandardCharteredProducer
 
@@ -189,6 +191,7 @@ class Configuration {
 
             mapOf(
                     MarathonSources.TaipeiStandardChartered to taipeiStandardCharteredProducer,
+                    MarathonSources.Florence to florenceProducer,
                     MarathonSources.Ergebnis to ergebnisProducer,
                     MarathonSources.PKO to pkoProducer,
                     MarathonSources.Treviso to trevisoProducer,

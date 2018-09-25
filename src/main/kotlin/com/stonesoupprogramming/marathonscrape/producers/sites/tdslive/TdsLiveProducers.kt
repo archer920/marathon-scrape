@@ -27,3 +27,13 @@ class RomeProducer(@Autowired tdsLiveScraper: TdsLiveScraper,
 
                 //2017
                 TdsScrapeInfo(Gender.UNASSIGNED, null, SequenceLinks(2017, "https://www.tds-live.com/ns/index.jsp?login=&password=&is_domenica=0&nextRaceId=&dpbib=&dpcat=&dpsex=&serviziol=&pageType=1&id=8252&servizio=000&locale=1040", 1332), ageGender = 7, finishTime = 8)))
+
+@Component
+class FlorenceProducer(@Autowired tdsLiveScraper: TdsLiveScraper,
+                   @Autowired numberedResultsPageRepository: NumberedResultsPageRepository) : AbstractTdsLiveProducer(tdsLiveScraper, numberedResultsPageRepository, LoggerFactory.getLogger(FlorenceProducer::class.java), MarathonSources.Florence,
+        listOf(
+                TdsScrapeInfo(Gender.UNASSIGNED, null, SequenceLinks(2014, "https://www.tds-live.com/ns/index.jsp?serviziol=&pageType=1&id=6206&servizio=000", 869)),
+                TdsScrapeInfo(Gender.UNASSIGNED, null, SequenceLinks(2015, "https://www.tds-live.com/ns/index.jsp?login=&password=&is_domenica=-1&nextRaceId=&dpbib=&dpcat=&dpsex=&serviziol=&pageType=1&id=6940&servizio=000&locale=2057", 828)),
+                TdsScrapeInfo(Gender.UNASSIGNED, null, SequenceLinks(2016, "https://www.tds-live.com/ns/index.jsp?login=&password=&is_domenica=0&nextRaceId=&dpbib=&dpcat=&dpsex=&serviziol=&pageType=1&id=7796&servizio=000&locale=2057", 822)),
+                TdsScrapeInfo(Gender.UNASSIGNED, null, SequenceLinks(2017, "https://www.tds-live.com/ns/index.jsp?login=&password=&is_domenica=0&nextRaceId=&dpbib=&dpcat=&dpsex=&serviziol=&pageType=1&id=8758&servizio=000&locale=2057", 844))))
+

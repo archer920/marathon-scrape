@@ -60,7 +60,6 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
             MarathonSources.TaipeiStandardChartered -> logger.printProgress(source, blankLines, 1832, 2178, 2000, 3167)
             MarathonSources.Ergebnis -> logger.printProgress(source, blankLines, 110690, 117227, 115505, 114469)
             MarathonSources.PKO -> logger.printProgress(source, blankLines, 3842, 4757)
-            MarathonSources.Treviso -> logger.printProgress(source, blankLines, 1835, 1551, 1180, 801)
             MarathonSources.Rome -> logger.printProgress(source, blankLines, 14875, 11487, 13881, 13318)
             MarathonSources.Florence -> logger.printProgress(source, blankLines, 8686, 8275, 8215, 8438)
             MarathonSources.Oslo -> logger.printProgress(source, blankLines, 2272, 2391, 2404, 2237)
