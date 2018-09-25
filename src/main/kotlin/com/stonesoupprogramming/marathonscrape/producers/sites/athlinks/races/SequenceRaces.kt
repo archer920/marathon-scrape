@@ -74,16 +74,6 @@ class ColumbusProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScrap
                 SequenceLinks(2017, "https://www.athlinks.com/event/5061/results/Event/602567/Course/911868/Results", 65, false)))
 
 @Component
-class SanSebastianProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
-                           @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
-    : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
-        LoggerFactory.getLogger(SanSebastianProducer::class.java),
-        MarathonSources.SanSebastian,
-        listOf(SequenceLinks(2014, "https://www.athlinks.com/event/35432/results/Event/362430/Course/532679/Results", 59, false),
-                SequenceLinks(2015, "https://www.athlinks.com/event/35432/results/Event/499877/Course/743435/Results", 60, false),
-                SequenceLinks(2016, "https://www.athlinks.com/event/35432/results/Event/604448/Course/915740/Results", 51, false)))
-
-@Component
 class FreiburgProducer(@Autowired athLinksMarathonScraper: AthLinksMarathonScraper,
                        @Autowired numberedResultsPageRepository: NumberedResultsPageRepository)
     : AbstractNumberedAthSequenceProducer(athLinksMarathonScraper, numberedResultsPageRepository,
