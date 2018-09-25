@@ -180,12 +180,16 @@ class Configuration {
             @Autowired osloProducer: OsloProducer,
             @Autowired romeProducer: RomeProducer,
             @Autowired trevisoProducer: TrevisoProducer,
+            @Autowired pkoProducer: PkoProducer,
             @Autowired florenceProducer: FlorenceProducer
+            @Autowired ergebnisProducer: ErgebnisProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
                     MarathonSources.Florence to florenceProducer,
+                    MarathonSources.Ergebnis to ergebnisProducer,
+                    MarathonSources.PKO to pkoProducer,
                     MarathonSources.Treviso to trevisoProducer,
                     MarathonSources.Rome to romeProducer,
                     MarathonSources.Oslo to osloProducer,

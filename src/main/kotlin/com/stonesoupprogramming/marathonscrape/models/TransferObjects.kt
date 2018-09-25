@@ -19,7 +19,8 @@ abstract class AbstractColumnPositions(
         open val placeFunction: BiFunction<String, String, String>? = null,
         open val halfwayTimeFunction: BiFunction<String, String, String>? = null,
         open val ageFunction: BiFunction<String, String, String>? = null,
-        open val genderFunction: BiFunction<String, String, String>? = null)
+        open val genderFunction: BiFunction<String, String, String>? = null,
+        open val category: Int? = null)
 
 data class AgeGenderColumnPositions(
         override val nationality: Int,
@@ -33,7 +34,8 @@ data class AgeGenderColumnPositions(
         val age : Int,
         val gender : Int,
         override val ageFunction: BiFunction<String, String, String>? = null,
-        override val genderFunction: BiFunction<String, String, String>? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction, ageFunction)
+        override val genderFunction: BiFunction<String, String, String>? = null,
+        override val category: Int? = null) : AbstractColumnPositions(nationality, finishTime, place, halfwayTime, nationalityFunction, finishTimeFunction, placeFunction, halfwayTimeFunction, ageFunction, category = category)
 
 data class MergedAgedGenderColumnPositions(
         override val nationality: Int,
