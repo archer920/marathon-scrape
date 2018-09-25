@@ -19,6 +19,7 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    TaipeiStandardChartered("--taipei-standard-chartered"),
     Ergebnis("--ergebnis"),
     PKO("--pko"),
     Treviso("--treviso"),
