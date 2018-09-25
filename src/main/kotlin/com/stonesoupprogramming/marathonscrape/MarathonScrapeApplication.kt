@@ -28,6 +28,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -330,7 +332,7 @@ class Application(
 
         statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
-        process(*args)
+        //process(*args)
 
         this.statusReporterService.shutdown = true
 
@@ -392,8 +394,28 @@ class Application(
 
     private fun writeFile(source: MarathonSources, startYear: Int, endYear: Int) {
         logger.info("Starting file export...")
-        for (i in startYear..endYear) {
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/$source-$i.csv")
+
+        when(source){
+            MarathonSources.Ergebnis ->{
+                val races = runnerDataRepository.queryDistinctCategories(source)
+                races.forEach { race ->
+                    try {
+                        Files.createDirectory(Paths.get("csv", race))
+                        logger.info("created folder for $race")
+                    } catch (e : Exception){
+                        //ignore
+                    }
+                    for (i in startYear..endYear) {
+                        runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(i, source, race).writeToCsv("csv/$race/$race-$i.csv")
+                        logger.info("Wrote $race")
+                    }
+                }
+            }
+            else -> {
+                for (i in startYear..endYear) {
+                    runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/$source-$i.csv")
+                }
+            }
         }
         logger.info("Finished file export...")
     }
