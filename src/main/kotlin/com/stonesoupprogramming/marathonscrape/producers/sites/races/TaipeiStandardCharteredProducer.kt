@@ -26,7 +26,7 @@ class TaipeiStandardCharteredAthComponent(@Autowired athLinksMarathonScraper: At
 
 @Component
 class TaipeiStandardCharteredRunToPixComponent(@Autowired private val runToPixScraper: RunToPixScraper,
-                                               @Autowired numberedResultsPageRepository: NumberedResultsPageRepository) : AbstractNumberedResultsPageProducer(numberedResultsPageRepository, LoggerFactory.getLogger(TaipeiRunToPixComponent::class.java), MarathonSources.Taipei) {
+                                               @Autowired numberedResultsPageRepository: NumberedResultsPageRepository) : AbstractNumberedResultsPageProducer(numberedResultsPageRepository, LoggerFactory.getLogger(TaipeiRunToPixComponent::class.java), MarathonSources.TaipeiStandardChartered) {
 
     private val scrapeInfo = PagedScrapeInfo(
             url = "https://www.run2pix.com/report/report_w.php?EventCode=20170212&Race=MA&sn=14",
@@ -57,11 +57,11 @@ class TaipeiStandardCharteredRunToPixComponent(@Autowired private val runToPixSc
 }
 
 @Component
-class TaipeiStandardCharteredProducer(@Autowired private val taipeiAthComponent: TaipeiAthComponent,
-                                      @Autowired private val taipeiStandardCharteredRunToPixComponent: TaipeiStandardCharteredRunToPixComponent) : AbstractBaseProducer(LoggerFactory.getLogger(TaipeiStandardCharteredProducer::class.java), MarathonSources.Taipei) {
+class TaipeiStandardCharteredProducer(@Autowired private val taipeiStandardCharteredAthComponent: TaipeiStandardCharteredAthComponent,
+                                      @Autowired private val taipeiStandardCharteredRunToPixComponent: TaipeiStandardCharteredRunToPixComponent) : AbstractBaseProducer(LoggerFactory.getLogger(TaipeiStandardCharteredProducer::class.java), MarathonSources.TaipeiStandardChartered) {
 
     override fun buildThreads() {
-        //threads.addAll(taipeiAthComponent.process())
+        //threads.addAll(taipeiStandardCharteredAthComponent.process())
         threads.addAll(taipeiStandardCharteredRunToPixComponent.process())
     }
 }
