@@ -12,9 +12,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
+//Ergebnis
 @Component
-class SchmiedefeldProducer(@Autowired private val standardWebScraperAgeGender: StandardWebScraperAgeGender,
-                           @Autowired private val pagedResultsRepository: ResultsRepository<ResultsPage>) : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(SchmiedefeldProducer::class.java), MarathonSources.Schmiedefeld){
+class ErgebnisProducer(@Autowired private val standardWebScraperAgeGender: StandardWebScraperAgeGender,
+                       @Autowired private val pagedResultsRepository: ResultsRepository<ResultsPage>) : AbstractResultsPageProducer<ResultsPage>(pagedResultsRepository, LoggerFactory.getLogger(ErgebnisProducer::class.java), MarathonSources.Ergebnis){
 
     val urls2014 = Array(1107) {it -> "http://www.marathon-ergebnis.de/cgi-bin/edbDetailSucheNeu.php?Seite=${it + 1}&Total=110690&MW=&AK=1&Ergebnis=0:00:00&Jahr=2014&Nachname=&Vorname=&Verein=&VerTag=&VerOrt=&AproSeite=100"}
     val urls2015 = Array(1173) {it -> "http://www.marathon-ergebnis.de/cgi-bin/edbDetailSucheNeu.php?Seite=${it + 1}&Total=117227&MW=&AK=1&Ergebnis=0:00:00&Jahr=2015&Nachname=&Vorname=&Verein=&VerTag=&VerOrt=&AproSeite=100" }
@@ -32,7 +33,8 @@ class SchmiedefeldProducer(@Autowired private val standardWebScraperAgeGender: S
                     place = 0,
                     finishTime = 7,
                     age = 6,
-                    gender = 5
+                    gender = 5,
+                    category = 9
             )
     )
 

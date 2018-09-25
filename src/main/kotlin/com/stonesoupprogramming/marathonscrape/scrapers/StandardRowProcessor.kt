@@ -25,9 +25,10 @@ class StandardAgeGenderRowProcessor<U : ResultsPage, V : AbstractScrapeInfo<AgeG
                     ?: row[columnPositions.age].unavailableIfBlank()
             val gender = columnPositions.genderFunction?.apply(row[columnPositions.gender], rowHtml[columnPositions.gender])
                     ?: row[columnPositions.gender].unavailableIfBlank()
+            val category = columnPositions.category?.let { pos -> row[pos] } ?: UNAVAILABLE
 
             try {
-                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources)
+                RunnerData.createRunnerData(logger, age, finishTime, gender, scrapeInfo.marathonYear, nationality, place, scrapeInfo.marathonSources, company = category)
             } catch (e: Exception) {
                 logger.error("Unable to create runner data", e)
                 throw e

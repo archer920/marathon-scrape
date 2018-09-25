@@ -57,7 +57,7 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
 
     override fun reportStatus(source: MarathonSources, blankLines: Boolean) {
         when (source) {
-            MarathonSources.Schmiedefeld -> logger.printProgress(source, blankLines, 111690, 117227, 115505, 114469)
+            MarathonSources.Ergebnis -> logger.printProgress(source, blankLines, 111690, 117227, 115505, 114469)
             MarathonSources.PKO -> logger.printProgress(source, blankLines, 3842, 4757)
             MarathonSources.Treviso -> logger.printProgress(source, blankLines, 1835, 1551, 1180, 801)
             MarathonSources.Rome -> logger.printProgress(source, blankLines, 14875, 11487, 13881, 13318)
