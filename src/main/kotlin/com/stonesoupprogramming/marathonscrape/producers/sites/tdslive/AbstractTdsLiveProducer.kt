@@ -65,7 +65,7 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
                             if(text == "N/D" || text.isBlank()){
                                 UNAVAILABLE
                             } else {
-                                val age = text.replace("OVER", "").replace("M", "").replace("F", "").replace("S", "")
+                                val age = text.filter { c : Char -> c.isDigit() }.toList().joinToString(separator = "")
                                 if(age.isBlank()){
                                     UNAVAILABLE
                                 } else {
@@ -93,9 +93,9 @@ abstract class AbstractTdsLiveProducer(private val scraper: TdsLiveScraper,
         tdsScrapeInfoList.find { tds -> tds.sequenceLinks.year == year }?.let { tds ->
             val columnPositions = scrapeInfo.columnPositions.copy(ageGender = tds.ageGender, nationality = tds.nationality, finishTime = tds.finishTime, place = tds.place)
             if(tds.preWebScrapeEvent != null){
-                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = 1, columnPositions = columnPositions, gender = tds.gender), preWebScrapeEvent = tds.preWebScrapeEvent, rowProcessor = TdsLiveRowProcessor()))
+                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions, gender = tds.gender), preWebScrapeEvent = tds.preWebScrapeEvent, rowProcessor = TdsLiveRowProcessor()))
             } else {
-                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = 1, columnPositions = columnPositions), rowProcessor = TdsLiveRowProcessor()))
+                threads.add(scraper.scrape(scrapeInfo.copy(marathonYear = year, url = tds.sequenceLinks.url, endPage = tds.sequenceLinks.endPage, startPage = lastPage, columnPositions = columnPositions), rowProcessor = TdsLiveRowProcessor()))
             }
         }
     }
