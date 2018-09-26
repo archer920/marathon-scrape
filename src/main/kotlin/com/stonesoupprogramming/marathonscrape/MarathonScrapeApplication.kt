@@ -181,12 +181,14 @@ class Configuration {
             @Autowired romeProducer: RomeProducer,
             @Autowired trevisoProducer: TrevisoProducer,
             @Autowired pkoProducer: PkoProducer,
-            @Autowired florenceProducer: FlorenceProducer
-            @Autowired ergebnisProducer: ErgebnisProducer
+            @Autowired florenceProducer: FlorenceProducer,
+            @Autowired ergebnisProducer: ErgebnisProducer,
+            @Autowired kinmenProducer: KinmenProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Kinmen to kinmenProducer,
                     MarathonSources.Florence to florenceProducer,
                     MarathonSources.Ergebnis to ergebnisProducer,
                     MarathonSources.PKO to pkoProducer,
@@ -333,7 +335,7 @@ class Application(
 
         statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
-        process(*args)
+        //process(*args)
 
         this.statusReporterService.shutdown = true
 
