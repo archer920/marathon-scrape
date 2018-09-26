@@ -190,11 +190,21 @@ class Configuration {
             @Autowired maineProducer: MaineProducer,
             @Autowired georgiaProducer: GeorgiaProducer,
             @Autowired saltLakeCityProducer: SaltLakeCityProducer,
-            @Autowired riteAidClevelandProducer: RiteAidClevelandProducer
+            @Autowired riteAidClevelandProducer: RiteAidClevelandProducer,
+            @Autowired niagraFallsProducer: NiagraFallsProducer,
+            @Autowired venturaProducer: VenturaProducer,
+            @Autowired charlottesThunderRoadProducer: CharlottesThunderRoadProducer,
+            @Autowired revelCanyonCityProducer: RevelCanyonCityProducer,
+            @Autowired roadToHopeProducer: RoadToHopeProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.RoadToHopeHamilton to roadToHopeProducer,
+                    MarathonSources.RevelCanyonCity to revelCanyonCityProducer,
+                    MarathonSources.CharlottesThunderRoad to charlottesThunderRoadProducer,
+                    MarathonSources.Ventura to venturaProducer,
+                    MarathonSources.NiagraFalls to niagraFallsProducer,
                     MarathonSources.RiteAidCleveland to riteAidClevelandProducer,
                     MarathonSources.SaltLakeCity to saltLakeCityProducer,
                     MarathonSources.Georgia to georgiaProducer,
