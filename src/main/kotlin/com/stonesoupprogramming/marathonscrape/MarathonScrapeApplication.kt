@@ -29,6 +29,8 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.stereotype.Component
+import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -183,12 +185,34 @@ class Configuration {
             @Autowired pkoProducer: PkoProducer,
             @Autowired florenceProducer: FlorenceProducer,
             @Autowired ergebnisProducer: ErgebnisProducer,
-            @Autowired kinmenProducer: KinmenProducer
+            @Autowired taipeiStandardCharteredProducer: TaipeiStandardCharteredProducer,
+            @Autowired kinmenProducer: KinmenProducer,
+            @Autowired telAvivProducer: TelAvivProducer,
+            @Autowired maineProducer: MaineProducer,
+            @Autowired georgiaProducer: GeorgiaProducer,
+            @Autowired saltLakeCityProducer: SaltLakeCityProducer,
+            @Autowired riteAidClevelandProducer: RiteAidClevelandProducer,
+            @Autowired niagraFallsProducer: NiagraFallsProducer,
+            @Autowired venturaProducer: VenturaProducer,
+            @Autowired charlottesThunderRoadProducer: CharlottesThunderRoadProducer,
+            @Autowired revelCanyonCityProducer: RevelCanyonCityProducer,
+            @Autowired roadToHopeProducer: RoadToHopeProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
                     MarathonSources.Kinmen to kinmenProducer,
+                    MarathonSources.RoadToHopeHamilton to roadToHopeProducer,
+                    MarathonSources.RevelCanyonCity to revelCanyonCityProducer,
+                    MarathonSources.CharlottesThunderRoad to charlottesThunderRoadProducer,
+                    MarathonSources.Ventura to venturaProducer,
+                    MarathonSources.NiagraFalls to niagraFallsProducer,
+                    MarathonSources.RiteAidCleveland to riteAidClevelandProducer,
+                    MarathonSources.SaltLakeCity to saltLakeCityProducer,
+                    MarathonSources.Georgia to georgiaProducer,
+                    MarathonSources.Maine to maineProducer,
+                    MarathonSources.TelAviv to telAvivProducer,
+                    MarathonSources.TaipeiStandardChartered to taipeiStandardCharteredProducer,
                     MarathonSources.Florence to florenceProducer,
                     MarathonSources.Ergebnis to ergebnisProducer,
                     MarathonSources.PKO to pkoProducer,
@@ -332,6 +356,27 @@ class Application(
         if(args.contains("--purge")){
             doPurge(args.toMarathonSources().filterNotNull())
         }
+        if(args.contains("--list")){
+            val races = runnerDataRepository.queryDistinctCategories(MarathonSources.Ergebnis)
+            races.forEach { race ->
+                val results = mutableListOf<RunnerData>()
+                val results2014 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2014, MarathonSources.Ergebnis, race)
+                val results2015 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2015, MarathonSources.Ergebnis, race)
+                val results2016 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2016, MarathonSources.Ergebnis, race)
+                val results2017 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2017, MarathonSources.Ergebnis, race)
+
+                with(results) {
+                    addAll(results2014)
+                    addAll(results2015)
+                    addAll(results2016)
+                    addAll(results2017)
+                }
+                if(results2014.isNotEmpty() && results2015.isNotEmpty() && results2016.isNotEmpty() && results2017.isNotEmpty()){
+                    println("$race, ${results.size}")
+                }
+            }
+            System.exit(0)
+        }
 
         statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
@@ -397,8 +442,33 @@ class Application(
 
     private fun writeFile(source: MarathonSources, startYear: Int, endYear: Int) {
         logger.info("Starting file export...")
-        for (i in startYear..endYear) {
-            runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/$source-$i.csv")
+
+        when(source){
+            MarathonSources.Ergebnis ->{
+                val races = runnerDataRepository.queryDistinctCategories(source)
+                races.forEach { race ->
+                    try {
+                        Files.createDirectory(Paths.get("csv", race))
+                        logger.info("created folder for $race")
+                    } catch (e : Exception){
+                        //ignore
+                    }
+                    for (i in startYear..endYear) {
+                        runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(i, source, race).writeToCsv("csv/$race/$race-$i.csv")
+                        logger.info("Wrote $race")
+                    }
+                }
+            }
+            else -> {
+                try{
+                    Files.createDirectory(Paths.get("csv", source.name))
+                    logger.info("Created folder csv/${source.name}")
+                } catch (e : Exception) {}
+
+                for (i in startYear..endYear) {
+                    runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/${source.name}/$source-$i.csv")
+                }
+            }
         }
         logger.info("Finished file export...")
     }

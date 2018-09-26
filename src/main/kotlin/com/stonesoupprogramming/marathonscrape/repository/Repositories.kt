@@ -13,6 +13,11 @@ interface RunnerDataRepository : JpaRepository<RunnerData, Long> {
 
     fun findByMarathonYearAndSourceOrderByAge(year : Int, source : MarathonSources) : List<RunnerData>
 
+    @Query("select distinct rd.company from RunnerData rd where rd.source = :source")
+    fun queryDistinctCategories(source: MarathonSources) : List<String>
+
+    fun findByMarathonYearAndSourceAndCompanyOrderByAge(year: Int, source: MarathonSources, company : String) : List<RunnerData>
+
     fun countBySource(source : MarathonSources) : Long
 }
 

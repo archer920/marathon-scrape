@@ -60,8 +60,13 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             val age = ageParts?.split(" ")?.first()?.calcAge(logger, false) ?: UNAVAILABLE
             age
         } catch (e : Exception){
-            logger.error("Failed to extract age form $input", e)
-            throw e
+            try {
+                val parts = input.split(" - ")
+                parts[2].split(" ").first().calcAge(logger, false)
+            } catch (e : Exception){
+                logger.error("Failed to extract age form $input", e)
+                throw e
+            }
         }
     }
 
@@ -71,7 +76,8 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             parts[0].split("\n")[1].replace("\t", "")
         } catch (e : Exception){
             try {
-                parts[1].split("\n")[1].replace("\t", "")
+                val parts = input.split(" - ")
+                parts[1].split("\n").last().replace("\t", "")
             } catch (e : Exception){
                 logger.error("Failed to extract gender form $input", e)
                 throw e
@@ -92,7 +98,7 @@ class OldMyRaceGrScraper(@Autowired driverFactory: DriverFactory,
             if(parts.size == 2){
                 UNAVAILABLE
             } else {
-                logger.error("Failed to extract nationality form $input", e)
+                logger.error("Failed to extract nationality from $input", e)
                 throw e
             }
         }

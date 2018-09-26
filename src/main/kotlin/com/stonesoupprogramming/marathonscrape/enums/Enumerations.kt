@@ -19,7 +19,18 @@ enum class Gender(val code : String){
 }
 
 enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startYear : Int = 2014){
+    RoadToHopeHamilton("--road-to-hope-hamilton"),
     Kinmen("--kinmen"),
+    RevelCanyonCity("--revel-canyon-city"),
+    CharlottesThunderRoad("--charlottes-thunder-road"),
+    Ventura("--ventura"),
+    NiagraFalls("--niagra-falls"),
+    RiteAidCleveland("--rite-ait-cleveland"),
+    SaltLakeCity("--salt-lake-city"),
+    Georgia("--georgia"),
+    Maine("--maine"),
+    TelAviv("--tel-aviv"),
+    TaipeiStandardChartered("--taipei-standard-chartered"),
     Ergebnis("--ergebnis"),
     PKO("--pko"),
     Treviso("--treviso"),
