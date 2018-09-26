@@ -29,6 +29,58 @@ private val standardColumnPositions = MergedAgedGenderColumnPositions(nationalit
 //                MarathonGuideInfo("", 2017, standardColumnPositions, )))
 
 @Component
+class RiteAidClevelandProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                 @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(RiteAidClevelandProducer::class.java),
+        MarathonSources.RiteAidCleveland,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=33140518", 2014, standardColumnPositions, 1898),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=33150517", 2015, standardColumnPositions, 1700),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=33160515", 2016, standardColumnPositions, 1485),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=33170521", 2017, standardColumnPositions, 1530)))
+
+@Component
+class SaltLakeCityProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                 @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(SaltLakeCityProducer::class.java),
+        MarathonSources.SaltLakeCity,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2034140419", 2014, standardColumnPositions, 876),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2034150418", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 705),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2034160416", 2016, standardColumnPositions.copy(nationality = 5, finishTime = 1), 765),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2034170422", 2017, standardColumnPositions.copy(nationality = 5, finishTime = 1), 632)))
+
+@Component
+class GeorgiaProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                 @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(GeorgiaProducer::class.java),
+        MarathonSources.Georgia,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2541140323", 2014, standardColumnPositions.copy(nationality = -1, finishTime = 1), 1628),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2541150322", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 1279),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2541160320", 2016, standardColumnPositions.copy(nationality = 5, finishTime = 1), 1379),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=2541170319", 2017, standardColumnPositions.copy(nationality = 5, finishTime = 1), 1436)))
+
+@Component
+class MaineProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
+                 @Autowired resultsRepository: ResultsRepository<ResultsPage>)
+    : AbstractMarathonGuideProducer(marathonGuideScraper,
+        resultsRepository,
+        LoggerFactory.getLogger(MaineProducer::class.java),
+        MarathonSources.Maine,
+        listOf(
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1173141005", 2014, standardColumnPositions, 1018),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1173151004", 2015, standardColumnPositions, 850),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1173161002", 2016, standardColumnPositions, 728),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=1173171001", 2017, standardColumnPositions.copy(nationality = 5, finishTime = 1, backupAge = null), 715)))
+
+@Component
 class LondonProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
                  @Autowired resultsRepository: ResultsRepository<ResultsPage>)
     : AbstractMarathonGuideProducer(marathonGuideScraper,
@@ -36,9 +88,9 @@ class LondonProducer(@Autowired marathonGuideScraper: MarathonGuideScraper,
         LoggerFactory.getLogger(LondonProducer::class.java),
         MarathonSources.London,
         listOf(
-                //MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16140413", 2014, standardColumnPositions.copy(nationality = 5, finishTime = 1), 35817),
-                //MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16150426", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 37581),
-                //MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16160424", 2016, standardColumnPositions.copy(nationality = 5, finishTime = 1), 39091),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16140413", 2014, standardColumnPositions.copy(nationality = 5, finishTime = 1), 35817),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16150426", 2015, standardColumnPositions.copy(nationality = 5, finishTime = 1), 37581),
+                MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16160424", 2016, standardColumnPositions.copy(nationality = 5, finishTime = 1), 39091),
                 MarathonGuideInfo("http://www.marathonguide.com/results/browse.cfm?MIDD=16170423", 2017, standardColumnPositions.copy(nationality = 5, place = 1, backupAge = 3, finishTime = 4), 39406)))
 
 @Component

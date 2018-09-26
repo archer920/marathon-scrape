@@ -185,11 +185,21 @@ class Configuration {
             @Autowired pkoProducer: PkoProducer,
             @Autowired florenceProducer: FlorenceProducer,
             @Autowired ergebnisProducer: ErgebnisProducer,
-            @Autowired taipeiStandardCharteredProducer: TaipeiStandardCharteredProducer
+            @Autowired taipeiStandardCharteredProducer: TaipeiStandardCharteredProducer,
+            @Autowired telAvivProducer: TelAvivProducer,
+            @Autowired maineProducer: MaineProducer,
+            @Autowired georgiaProducer: GeorgiaProducer,
+            @Autowired saltLakeCityProducer: SaltLakeCityProducer,
+            @Autowired riteAidClevelandProducer: RiteAidClevelandProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.RiteAidCleveland to riteAidClevelandProducer,
+                    MarathonSources.SaltLakeCity to saltLakeCityProducer,
+                    MarathonSources.Georgia to georgiaProducer,
+                    MarathonSources.Maine to maineProducer,
+                    MarathonSources.TelAviv to telAvivProducer,
                     MarathonSources.TaipeiStandardChartered to taipeiStandardCharteredProducer,
                     MarathonSources.Florence to florenceProducer,
                     MarathonSources.Ergebnis to ergebnisProducer,
@@ -334,6 +344,27 @@ class Application(
         if(args.contains("--purge")){
             doPurge(args.toMarathonSources().filterNotNull())
         }
+        if(args.contains("--list")){
+            val races = runnerDataRepository.queryDistinctCategories(MarathonSources.Ergebnis)
+            races.forEach { race ->
+                val results = mutableListOf<RunnerData>()
+                val results2014 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2014, MarathonSources.Ergebnis, race)
+                val results2015 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2015, MarathonSources.Ergebnis, race)
+                val results2016 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2016, MarathonSources.Ergebnis, race)
+                val results2017 = runnerDataRepository.findByMarathonYearAndSourceAndCompanyOrderByAge(2017, MarathonSources.Ergebnis, race)
+
+                with(results) {
+                    addAll(results2014)
+                    addAll(results2015)
+                    addAll(results2016)
+                    addAll(results2017)
+                }
+                if(results2014.isNotEmpty() && results2015.isNotEmpty() && results2016.isNotEmpty() && results2017.isNotEmpty()){
+                    println("$race, ${results.size}")
+                }
+            }
+            System.exit(0)
+        }
 
         statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
@@ -417,8 +448,13 @@ class Application(
                 }
             }
             else -> {
+                try{
+                    Files.createDirectory(Paths.get("csv", source.name))
+                    logger.info("Created folder csv/${source.name}")
+                } catch (e : Exception) {}
+
                 for (i in startYear..endYear) {
-                    runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/$source-$i.csv")
+                    runnerDataRepository.findByMarathonYearAndSourceOrderByAge(i, source).writeToCsv("csv/${source.name}/$source-$i.csv")
                 }
             }
         }

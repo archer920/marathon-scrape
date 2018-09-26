@@ -12,6 +12,7 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import java.text.NumberFormat
 import java.util.concurrent.CompletableFuture
+import kotlin.math.log
 
 interface StatusReporterService {
     var shutdown: Boolean
@@ -57,6 +58,11 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
 
     override fun reportStatus(source: MarathonSources, blankLines: Boolean) {
         when (source) {
+            MarathonSources.RiteAidCleveland -> logger.printProgress(source, blankLines, 1898, 1700, 1485, 1530)
+            MarathonSources.SaltLakeCity -> logger.printProgress(source, blankLines, 876, 705, 765, 632)
+            MarathonSources.Georgia -> logger.printProgress(source, blankLines, 1628, 1279, 1379, 1436)
+            MarathonSources.Maine -> logger.printProgress(source, blankLines, 1018, 850, 728, 715)
+            MarathonSources.TelAviv -> logger.printProgress(source, blankLines, 2043, 1825, 1608, 2085)
             MarathonSources.TaipeiStandardChartered -> logger.printProgress(source, blankLines, 1832, 2178, 2000, 3167)
             MarathonSources.Ergebnis -> logger.printProgress(source, blankLines, 110690, 117227, 115505, 114469)
             MarathonSources.PKO -> logger.printProgress(source, blankLines, 3842, 4757)
@@ -68,8 +74,7 @@ class StatusReporterServiceImpl(@Autowired private val runnerDataRepository: Run
             MarathonSources.Padova -> logger.printProgress(source, blankLines, 1432, 1374, 1740, 1541)
             MarathonSources.London -> logger.printProgress(source, blankLines, 35817, 37581, 39091, 39406)
             MarathonSources.Turin -> logger.printProgress(source, blankLines, 1367, 1579, 1574, 3545)
-            MarathonSources.Barcelona -> logger.printProgress(source, blankLines, 14223, //2014 is an estimate
-                    15380, 16504, 16189)
+            MarathonSources.Barcelona -> logger.printProgress(source, blankLines, 14223, 15380, 16504, 16189)
             MarathonSources.Ottawa -> logger.printProgress(source, blankLines, 4664)
             MarathonSources.Kaiser -> logger.printProgress(source, blankLines, 1332, 1422, 1263, 1335)
             MarathonSources.Cracovia -> logger.printProgress(source, blankLines, 5358, 4577, 5552, 5615)
