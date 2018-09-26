@@ -380,7 +380,7 @@ class Application(
 
         statusReporterService.reportBulkStatusAsync(args.toMarathonSources().filterNotNull())
 
-        //process(*args)
+        process(*args)
 
         this.statusReporterService.shutdown = true
 
