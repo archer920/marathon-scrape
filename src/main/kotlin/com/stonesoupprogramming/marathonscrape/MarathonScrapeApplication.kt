@@ -195,11 +195,21 @@ class Configuration {
             @Autowired venturaProducer: VenturaProducer,
             @Autowired charlottesThunderRoadProducer: CharlottesThunderRoadProducer,
             @Autowired revelCanyonCityProducer: RevelCanyonCityProducer,
-            @Autowired roadToHopeProducer: RoadToHopeProducer
+            @Autowired roadToHopeProducer: RoadToHopeProducer,
+            @Autowired outerBanksProducer: OuterBanksProducer,
+            @Autowired rehobothProducer: RehobothProducer,
+            @Autowired breastCancerProducer: BreastCancerProducer,
+            @Autowired mercedesProducer: MercedesProducer,
+            @Autowired mayorsProducer: MayorsProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Mayors to mayorsProducer,
+                    MarathonSources.Mercedes to mercedesProducer,
+                    MarathonSources.BreastCancer to breastCancerProducer,
+                    MarathonSources.Rehobath to rehobothProducer,
+                    MarathonSources.OuterBanks to outerBanksProducer,
                     MarathonSources.RoadToHopeHamilton to roadToHopeProducer,
                     MarathonSources.RevelCanyonCity to revelCanyonCityProducer,
                     MarathonSources.CharlottesThunderRoad to charlottesThunderRoadProducer,
