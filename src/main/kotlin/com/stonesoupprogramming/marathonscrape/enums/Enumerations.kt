@@ -26,6 +26,7 @@ enum class MarathonSources(val arg : String, val endYear: Int = 2017, val startY
     Rehobath("--rehobath"),
     OuterBanks("--outer-banks"),
     RoadToHopeHamilton("--road-to-hope-hamilton"),
+    Kinmen("--kinmen"),
     RevelCanyonCity("--revel-canyon-city"),
     CharlottesThunderRoad("--charlottes-thunder-road"),
     Ventura("--ventura"),

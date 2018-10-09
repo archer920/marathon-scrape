@@ -186,6 +186,7 @@ class Configuration {
             @Autowired florenceProducer: FlorenceProducer,
             @Autowired ergebnisProducer: ErgebnisProducer,
             @Autowired taipeiStandardCharteredProducer: TaipeiStandardCharteredProducer,
+            @Autowired kinmenProducer: KinmenProducer,
             @Autowired telAvivProducer: TelAvivProducer,
             @Autowired maineProducer: MaineProducer,
             @Autowired georgiaProducer: GeorgiaProducer,
@@ -207,6 +208,7 @@ class Configuration {
 
             mapOf(
                     MarathonSources.Ponzan to poznanProducer,
+                    MarathonSources.Kinmen to kinmenProducer,
                     MarathonSources.Mayors to mayorsProducer,
                     MarathonSources.Mercedes to mercedesProducer,
                     MarathonSources.BreastCancer to breastCancerProducer,
