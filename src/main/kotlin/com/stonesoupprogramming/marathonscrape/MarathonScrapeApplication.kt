@@ -200,11 +200,13 @@ class Configuration {
             @Autowired rehobothProducer: RehobothProducer,
             @Autowired breastCancerProducer: BreastCancerProducer,
             @Autowired mercedesProducer: MercedesProducer,
-            @Autowired mayorsProducer: MayorsProducer
+            @Autowired mayorsProducer: MayorsProducer,
+            @Autowired poznanProducer: PoznanProducer
 
     ): Map<MarathonSources, AbstractBaseProducer> =
 
             mapOf(
+                    MarathonSources.Ponzan to poznanProducer,
                     MarathonSources.Mayors to mayorsProducer,
                     MarathonSources.Mercedes to mercedesProducer,
                     MarathonSources.BreastCancer to breastCancerProducer,

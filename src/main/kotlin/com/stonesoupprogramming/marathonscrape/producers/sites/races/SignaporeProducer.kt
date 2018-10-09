@@ -22,7 +22,7 @@ class SignaporeProducer(
     private val urls2014 = Array(515) { it -> "https://www.multisportaustralia.com.au/races/6184/events/1?page=$it" }
     private val urls2015 = Array(459) { it -> "https://www.multisportaustralia.com.au/races/10714/events/1?page=$it" }
     private val urls2016 = Array(416) { it -> "https://www.multisportaustralia.com.au/races/13255/events/1?page=$it" }
-    private val urls2017 = Array(389) { it -> "https://www.multisportaustralia.com.au/races/14829/events/3?page=$it" }
+    private val urls2017 = Array(389) { it -> "https://www.multisportaustralia.com.au/races/14829/events/1?page=$it" }
 
     override fun buildThreads() {
         val nationalityFunction = BiFunction<String, String, String> { text, html ->
